@@ -1,0 +1,35 @@
+#!/bin/bash
+# Semantic Search Helper Script
+# Provides simple interface to semantic and pattern-based code search
+
+set -e
+
+PROJECT_ROOT="${1:-.}"
+QUERY="$2"
+
+if [ -z "$QUERY" ]; then
+    echo "Usage: semantic-search <project-dir> <search-query>"
+    echo ""
+    echo "Examples:"
+    echo "  semantic-search . 'authentication flow'"
+    echo "  semantic-search /project 'database connection'"
+    echo "  semantic-search . 'error handling patterns'"
+    exit 1
+fi
+
+echo "Searching for: $QUERY"
+echo "Project: $PROJECT_ROOT"
+echo ""
+
+# Use OpenCode's semantic-search tool
+cd "$PROJECT_ROOT"
+
+if command -v opencode &>/dev/null; then
+    # If opencode is available, use its search
+    echo "Run in OpenCode TUI:"
+    echo "  @semantic-search(\"$QUERY\")"
+else
+    # Fallback to ripgrep for pattern-based search
+    echo "Quick grep search:"
+    echo "  rg -l '$QUERY' . 2>/dev/null || echo 'No matches found'"
+fi

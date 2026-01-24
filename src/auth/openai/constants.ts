@@ -1,0 +1,10 @@
+export const OPENAI_CLIENT_ID = process.env.OPENAI_CLIENT_ID || ''
+export const OPENAI_CLIENT_SECRET = process.env.OPENAI_CLIENT_SECRET || ''
+export const OPENAI_AUTH_URL = 'https://api.openai.com/v1/auth'
+export const OPENAI_TOKEN_URL = 'https://api.openai.com/v1/auth/tokens'
+export const OPENAI_SCOPES = ['openid', 'profile', 'email']
+export const OPENAI_REDIRECT_URI = process.env.OPENAI_REDIRECT_URI || 'http://localhost:51121/oauth-callback'
+export const OPENAI_CALLBACK_PORT = parseInt(process.env.OPENAI_CALLBACK_PORT || '51121', 10)
+export const OPENAI_USERINFO_URL = 'https://api.openai.com/v1/user/info'
+export const OPENAI_TOKEN_REFRESH_BUFFER_MS = 5 * 60 * 1000
+export const MAX_SESSIONS = 5
