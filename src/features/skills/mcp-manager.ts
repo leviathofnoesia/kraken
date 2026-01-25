@@ -3,7 +3,7 @@ import * as os from "os"
 // @ts-ignore - MCP SDK types are complex
 import { Client } from "@modelcontextprotocol/sdk/client"
 // @ts-ignore
-import type { Tool } from "@modelcontextprotocol/sdk/client"
+import type { Tool, Resource, Prompt } from "@modelcontextprotocol/sdk/client"
 
 import type {
   SkillMcpClientInfo,
@@ -54,13 +54,11 @@ export class SkillMcpManager {
     const client = new Client({
       name: serverName,
       version: "1.0.0",
-    }, {
-      timeout: info.timeout ?? 30000,
     })
 
     await client.connect()
 
-    const clientInfo: ClientInfo = {
+    const clientInfo = {
       client,
       lastUsed: Date.now(),
       idleSince: Date.now(),
@@ -105,6 +103,7 @@ export class SkillMcpManager {
       } catch (error) {
         console.error(`[skill-mcp-manager] Error disconnecting from ${key}:`, error)
       }
+      this.clients.delete(key)
     }
 
     this.clients.clear()
@@ -130,7 +129,7 @@ export class SkillMcpManager {
   async listResources(
     info: SkillMcpClientInfo,
     context: any
-  ): Promise<any[]> {
+  ): Promise<Resource[]> {
     const client = await this.getOrCreateClient(info, context)
 
     try {
@@ -146,7 +145,7 @@ export class SkillMcpManager {
   async listPrompts(
     info: SkillMcpClientInfo,
     context: any
-  ): Promise<any[]> {
+  ): Promise<Prompt[]> {
     const client = await this.getOrCreateClient(info, context)
 
     try {
@@ -243,7 +242,8 @@ export class SkillMcpManager {
       console.error(`[skill-mcp-manager] Error disconnecting from ${serverName}:`, error)
     }
 
-    this.clients.delete(`${serverName}:1.0.0`)
+    const key = `${serverName}:1.0.0`
+    this.clients.delete(key)
   }
 
   getConnectedServers(): string[] {
