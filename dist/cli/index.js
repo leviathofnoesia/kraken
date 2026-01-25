@@ -1426,7 +1426,7 @@ Skills:`));
   }
 }
 // package.json
-var version2 = "5.0.0";
+var version2 = "1.0.0";
 
 // src/cli/index.ts
 var program = new Command;

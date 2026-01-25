@@ -1,7 +1,7 @@
 {
   "name": "kraken-code",
-  "version": "5.0.0",
-  "description": "Kraken Code - Unified OpenCode plugin with high-density agents, skills, commands, and advanced memory integration",
+  "version": "1.0.0",
+  "description": "Kraken Code - Transforms OpenCode into an autonomous, high-density development environment",
   "type": "module",
   "main": "dist/index.js",
   "module": "dist/index.js",
