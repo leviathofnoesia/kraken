@@ -76,3 +76,13 @@ sbom.cyclonedx.json
 .userconfig
 .claude/
 GEMINI.md
+
+# Archive of historical documentation (not tracked)
+archive/
+
+# Test/example files not for release
+test-file.ts
+test-*.ts
+
+# Package archives (old versions)
+kraken-code-*.tgz
