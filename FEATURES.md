@@ -4,7 +4,7 @@
 
 | Aspect | Kraken-Code |
 |--------|-------------|
-| **Version** | 5.0.0 |
+| **Version** | 1.1.0 |
 | **Author** | LeviathofNoesia |
 | **Type** | Unified OpenCode Plugin |
 | **License** | MIT |
@@ -17,7 +17,7 @@
 **Core Philosophy**: Feature completeness, modular architecture, comprehensive tooling
 
 **Key Architectural Decisions**:
-- 10 sea-themed agents with clear specialization boundaries
+- 11 sea-themed agents with clear specialization boundaries
 - Modular feature system (skills, commands, MCP, memory)
 - Native integrations with full SDK implementations
 - Comprehensive hook system (30+ hooks)
@@ -40,6 +40,7 @@
 | **Pearl** | Refactoring & Optimization | Improves code quality, performance, and maintainability |
 | **Poseidon** | Data & Infrastructure | Databases, data pipelines, infrastructure management |
 | **Leviathan** | Large-Scale Projects | Large-scale refactoring and project-wide changes |
+| **Maelstrom** | First-Principles Reasoning | Deep first-principles analysis for hard problems |
 
 **Characteristics**:
 - Manual selection or configurable default (Kraken)
@@ -293,7 +294,7 @@ export class SkillLoader {
 - Feature completeness over raw performance
 - Modular architecture
 - TDD and testing discipline
-- Sea-themed agent organization
+- 11 sea-themed agents with clear specialization
 - Persistent memory across sessions
 
 **Usage**:
@@ -315,7 +316,7 @@ export class SkillLoader {
 | Category | Kraken-Code |
 |----------|-------------|
 | **Agent Model Specialization** | User-configured per agent |
-| **Number of Agents** | 10 domain-specific |
+| **Number of Agents** | 11 domain-specific |
 | **Keyword Detection** | Basic (enhanced mode) |
  | **LSP Integration** | Full (12 tools, 16 servers) |
 | **MCP Support** | Dedicated Kratos, structured |
@@ -342,7 +343,7 @@ export class SkillLoader {
 
 ## Key Features
 
-1. **Sea-themed agent system** - 10 domain-specific agents for comprehensive coverage
+1. **Sea-themed agent system** - 11 domain-specific agents for comprehensive coverage
 2. **Blitzkrieg TDD system** - Complete test-driven development enforcement
 3. **Kratos memory** - Persistent memory storage across sessions
 4. **Native SDK integrations** - GitHub, Git, PR/Issue SDKs

@@ -387,6 +387,17 @@ Kraken Code includes **31+ hooks** that properly integrate with OpenCode's API:
 
 ---
 
+## Documentation
+
+- **[README.md](README.md)** - This file
+- **[FEATURES.md](FEATURES.md)** - Complete feature overview
+- **[FAQ.md](FAQ.md)** - Frequently asked questions
+- **[EXAMPLES.md](EXAMPLES.md)** - Practical usage examples
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** - Common issues and solutions
+- **[INTEGRATION_STATUS.md](INTEGRATION_STATUS.md)** - Integration verification details
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** - Contributing guidelines
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) for details.
