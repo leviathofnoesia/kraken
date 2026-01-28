@@ -3,6 +3,7 @@ var __create = Object.create;
 var __getProtoOf = Object.getPrototypeOf;
 var __defProp = Object.defineProperty;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __toESM = (mod, isNodeMode, target) => {
   target = mod != null ? __create(__getProtoOf(mod)) : {};
@@ -14,6 +15,20 @@ var __toESM = (mod, isNodeMode, target) => {
         enumerable: true
       });
   return to;
+};
+var __moduleCache = /* @__PURE__ */ new WeakMap;
+var __toCommonJS = (from) => {
+  var entry = __moduleCache.get(from), desc;
+  if (entry)
+    return entry;
+  entry = __defProp({}, "__esModule", { value: true });
+  if (from && typeof from === "object" || typeof from === "function")
+    __getOwnPropNames(from).map((key) => !__hasOwnProp.call(entry, key) && __defProp(entry, key, {
+      get: () => from[key],
+      enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+    }));
+  __moduleCache.set(from, entry);
+  return entry;
 };
 var __commonJS = (cb, mod) => () => (mod || cb((mod = { exports: {} }).exports, mod), mod.exports);
 var __export = (target, all) => {
@@ -27,6 +42,650 @@ var __export = (target, all) => {
 };
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
+// src/storage/kraken-todo.ts
+import * as fs from "fs";
+import * as path2 from "path";
+import * as os from "os";
+function ensureDirectories() {
+  if (!fs.existsSync(KRAKEN_DIR)) {
+    fs.mkdirSync(KRAKEN_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(TODO_DIR)) {
+    fs.mkdirSync(TODO_DIR, { recursive: true });
+  }
+}
+function getTodoPath(sessionId) {
+  ensureDirectories();
+  return path2.join(TODO_DIR, `${sessionId}.jsonl`);
+}
+function loadKrakenTodos(sessionId) {
+  try {
+    ensureDirectories();
+    const filePath = getTodoPath(sessionId);
+    if (!fs.existsSync(filePath)) {
+      return [];
+    }
+    const content = fs.readFileSync(filePath, "utf-8");
+    const lines = content.trim().split(`
+`);
+    return lines.map((line) => {
+      try {
+        return JSON.parse(line);
+      } catch {
+        return null;
+      }
+    }).filter((entry) => entry !== null);
+  } catch (error) {
+    console.error(`[kraken-todo] Error loading todos for session ${sessionId}:`, error);
+    return [];
+  }
+}
+function saveKrakenTodos(sessionId, todos) {
+  try {
+    ensureDirectories();
+    const filePath = getTodoPath(sessionId);
+    const lines = todos.map((todo) => JSON.stringify({ ...todo, timestamp: Date.now() }));
+    fs.writeFileSync(filePath, lines.join(`
+`));
+    console.log(`[kraken-todo] Saved ${todos.length} todos for session ${sessionId}`);
+  } catch (error) {
+    console.error(`[kraken-todo] Error saving todos for session ${sessionId}:`, error);
+  }
+}
+function deleteKrakenTodos(sessionId) {
+  try {
+    const filePath = getTodoPath(sessionId);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`[kraken-todo] Deleted todos for session ${sessionId}`);
+    }
+  } catch (error) {
+    console.error(`[kraken-todo] Error deleting todos for session ${sessionId}:`, error);
+  }
+}
+function cleanupOldTodos(maxAgeDays = 30) {
+  try {
+    ensureDirectories();
+    const now = Date.now();
+    const maxAge = maxAgeDays * 24 * 60 * 60 * 1000;
+    const files = fs.readdirSync(TODO_DIR);
+    for (const file of files) {
+      const filePath = path2.join(TODO_DIR, file);
+      const stats = fs.statSync(filePath);
+      if (now - stats.mtimeMs > maxAge) {
+        fs.unlinkSync(filePath);
+        console.log(`[kraken-todo] Cleaned up old todo file: ${file}`);
+      }
+    }
+  } catch (error) {
+    console.error("[kraken-todo] Error cleaning up old todos:", error);
+  }
+}
+var KRAKEN_DIR, TODO_DIR;
+var init_kraken_todo = __esm(() => {
+  KRAKEN_DIR = path2.join(os.homedir(), ".kraken");
+  TODO_DIR = path2.join(KRAKEN_DIR, "todos");
+});
+
+// src/storage/kraken-transcript.ts
+import * as fs2 from "fs";
+import * as path3 from "path";
+import * as os2 from "os";
+function ensureDirectories2() {
+  if (!fs2.existsSync(KRAKEN_DIR2)) {
+    fs2.mkdirSync(KRAKEN_DIR2, { recursive: true });
+  }
+  if (!fs2.existsSync(TRANSCRIPT_DIR)) {
+    fs2.mkdirSync(TRANSCRIPT_DIR, { recursive: true });
+  }
+}
+function getTranscriptPath(sessionId) {
+  ensureDirectories2();
+  return path3.join(TRANSCRIPT_DIR, `${sessionId}.jsonl`);
+}
+function appendTranscriptEntry(sessionId, entry) {
+  try {
+    ensureDirectories2();
+    const filePath = getTranscriptPath(sessionId);
+    const line = JSON.stringify({ ...entry, timestamp: entry.timestamp || Date.now() });
+    fs2.appendFileSync(filePath, line + `
+`);
+  } catch (error) {
+    console.error(`[kraken-transcript] Error appending transcript entry for session ${sessionId}:`, error);
+  }
+}
+function recordToolUse(sessionId, toolName, toolInput, toolOutput) {
+  try {
+    ensureDirectories2();
+    const filePath = getTranscriptPath(sessionId);
+    const entry = {
+      role: "assistant",
+      content: `Tool use: ${toolName}`,
+      toolName,
+      toolInput,
+      toolOutput,
+      timestamp: Date.now()
+    };
+    const line = JSON.stringify(entry);
+    fs2.appendFileSync(filePath, line + `
+`);
+  } catch (error) {
+    console.error(`[kraken-transcript] Error recording tool use for session ${sessionId}:`, error);
+  }
+}
+function recordUserMessage(sessionId, content) {
+  appendTranscriptEntry(sessionId, {
+    role: "user",
+    content,
+    timestamp: Date.now()
+  });
+}
+function recordAssistantMessage(sessionId, content) {
+  appendTranscriptEntry(sessionId, {
+    role: "assistant",
+    content,
+    timestamp: Date.now()
+  });
+}
+function loadTranscript(sessionId) {
+  try {
+    ensureDirectories2();
+    const filePath = getTranscriptPath(sessionId);
+    if (!fs2.existsSync(filePath)) {
+      return [];
+    }
+    const content = fs2.readFileSync(filePath, "utf-8");
+    const lines = content.trim().split(`
+`);
+    return lines.map((line) => {
+      try {
+        return JSON.parse(line);
+      } catch {
+        return null;
+      }
+    }).filter((entry) => entry !== null);
+  } catch (error) {
+    console.error(`[kraken-transcript] Error loading transcript for session ${sessionId}:`, error);
+    return [];
+  }
+}
+function deleteTranscript(sessionId) {
+  try {
+    const filePath = getTranscriptPath(sessionId);
+    if (fs2.existsSync(filePath)) {
+      fs2.unlinkSync(filePath);
+      console.log(`[kraken-transcript] Deleted transcript for session ${sessionId}`);
+    }
+  } catch (error) {
+    console.error(`[kraken-transcript] Error deleting transcript for session ${sessionId}:`, error);
+  }
+}
+function deleteTempTranscript(path4) {
+  try {
+    if (fs2.existsSync(path4)) {
+      fs2.unlinkSync(path4);
+      console.log(`[kraken-transcript] Deleted temp transcript: ${path4}`);
+    }
+  } catch (error) {
+    console.error(`[kraken-transcript] Error deleting temp transcript: ${path4}`, error);
+  }
+}
+var KRAKEN_DIR2, TRANSCRIPT_DIR;
+var init_kraken_transcript = __esm(() => {
+  KRAKEN_DIR2 = path3.join(os2.homedir(), ".kraken");
+  TRANSCRIPT_DIR = path3.join(KRAKEN_DIR2, "transcripts");
+});
+
+// src/storage/kraken-paths.ts
+import * as path4 from "path";
+import * as os3 from "os";
+function getKrakenDir() {
+  return path4.join(os3.homedir(), ".kraken");
+}
+function getKrakenTodoDir() {
+  return path4.join(getKrakenDir(), "todos");
+}
+function getKrakenTranscriptDir() {
+  return path4.join(getKrakenDir(), "transcripts");
+}
+function getKrakenTodoPath(sessionId) {
+  return path4.join(getKrakenTodoDir(), `${sessionId}.jsonl`);
+}
+function getKrakenTranscriptPath(sessionId) {
+  return path4.join(getKrakenTranscriptDir(), `${sessionId}.jsonl`);
+}
+function getTempTranscriptPath() {
+  return path4.join(getKrakenTranscriptDir(), "temp.jsonl");
+}
+var init_kraken_paths = () => {};
+
+// src/storage/todo-manager.ts
+import { promises as fs3 } from "fs";
+import { join as join4, dirname } from "path";
+import * as os4 from "os";
+function getTodoPath2(sessionId, customPath) {
+  if (customPath) {
+    return join4(customPath, `${sessionId}.json`);
+  }
+  const basePath = join4(os4.homedir(), ".claude", "todos");
+  return join4(basePath, `${sessionId}.json`);
+}
+async function loadTodoFile(sessionId, customPath) {
+  const todoPath = getTodoPath2(sessionId, customPath);
+  try {
+    await fs3.mkdir(dirname(todoPath), { recursive: true });
+    const content = await fs3.readFile(todoPath, TODO_ENCODING);
+    const todoFile = JSON.parse(content);
+    if (todoFile.version !== TODO_VERSION) {
+      console.warn(`[todo-manager] Todo file version mismatch: ${todoFile.version} (expected ${TODO_VERSION})`);
+      return null;
+    }
+    return todoFile.todos || [];
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return [];
+    }
+    console.error(`[todo-manager] Error loading todo file from ${todoPath}:`, error);
+    return null;
+  }
+}
+async function saveTodoFile(sessionId, todos, customPath) {
+  const todoPath = getTodoPath2(sessionId, customPath);
+  try {
+    await fs3.mkdir(dirname(todoPath), { recursive: true });
+    const todoFile = {
+      version: TODO_VERSION,
+      todos
+    };
+    await fs3.writeFile(todoPath, JSON.stringify(todoFile, null, 2), TODO_ENCODING);
+    console.log(`[todo-manager] Saved ${todos.length} todos to ${todoPath}`);
+    return true;
+  } catch (error) {
+    console.error(`[todo-manager] Error saving todo file to ${todoPath}:`, error);
+    return false;
+  }
+}
+async function deleteTodoFile(sessionId, customPath) {
+  const todoPath = getTodoPath2(sessionId, customPath);
+  try {
+    await fs3.unlink(todoPath);
+    console.log(`[todo-manager] Deleted todo file: ${todoPath}`);
+    return true;
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return true;
+    }
+    console.error(`[todo-manager] Error deleting todo file ${todoPath}:`, error);
+    return false;
+  }
+}
+async function saveOpenCodeTodos(client, sessionId, todos) {
+  try {
+    const todoDir = join4(os4.homedir(), ".claude", "todos");
+    await fs3.mkdir(todoDir, { recursive: true });
+    const todoFile = {
+      version: TODO_VERSION,
+      todos
+    };
+    const todoPath = join4(todoDir, `${sessionId}.json`);
+    await fs3.writeFile(todoPath, JSON.stringify(todoFile, null, 2), TODO_ENCODING);
+    console.log(`[todo-manager] Saved ${todos.length} todos to OpenCode API`);
+    return true;
+  } catch (error) {
+    console.error(`[todo-manager] Error saving todos to OpenCode API:`, error);
+    return false;
+  }
+}
+async function loadOpenCodeTodos(sessionId) {
+  try {
+    const todoPath = join4(os4.homedir(), ".claude", "todos", `${sessionId}.json`);
+    const content = await fs3.readFile(todoPath, TODO_ENCODING);
+    const todoFile = JSON.parse(content);
+    if (todoFile.version !== TODO_VERSION) {
+      console.warn(`[todo-manager] Todo file version mismatch: ${todoFile.version}`);
+      return null;
+    }
+    return todoFile.todos || [];
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return [];
+    }
+    console.error(`[todo-manager] Error loading todos from OpenCode API:`, error);
+    return null;
+  }
+}
+function validateTodo(todo) {
+  const requiredFields = ["id", "content", "status", "priority"];
+  for (const field of requiredFields) {
+    if (!todo[field]) {
+      console.warn(`[todo-manager] Invalid todo: missing field "${field}"`);
+      return false;
+    }
+  }
+  const validStatuses = ["pending", "in_progress", "completed", "cancelled"];
+  if (!validStatuses.includes(todo.status)) {
+    console.warn(`[todo-manager] Invalid todo status: ${todo.status}`);
+    return false;
+  }
+  const validPriorities = ["high", "medium", "low"];
+  if (!validPriorities.includes(todo.priority)) {
+    console.warn(`[todo-manager] Invalid todo priority: ${todo.priority}`);
+    return false;
+  }
+  return true;
+}
+var TODO_VERSION = "1.0", TODO_ENCODING = "utf-8";
+var init_todo_manager = () => {};
+
+// src/storage/transcript-manager.ts
+import { promises as fs4 } from "fs";
+import { join as join5, dirname as dirname2 } from "path";
+import * as os5 from "os";
+function getTranscriptPath2(sessionId, customPath) {
+  if (customPath) {
+    return join5(customPath, `${sessionId}.jsonl`);
+  }
+  const basePath = join5(os5.homedir(), ".claude", "transcripts");
+  return join5(basePath, `${sessionId}.jsonl`);
+}
+async function appendTranscriptEntry2(sessionId, entry, customPath) {
+  const transcriptPath = getTranscriptPath2(sessionId, customPath);
+  try {
+    await fs4.mkdir(dirname2(transcriptPath), { recursive: true });
+    const entryWithTimestamp = {
+      ...entry,
+      timestamp: entry.timestamp || Date.now()
+    };
+    const jsonlLine = JSON.stringify(entryWithTimestamp) + `
+`;
+    await fs4.appendFile(transcriptPath, jsonlLine, TRANSCRIPT_ENCODING);
+  } catch (error) {
+    console.error(`[transcript-manager] Error appending transcript entry:`, error);
+  }
+}
+async function recordToolUse2(sessionId, toolName, toolInput, toolOutput, customPath) {
+  const entry = {
+    role: "assistant",
+    content: "",
+    timestamp: Date.now(),
+    toolName,
+    toolInput,
+    toolOutput
+  };
+  await appendTranscriptEntry2(sessionId, entry, customPath);
+}
+async function recordUserMessage2(sessionId, content, customPath) {
+  const entry = {
+    role: "user",
+    content,
+    timestamp: Date.now()
+  };
+  await appendTranscriptEntry2(sessionId, entry, customPath);
+}
+async function recordAssistantMessage2(sessionId, content, customPath) {
+  const entry = {
+    role: "assistant",
+    content,
+    timestamp: Date.now()
+  };
+  await appendTranscriptEntry2(sessionId, entry, customPath);
+}
+async function buildTranscriptFromSession(client, sessionId, options) {
+  try {
+    const messages = await client.listMessages({ sessionId, limit: 1000 });
+    const parts = messages.flatMap((msg) => msg.parts || []);
+    let transcript = "";
+    for (const part of parts) {
+      if (part.type === "text") {
+        const role = part.role === "user" ? "user" : "assistant";
+        transcript += `${role.toUpperCase()}: ${part.text}
+
+`;
+      }
+    }
+    if (options?.currentToolName) {
+      transcript += `TOOL: ${options.currentToolName}
+`;
+      if (options.currentToolInput !== undefined) {
+        transcript += `INPUT: ${JSON.stringify(options.currentToolInput)}
+`;
+      }
+      transcript += `
+`;
+    }
+    return transcript || null;
+  } catch (error) {
+    console.error(`[transcript-manager] Error building transcript from session:`, error);
+    return null;
+  }
+}
+async function deleteTempTranscript2(path5) {
+  try {
+    await fs4.unlink(path5);
+    console.log(`[transcript-manager] Deleted temp transcript: ${path5}`);
+    return true;
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return true;
+    }
+    console.error(`[transcript-manager] Error deleting temp transcript:`, error);
+    return false;
+  }
+}
+async function readTranscript(sessionId, customPath) {
+  const transcriptPath = getTranscriptPath2(sessionId, customPath);
+  try {
+    const content = await fs4.readFile(transcriptPath, TRANSCRIPT_ENCODING);
+    const lines = content.trim().split(`
+`);
+    const entries = [];
+    for (const line of lines) {
+      if (line.trim()) {
+        try {
+          const entry = JSON.parse(line);
+          entries.push(entry);
+        } catch (parseError) {
+          console.warn(`[transcript-manager] Failed to parse transcript line:`, parseError);
+        }
+      }
+    }
+    return entries;
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return [];
+    }
+    console.error(`[transcript-manager] Error reading transcript:`, error);
+    return [];
+  }
+}
+async function clearTranscript(sessionId, customPath) {
+  const transcriptPath = getTranscriptPath2(sessionId, customPath);
+  try {
+    await fs4.unlink(transcriptPath);
+    console.log(`[transcript-manager] Cleared transcript for session ${sessionId}`);
+    return true;
+  } catch (error) {
+    if (error?.code === "ENOENT") {
+      return true;
+    }
+    console.error(`[transcript-manager] Error clearing transcript:`, error);
+    return false;
+  }
+}
+function validateTranscriptEntry(entry) {
+  if (!entry.role || entry.role !== "user" && entry.role !== "assistant") {
+    console.warn(`[transcript-manager] Invalid transcript entry: invalid role "${entry.role}"`);
+    return false;
+  }
+  if (entry.role === "assistant" && !entry.content && !entry.toolName) {
+    console.warn(`[transcript-manager] Invalid assistant entry: must have content or toolName`);
+    return false;
+  }
+  if (entry.role === "user" && !entry.content) {
+    console.warn(`[transcript-manager] Invalid user entry: must have content`);
+    return false;
+  }
+  return true;
+}
+var TRANSCRIPT_ENCODING = "utf-8";
+var init_transcript_manager = () => {};
+
+// src/storage/paths.ts
+import * as os6 from "os";
+import * as path5 from "path";
+function getDefaultPaths() {
+  const homeDir = os6.homedir();
+  return {
+    todoPath: path5.join(homeDir, ".claude", "todos"),
+    transcriptPath: path5.join(homeDir, ".claude", "transcripts")
+  };
+}
+function getPaths(config) {
+  const defaults = getDefaultPaths();
+  return {
+    todoPath: config.todoPath || defaults.todoPath,
+    transcriptPath: config.transcriptPath || defaults.transcriptPath,
+    customTodoPath: config.todoPath,
+    customTranscriptPath: config.transcriptPath
+  };
+}
+function resolveSessionId(sessionId) {
+  if (!sessionId) {
+    return "unknown";
+  }
+  return sessionId.replace(/[^a-zA-Z0-9_-]/g, "_");
+}
+function validatePath(filePath) {
+  if (!filePath) {
+    return false;
+  }
+  const resolved = path5.resolve(filePath);
+  if (resolved.startsWith(path5.resolve(os6.homedir()))) {
+    return true;
+  }
+  return false;
+}
+function getRelativePath(filePath, basePath = process.cwd()) {
+  return path5.relative(basePath, filePath);
+}
+var init_paths = () => {};
+
+// src/storage/index.ts
+var exports_storage = {};
+__export(exports_storage, {
+  writeState: () => writeState,
+  validateTranscriptEntry: () => validateTranscriptEntry,
+  validateTodo: () => validateTodo,
+  validatePath: () => validatePath,
+  saveTodoFile: () => saveTodoFile,
+  saveOpenCodeTodos: () => saveOpenCodeTodos,
+  saveKrakenTodos: () => saveKrakenTodos,
+  resolveSessionId: () => resolveSessionId,
+  recordUserMessage: () => recordUserMessage2,
+  recordToolUse: () => recordToolUse2,
+  recordKrakenUserMessage: () => recordUserMessage,
+  recordKrakenToolUse: () => recordToolUse,
+  recordKrakenAssistantMessage: () => recordAssistantMessage,
+  recordAssistantMessage: () => recordAssistantMessage2,
+  readTranscript: () => readTranscript,
+  readState: () => readState,
+  loadTodoFile: () => loadTodoFile,
+  loadOpenCodeTodos: () => loadOpenCodeTodos,
+  loadKrakenTranscript: () => loadTranscript,
+  loadKrakenTodos: () => loadKrakenTodos,
+  incrementIteration: () => incrementIteration,
+  getTranscriptPath: () => getTranscriptPath2,
+  getTodoPath: () => getTodoPath2,
+  getTempTranscriptPath: () => getTempTranscriptPath,
+  getStateFilePath: () => getStateFilePath,
+  getRelativePath: () => getRelativePath,
+  getPaths: () => getPaths,
+  getKrakenTranscriptPath: () => getKrakenTranscriptPath,
+  getKrakenTranscriptDir: () => getKrakenTranscriptDir,
+  getKrakenTodoPath: () => getKrakenTodoPath,
+  getKrakenTodoDir: () => getKrakenTodoDir,
+  getKrakenDir: () => getKrakenDir,
+  getDefaultPaths: () => getDefaultPaths,
+  ensureDirectories: () => ensureDirectories3,
+  deleteTodoFile: () => deleteTodoFile,
+  deleteTempTranscript: () => deleteTempTranscript2,
+  deleteKrakenTranscript: () => deleteTranscript,
+  deleteKrakenTodos: () => deleteKrakenTodos,
+  deleteKrakenTempTranscript: () => deleteTempTranscript,
+  clearTranscript: () => clearTranscript,
+  clearState: () => clearState,
+  cleanupOldTodos: () => cleanupOldTodos,
+  buildTranscriptFromSession: () => buildTranscriptFromSession,
+  appendTranscriptEntry: () => appendTranscriptEntry2,
+  appendKrakenTranscriptEntry: () => appendTranscriptEntry
+});
+import * as fs5 from "fs";
+import * as path6 from "path";
+import * as os7 from "os";
+function getStateFilePath(sessionID) {
+  return path6.join(SESSIONS_DIR, `${sessionID}.json`);
+}
+function ensureDirectories3() {
+  if (!fs5.existsSync(STORAGE_DIR)) {
+    fs5.mkdirSync(STORAGE_DIR, { recursive: true });
+  }
+  if (!fs5.existsSync(SESSIONS_DIR)) {
+    fs5.mkdirSync(SESSIONS_DIR, { recursive: true });
+  }
+}
+function readState(sessionID) {
+  try {
+    ensureDirectories3();
+    const filePath = getStateFilePath(sessionID);
+    if (!fs5.existsSync(filePath)) {
+      return null;
+    }
+    const data = fs5.readFileSync(filePath, "utf-8");
+    return JSON.parse(data);
+  } catch (error) {
+    console.error(`[storage] Error reading state for session ${sessionID}:`, error);
+    return null;
+  }
+}
+function writeState(sessionID, state) {
+  try {
+    ensureDirectories3();
+    const filePath = getStateFilePath(sessionID);
+    fs5.writeFileSync(filePath, JSON.stringify(state, null, 2));
+  } catch (error) {
+    console.error(`[storage] Error writing state for session ${sessionID}:`, error);
+  }
+}
+function clearState(sessionID) {
+  try {
+    const filePath = getStateFilePath(sessionID);
+    if (fs5.existsSync(filePath)) {
+      fs5.unlinkSync(filePath);
+    }
+  } catch (error) {
+    console.error(`[storage] Error clearing state for session ${sessionID}:`, error);
+  }
+}
+function incrementIteration(sessionID) {
+  const state = readState(sessionID);
+  if (!state) {
+    return null;
+  }
+  state.currentIteration++;
+  writeState(sessionID, state);
+  return state;
+}
+var STORAGE_DIR, SESSIONS_DIR;
+var init_storage = __esm(() => {
+  init_kraken_todo();
+  init_kraken_transcript();
+  init_kraken_paths();
+  init_todo_manager();
+  init_transcript_manager();
+  init_paths();
+  STORAGE_DIR = path6.join(os7.homedir(), ".opencode", "kraken-code");
+  SESSIONS_DIR = path6.join(STORAGE_DIR, "sessions");
+});
 
 // src/tools/lsp/client.ts
 import { spawn } from "node:child_process";
@@ -137,8 +796,8 @@ class LSPClient {
 `;
     const fullMessage = header + content;
     this.proc.stdin?.write(fullMessage);
-    return new Promise((resolve, reject) => {
-      this.pending.set(id, { resolve, reject });
+    return new Promise((resolve2, reject) => {
+      this.pending.set(id, { resolve: resolve2, reject });
     });
   }
   async request(method, params) {
@@ -190,8 +849,8 @@ class LSPClient {
     const uri = `file://${filePath}`;
     let version = this.openedFiles.get(uri) ?? 0;
     version++;
-    const { promises: fs7 } = await import("node:fs");
-    const content = await fs7.readFile(filePath, "utf-8");
+    const { promises: fs10 } = await import("node:fs");
+    const content = await fs10.readFile(filePath, "utf-8");
     const ext = filePath.split(".").pop() ?? "";
     const languageId = this.getLanguageId(ext);
     await this.notify("textDocument/didOpen", {
@@ -583,7 +1242,7 @@ __export(exports_utils, {
 function findWorkspaceRoot(filePath) {
   const parts = filePath.split("/");
   for (let i = parts.length;i > 0; i--) {
-    const path9 = parts.slice(0, i).join("/");
+    const path11 = parts.slice(0, i).join("/");
     const markers = [
       "package.json",
       "tsconfig.json",
@@ -595,9 +1254,9 @@ function findWorkspaceRoot(filePath) {
     ];
     for (const marker of markers) {
       try {
-        const file = Bun.file(`${path9}/${marker}`);
+        const file = Bun.file(`${path11}/${marker}`);
         if (file.size > 0) {
-          return path9;
+          return path11;
         }
       } catch {}
     }
@@ -821,8 +1480,8 @@ async function applyWorkspaceEdit(edit) {
   if (edit.changes) {
     for (const [uri, textEdits] of Object.entries(edit.changes)) {
       try {
-        const path9 = uriToPath(uri);
-        const content = await Bun.file(path9).text();
+        const path11 = uriToPath(uri);
+        const content = await Bun.file(path11).text();
         const lines = content.split(`
 `);
         for (const te of textEdits) {
@@ -832,9 +1491,9 @@ async function applyWorkspaceEdit(edit) {
             result.totalEdits++;
           }
         }
-        Bun.write(path9, lines.join(`
+        Bun.write(path11, lines.join(`
 `));
-        result.filesModified.push(path9);
+        result.filesModified.push(path11);
       } catch (error) {
         result.errors.push(`Failed to apply edit to ${uri}: ${error}`);
         result.success = false;
@@ -856,6 +1515,243 @@ ${result.errors.join(`
 var init_utils = __esm(() => {
   init_config();
   init_manager();
+});
+
+// src/hooks/session-recovery/detector.ts
+var exports_detector = {};
+__export(exports_detector, {
+  isTransientError: () => isTransientError,
+  isRecoverableError: () => isRecoverableError,
+  isPermanentError: () => isPermanentError,
+  getRecoveryMessage: () => getRecoveryMessage,
+  detectThinkingBlockOrderError: () => detectThinkingBlockOrderError,
+  detectErrorType: () => detectErrorType,
+  detectErrorFromOutput: () => detectErrorFromOutput
+});
+function detectErrorType(error, _context) {
+  if (!error) {
+    return "no_error";
+  }
+  const errorString = error instanceof Error ? error.message : String(error);
+  const lowerError = errorString.toLowerCase();
+  for (const [type, patterns] of Object.entries(errorPatterns)) {
+    for (const pattern of patterns) {
+      if (pattern.test(lowerError)) {
+        return type;
+      }
+    }
+  }
+  return "no_error";
+}
+function detectErrorFromOutput(output) {
+  if (!output || typeof output !== "string") {
+    return null;
+  }
+  const outputString = output.toLowerCase();
+  for (const [type, patterns] of Object.entries(errorPatterns)) {
+    for (const pattern of patterns) {
+      if (pattern.test(outputString)) {
+        return type;
+      }
+    }
+  }
+  return null;
+}
+function detectThinkingBlockOrderError(thinkingBlocks) {
+  if (!thinkingBlocks || thinkingBlocks.length < 2) {
+    return null;
+  }
+  const blockTags = thinkingBlocks.map((block) => {
+    if (typeof block === "string") {
+      return block.trim();
+    }
+    return "";
+  }).filter((tag) => tag.length > 0);
+  const invalidPatterns = [
+    /thinking.*after.*reply/i,
+    /thinking.*after.*response/i,
+    /<!--thinking-->.*<!--\/thinking-->.*<!--thinking-->/i
+  ];
+  for (const pattern of invalidPatterns) {
+    const fullContent = blockTags.join(`
+`);
+    if (pattern.test(fullContent)) {
+      return "thinking_block_order";
+    }
+  }
+  return null;
+}
+function isRecoverableError(errorType) {
+  return [
+    "tool_result_missing",
+    "thinking_block_order",
+    "network_timeout"
+  ].includes(errorType);
+}
+function isTransientError(errorType) {
+  return [
+    "network_timeout",
+    "rate_limit"
+  ].includes(errorType);
+}
+function isPermanentError(errorType) {
+  return [
+    "auth_error"
+  ].includes(errorType);
+}
+function getRecoveryMessage(errorType) {
+  const messages = {
+    tool_result_missing: "Tool result appears to be missing or empty",
+    thinking_block_order: "Thinking blocks are in incorrect order",
+    thinking_disabled_violation: "Thinking block found but thinking mode is disabled",
+    network_timeout: "Network connection timed out",
+    rate_limit: "Rate limit exceeded",
+    auth_error: "Authentication failed",
+    no_error: "No error detected"
+  };
+  return messages[errorType];
+}
+var errorPatterns;
+var init_detector = __esm(() => {
+  errorPatterns = {
+    tool_result_missing: [/Tool.*returned.*empty/i, /No.*tool.*output/i, /Tool.*result.*missing/i],
+    thinking_block_order: [/Thinking.*block.*order/i, /thinking.*blocks.*must.*come.*before/i, /Invalid.*thinking.*order/i],
+    thinking_disabled_violation: [/Thinking.*disabled.*but.*block.*found/i, /thinking.*block.*without.*mode/i, /thinking.*tag.*without.*enabled.*mode/i],
+    network_timeout: [/network.*timeout/i, /connection.*timed.*out/i, /ETIMEDOUT/i],
+    rate_limit: [/rate.*limit/i, /too.*many.*requests/i, /429.*Too.*Many.*Requests/i],
+    auth_error: [/authentication.*failed/i, /invalid.*api.*key/i, /unauthorized/i],
+    no_error: [/no error detected/i]
+  };
+});
+
+// src/hooks/session-recovery/strategies.ts
+var exports_strategies = {};
+__export(exports_strategies, {
+  retryWithBackoff: () => retryWithBackoff,
+  attemptRecovery: () => attemptRecovery
+});
+async function attemptRecovery(errorType, context, options) {
+  const strategy = strategies[errorType];
+  if (!strategy) {
+    console.log("[session-recovery] No recovery strategy for error type: " + errorType);
+    return false;
+  }
+  const canRecover = await strategy.canRecover(context);
+  if (!canRecover) {
+    console.log("[session-recovery] Cannot recover from " + errorType);
+    return false;
+  }
+  if (options?.skipConfirmation) {
+    return await strategy.recover(context);
+  }
+  console.log("[session-recovery] Recovery option: " + strategy.description);
+  console.log("[session-recovery] [session recovered - continuing previous task]");
+  return await strategy.recover(context);
+}
+async function retryWithBackoff(fn, maxRetries = 3, baseDelay = 1000) {
+  let lastError = null;
+  for (let attempt = 0;attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      if (attempt < maxRetries) {
+        const delay = baseDelay * Math.pow(2, attempt);
+        console.log("[session-recovery] Retry " + (attempt + 1) + "/" + maxRetries + " after " + delay + "ms");
+        await new Promise(function(resolve2) {
+          setTimeout(resolve2, delay);
+        });
+      }
+    }
+  }
+  throw lastError || new Error("Max retries exceeded");
+}
+var toolResultMissingStrategy, thinkingBlockOrderStrategy, thinkingDisabledViolationStrategy, networkTimeoutStrategy, rateLimitStrategy, authErrorStrategy, strategies;
+var init_strategies = __esm(() => {
+  toolResultMissingStrategy = {
+    errorType: "tool_result_missing",
+    canRecover: async function(context) {
+      return context.sessionID !== undefined && context.toolOutput === undefined;
+    },
+    recover: async function(context) {
+      console.log("[session-recovery] Attempting to recover tool_result_missing for session " + context.sessionID);
+      console.log("[session-recovery] [session recovered - continuing previous task]");
+      return true;
+    },
+    description: "Retry of tool execution or continue with alternative approach"
+  };
+  thinkingBlockOrderStrategy = {
+    errorType: "thinking_block_order",
+    canRecover: async function(context) {
+      return context.sessionID !== undefined && context.thinkingBlocks !== undefined;
+    },
+    recover: async function(context) {
+      console.log("[session-recovery] Recovering thinking_block_order by reordering blocks");
+      if (context.thinkingBlocks) {
+        const blocks = Array.isArray(context.thinkingBlocks) ? context.thinkingBlocks : [context.thinkingBlocks];
+        const reversed = blocks.reverse();
+        console.log("[session-recovery] Reordered " + reversed.length + " thinking blocks");
+        return true;
+      }
+      return false;
+    },
+    description: "Reorder thinking blocks to correct order"
+  };
+  thinkingDisabledViolationStrategy = {
+    errorType: "thinking_disabled_violation",
+    canRecover: async function() {
+      return true;
+    },
+    recover: async function() {
+      console.log("[session-recovery] Ignoring thinking_disabled_violation - will re-enable thinking mode");
+      return true;
+    },
+    description: "Re-enable thinking mode in next request"
+  };
+  networkTimeoutStrategy = {
+    errorType: "network_timeout",
+    canRecover: async function() {
+      return true;
+    },
+    recover: async function() {
+      console.log("[session-recovery] Network timeout detected - will retry");
+      return true;
+    },
+    description: "Retry of request with exponential backoff"
+  };
+  rateLimitStrategy = {
+    errorType: "rate_limit",
+    canRecover: async function() {
+      return true;
+    },
+    recover: async function() {
+      console.log("[session-recovery] Rate limit hit - implementing delay");
+      await new Promise(function(resolve2) {
+        setTimeout(resolve2, 5000);
+      });
+      return true;
+    },
+    description: "Wait and retry with exponential backoff"
+  };
+  authErrorStrategy = {
+    errorType: "auth_error",
+    canRecover: async function() {
+      return false;
+    },
+    recover: async function() {
+      console.log("[session-recovery] Authentication error - cannot recover automatically");
+      return false;
+    },
+    description: "User must re-authenticate manually"
+  };
+  strategies = {
+    tool_result_missing: toolResultMissingStrategy,
+    thinking_block_order: thinkingBlockOrderStrategy,
+    thinking_disabled_violation: thinkingDisabledViolationStrategy,
+    network_timeout: networkTimeoutStrategy,
+    rate_limit: rateLimitStrategy,
+    auth_error: authErrorStrategy
+  };
 });
 
 // node_modules/ajv/dist/compile/codegen/code.js
@@ -3744,7 +4640,7 @@ var require_compile = __commonJS((exports) => {
     const schOrFunc = root.refs[ref];
     if (schOrFunc)
       return schOrFunc;
-    let _sch = resolve.call(this, root, ref);
+    let _sch = resolve2.call(this, root, ref);
     if (_sch === undefined) {
       const schema = (_a = root.localRefs) === null || _a === undefined ? undefined : _a[ref];
       const { schemaId } = this.opts;
@@ -3771,7 +4667,7 @@ var require_compile = __commonJS((exports) => {
   function sameSchemaEnv(s1, s2) {
     return s1.schema === s2.schema && s1.root === s2.root && s1.baseId === s2.baseId;
   }
-  function resolve(root, ref) {
+  function resolve2(root, ref) {
     let sch;
     while (typeof (sch = this.refs[ref]) == "string")
       ref = sch;
@@ -3982,8 +4878,8 @@ var require_utils = __commonJS((exports, module) => {
     }
     return ind;
   }
-  function removeDotSegments(path11) {
-    let input = path11;
+  function removeDotSegments(path13) {
+    let input = path13;
     const output = [];
     let nextSlash = -1;
     let len = 0;
@@ -4173,8 +5069,8 @@ var require_schemes = __commonJS((exports, module) => {
       wsComponent.secure = undefined;
     }
     if (wsComponent.resourceName) {
-      const [path11, query] = wsComponent.resourceName.split("?");
-      wsComponent.path = path11 && path11 !== "/" ? path11 : undefined;
+      const [path13, query] = wsComponent.resourceName.split("?");
+      wsComponent.path = path13 && path13 !== "/" ? path13 : undefined;
       wsComponent.query = query;
       wsComponent.resourceName = undefined;
     }
@@ -4301,55 +5197,55 @@ var require_fast_uri = __commonJS((exports, module) => {
     }
     return uri;
   }
-  function resolve(baseURI, relativeURI, options) {
+  function resolve2(baseURI, relativeURI, options) {
     const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
     const resolved = resolveComponent(parse(baseURI, schemelessOptions), parse(relativeURI, schemelessOptions), schemelessOptions, true);
     schemelessOptions.skipEscape = true;
     return serialize(resolved, schemelessOptions);
   }
-  function resolveComponent(base, relative2, options, skipNormalization) {
+  function resolveComponent(base, relative3, options, skipNormalization) {
     const target = {};
     if (!skipNormalization) {
       base = parse(serialize(base, options), options);
-      relative2 = parse(serialize(relative2, options), options);
+      relative3 = parse(serialize(relative3, options), options);
     }
     options = options || {};
-    if (!options.tolerant && relative2.scheme) {
-      target.scheme = relative2.scheme;
-      target.userinfo = relative2.userinfo;
-      target.host = relative2.host;
-      target.port = relative2.port;
-      target.path = removeDotSegments(relative2.path || "");
-      target.query = relative2.query;
+    if (!options.tolerant && relative3.scheme) {
+      target.scheme = relative3.scheme;
+      target.userinfo = relative3.userinfo;
+      target.host = relative3.host;
+      target.port = relative3.port;
+      target.path = removeDotSegments(relative3.path || "");
+      target.query = relative3.query;
     } else {
-      if (relative2.userinfo !== undefined || relative2.host !== undefined || relative2.port !== undefined) {
-        target.userinfo = relative2.userinfo;
-        target.host = relative2.host;
-        target.port = relative2.port;
-        target.path = removeDotSegments(relative2.path || "");
-        target.query = relative2.query;
+      if (relative3.userinfo !== undefined || relative3.host !== undefined || relative3.port !== undefined) {
+        target.userinfo = relative3.userinfo;
+        target.host = relative3.host;
+        target.port = relative3.port;
+        target.path = removeDotSegments(relative3.path || "");
+        target.query = relative3.query;
       } else {
-        if (!relative2.path) {
+        if (!relative3.path) {
           target.path = base.path;
-          if (relative2.query !== undefined) {
-            target.query = relative2.query;
+          if (relative3.query !== undefined) {
+            target.query = relative3.query;
           } else {
             target.query = base.query;
           }
         } else {
-          if (relative2.path[0] === "/") {
-            target.path = removeDotSegments(relative2.path);
+          if (relative3.path[0] === "/") {
+            target.path = removeDotSegments(relative3.path);
           } else {
             if ((base.userinfo !== undefined || base.host !== undefined || base.port !== undefined) && !base.path) {
-              target.path = "/" + relative2.path;
+              target.path = "/" + relative3.path;
             } else if (!base.path) {
-              target.path = relative2.path;
+              target.path = relative3.path;
             } else {
-              target.path = base.path.slice(0, base.path.lastIndexOf("/") + 1) + relative2.path;
+              target.path = base.path.slice(0, base.path.lastIndexOf("/") + 1) + relative3.path;
             }
             target.path = removeDotSegments(target.path);
           }
-          target.query = relative2.query;
+          target.query = relative3.query;
         }
         target.userinfo = base.userinfo;
         target.host = base.host;
@@ -4357,7 +5253,7 @@ var require_fast_uri = __commonJS((exports, module) => {
       }
       target.scheme = base.scheme;
     }
-    target.fragment = relative2.fragment;
+    target.fragment = relative3.fragment;
     return target;
   }
   function equal(uriA, uriB, options) {
@@ -4529,7 +5425,7 @@ var require_fast_uri = __commonJS((exports, module) => {
   var fastUri = {
     SCHEMES,
     normalize,
-    resolve,
+    resolve: resolve2,
     resolveComponent,
     equal,
     serialize,
@@ -7309,12 +8205,12 @@ var require_dist = __commonJS((exports, module) => {
       throw new Error(`Unknown format "${name}"`);
     return f;
   };
-  function addFormats(ajv, list, fs9, exportName) {
+  function addFormats(ajv, list, fs12, exportName) {
     var _a;
     var _b;
     (_a = (_b = ajv.opts.code).formats) !== null && _a !== undefined || (_b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`);
     for (const f of list)
-      ajv.addFormat(f, fs9[f]);
+      ajv.addFormat(f, fs12[f]);
   }
   module.exports = exports = formatsPlugin;
   Object.defineProperty(exports, "__esModule", { value: true });
@@ -7325,8 +8221,8 @@ var require_dist = __commonJS((exports, module) => {
 var require_windows = __commonJS((exports, module) => {
   module.exports = isexe;
   isexe.sync = sync;
-  var fs9 = __require("fs");
-  function checkPathExt(path11, options) {
+  var fs12 = __require("fs");
+  function checkPathExt(path13, options) {
     var pathext = options.pathExt !== undefined ? options.pathExt : process.env.PATHEXT;
     if (!pathext) {
       return true;
@@ -7337,25 +8233,25 @@ var require_windows = __commonJS((exports, module) => {
     }
     for (var i = 0;i < pathext.length; i++) {
       var p = pathext[i].toLowerCase();
-      if (p && path11.substr(-p.length).toLowerCase() === p) {
+      if (p && path13.substr(-p.length).toLowerCase() === p) {
         return true;
       }
     }
     return false;
   }
-  function checkStat(stat, path11, options) {
+  function checkStat(stat, path13, options) {
     if (!stat.isSymbolicLink() && !stat.isFile()) {
       return false;
     }
-    return checkPathExt(path11, options);
+    return checkPathExt(path13, options);
   }
-  function isexe(path11, options, cb) {
-    fs9.stat(path11, function(er, stat) {
-      cb(er, er ? false : checkStat(stat, path11, options));
+  function isexe(path13, options, cb) {
+    fs12.stat(path13, function(er, stat) {
+      cb(er, er ? false : checkStat(stat, path13, options));
     });
   }
-  function sync(path11, options) {
-    return checkStat(fs9.statSync(path11), path11, options);
+  function sync(path13, options) {
+    return checkStat(fs12.statSync(path13), path13, options);
   }
 });
 
@@ -7363,14 +8259,14 @@ var require_windows = __commonJS((exports, module) => {
 var require_mode = __commonJS((exports, module) => {
   module.exports = isexe;
   isexe.sync = sync;
-  var fs9 = __require("fs");
-  function isexe(path11, options, cb) {
-    fs9.stat(path11, function(er, stat) {
+  var fs12 = __require("fs");
+  function isexe(path13, options, cb) {
+    fs12.stat(path13, function(er, stat) {
       cb(er, er ? false : checkStat(stat, options));
     });
   }
-  function sync(path11, options) {
-    return checkStat(fs9.statSync(path11), options);
+  function sync(path13, options) {
+    return checkStat(fs12.statSync(path13), options);
   }
   function checkStat(stat, options) {
     return stat.isFile() && checkMode(stat, options);
@@ -7392,7 +8288,7 @@ var require_mode = __commonJS((exports, module) => {
 
 // node_modules/isexe/index.js
 var require_isexe = __commonJS((exports, module) => {
-  var fs9 = __require("fs");
+  var fs12 = __require("fs");
   var core;
   if (process.platform === "win32" || global.TESTING_WINDOWS) {
     core = require_windows();
@@ -7401,7 +8297,7 @@ var require_isexe = __commonJS((exports, module) => {
   }
   module.exports = isexe;
   isexe.sync = sync;
-  function isexe(path11, options, cb) {
+  function isexe(path13, options, cb) {
     if (typeof options === "function") {
       cb = options;
       options = {};
@@ -7410,17 +8306,17 @@ var require_isexe = __commonJS((exports, module) => {
       if (typeof Promise !== "function") {
         throw new TypeError("callback not provided");
       }
-      return new Promise(function(resolve, reject) {
-        isexe(path11, options || {}, function(er, is) {
+      return new Promise(function(resolve2, reject) {
+        isexe(path13, options || {}, function(er, is) {
           if (er) {
             reject(er);
           } else {
-            resolve(is);
+            resolve2(is);
           }
         });
       });
     }
-    core(path11, options || {}, function(er, is) {
+    core(path13, options || {}, function(er, is) {
       if (er) {
         if (er.code === "EACCES" || options && options.ignoreErrors) {
           er = null;
@@ -7430,9 +8326,9 @@ var require_isexe = __commonJS((exports, module) => {
       cb(er, is);
     });
   }
-  function sync(path11, options) {
+  function sync(path13, options) {
     try {
-      return core.sync(path11, options || {});
+      return core.sync(path13, options || {});
     } catch (er) {
       if (options && options.ignoreErrors || er.code === "EACCES") {
         return false;
@@ -7446,7 +8342,7 @@ var require_isexe = __commonJS((exports, module) => {
 // node_modules/which/which.js
 var require_which = __commonJS((exports, module) => {
   var isWindows = process.platform === "win32" || process.env.OSTYPE === "cygwin" || process.env.OSTYPE === "msys";
-  var path11 = __require("path");
+  var path13 = __require("path");
   var COLON = isWindows ? ";" : ":";
   var isexe = require_isexe();
   var getNotFoundError = (cmd) => Object.assign(new Error(`not found: ${cmd}`), { code: "ENOENT" });
@@ -7477,27 +8373,27 @@ var require_which = __commonJS((exports, module) => {
       opt = {};
     const { pathEnv, pathExt, pathExtExe } = getPathInfo(cmd, opt);
     const found = [];
-    const step = (i) => new Promise((resolve, reject) => {
+    const step = (i) => new Promise((resolve2, reject) => {
       if (i === pathEnv.length)
-        return opt.all && found.length ? resolve(found) : reject(getNotFoundError(cmd));
+        return opt.all && found.length ? resolve2(found) : reject(getNotFoundError(cmd));
       const ppRaw = pathEnv[i];
       const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
-      const pCmd = path11.join(pathPart, cmd);
+      const pCmd = path13.join(pathPart, cmd);
       const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd : pCmd;
-      resolve(subStep(p, i, 0));
+      resolve2(subStep(p, i, 0));
     });
-    const subStep = (p, i, ii) => new Promise((resolve, reject) => {
+    const subStep = (p, i, ii) => new Promise((resolve2, reject) => {
       if (ii === pathExt.length)
-        return resolve(step(i + 1));
+        return resolve2(step(i + 1));
       const ext = pathExt[ii];
       isexe(p + ext, { pathExt: pathExtExe }, (er, is) => {
         if (!er && is) {
           if (opt.all)
             found.push(p + ext);
           else
-            return resolve(p + ext);
+            return resolve2(p + ext);
         }
-        return resolve(subStep(p, i, ii + 1));
+        return resolve2(subStep(p, i, ii + 1));
       });
     });
     return cb ? step(0).then((res) => cb(null, res), cb) : step(0);
@@ -7509,7 +8405,7 @@ var require_which = __commonJS((exports, module) => {
     for (let i = 0;i < pathEnv.length; i++) {
       const ppRaw = pathEnv[i];
       const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
-      const pCmd = path11.join(pathPart, cmd);
+      const pCmd = path13.join(pathPart, cmd);
       const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd : pCmd;
       for (let j = 0;j < pathExt.length; j++) {
         const cur = p + pathExt[j];
@@ -7550,7 +8446,7 @@ var require_path_key = __commonJS((exports, module) => {
 
 // node_modules/cross-spawn/lib/util/resolveCommand.js
 var require_resolveCommand = __commonJS((exports, module) => {
-  var path11 = __require("path");
+  var path13 = __require("path");
   var which = require_which();
   var getPathKey = require_path_key();
   function resolveCommandAttempt(parsed, withoutPathExt) {
@@ -7567,7 +8463,7 @@ var require_resolveCommand = __commonJS((exports, module) => {
     try {
       resolved = which.sync(parsed.command, {
         path: env[getPathKey({ env })],
-        pathExt: withoutPathExt ? path11.delimiter : undefined
+        pathExt: withoutPathExt ? path13.delimiter : undefined
       });
     } catch (e) {} finally {
       if (shouldSwitchCwd) {
@@ -7575,7 +8471,7 @@ var require_resolveCommand = __commonJS((exports, module) => {
       }
     }
     if (resolved) {
-      resolved = path11.resolve(hasCustomCwd ? parsed.options.cwd : "", resolved);
+      resolved = path13.resolve(hasCustomCwd ? parsed.options.cwd : "", resolved);
     }
     return resolved;
   }
@@ -7620,8 +8516,8 @@ var require_shebang_command = __commonJS((exports, module) => {
     if (!match) {
       return null;
     }
-    const [path11, argument] = match[0].replace(/#! ?/, "").split(" ");
-    const binary = path11.split("/").pop();
+    const [path13, argument] = match[0].replace(/#! ?/, "").split(" ");
+    const binary = path13.split("/").pop();
     if (binary === "env") {
       return argument;
     }
@@ -7631,16 +8527,16 @@ var require_shebang_command = __commonJS((exports, module) => {
 
 // node_modules/cross-spawn/lib/util/readShebang.js
 var require_readShebang = __commonJS((exports, module) => {
-  var fs9 = __require("fs");
+  var fs12 = __require("fs");
   var shebangCommand = require_shebang_command();
   function readShebang(command) {
     const size = 150;
     const buffer = Buffer.alloc(size);
     let fd;
     try {
-      fd = fs9.openSync(command, "r");
-      fs9.readSync(fd, buffer, 0, size, 0);
-      fs9.closeSync(fd);
+      fd = fs12.openSync(command, "r");
+      fs12.readSync(fd, buffer, 0, size, 0);
+      fs12.closeSync(fd);
     } catch (e) {}
     return shebangCommand(buffer.toString());
   }
@@ -7649,7 +8545,7 @@ var require_readShebang = __commonJS((exports, module) => {
 
 // node_modules/cross-spawn/lib/parse.js
 var require_parse = __commonJS((exports, module) => {
-  var path11 = __require("path");
+  var path13 = __require("path");
   var resolveCommand = require_resolveCommand();
   var escape2 = require_escape();
   var readShebang = require_readShebang();
@@ -7674,7 +8570,7 @@ var require_parse = __commonJS((exports, module) => {
     const needsShell = !isExecutableRegExp.test(commandFile);
     if (parsed.options.forceShell || needsShell) {
       const needsDoubleEscapeMetaChars = isCmdShimRegExp.test(commandFile);
-      parsed.command = path11.normalize(parsed.command);
+      parsed.command = path13.normalize(parsed.command);
       parsed.command = escape2.command(parsed.command);
       parsed.args = parsed.args.map((arg) => escape2.argument(arg, needsDoubleEscapeMetaChars));
       const shellCommand = [parsed.command].concat(parsed.args).join(" ");
@@ -9728,7 +10624,7 @@ import { z } from "zod";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import path from "node:path";
-var __dirname = "/home/leviath/kraken-code/src/tools";
+var __dirname = "/home/ubuntu/clawd/Projects/kraken-code/src/tools";
 var execFileAsync = promisify(execFile);
 async function runCompression(prompt) {
   const compressionDir = path.resolve(__dirname, "..", "compression");
@@ -9787,99 +10683,8 @@ var opencodeXCompress = tool({
   }
 });
 
-// src/storage/index.ts
-import * as fs2 from "fs";
-import * as path4 from "path";
-import * as os4 from "os";
-
-// src/storage/kraken-todo.ts
-import * as path2 from "path";
-import * as os from "os";
-var KRAKEN_DIR = path2.join(os.homedir(), ".kraken");
-var TODO_DIR = path2.join(KRAKEN_DIR, "todos");
-// src/storage/kraken-transcript.ts
-import * as path3 from "path";
-import * as os2 from "os";
-var KRAKEN_DIR2 = path3.join(os2.homedir(), ".kraken");
-var TRANSCRIPT_DIR = path3.join(KRAKEN_DIR2, "transcripts");
-// src/storage/transcript-manager.ts
-import { promises as fs } from "fs";
-import { join as join3, dirname } from "path";
-import * as os3 from "os";
-var TRANSCRIPT_ENCODING = "utf-8";
-function getTranscriptPath(sessionId, customPath) {
-  if (customPath) {
-    return join3(customPath, `${sessionId}.jsonl`);
-  }
-  const basePath = join3(os3.homedir(), ".claude", "transcripts");
-  return join3(basePath, `${sessionId}.jsonl`);
-}
-async function appendTranscriptEntry(sessionId, entry, customPath) {
-  const transcriptPath = getTranscriptPath(sessionId, customPath);
-  try {
-    await fs.mkdir(dirname(transcriptPath), { recursive: true });
-    const entryWithTimestamp = {
-      ...entry,
-      timestamp: entry.timestamp || Date.now()
-    };
-    const jsonlLine = JSON.stringify(entryWithTimestamp) + `
-`;
-    await fs.appendFile(transcriptPath, jsonlLine, TRANSCRIPT_ENCODING);
-  } catch (error) {
-    console.error(`[transcript-manager] Error appending transcript entry:`, error);
-  }
-}
-async function recordToolUse(sessionId, toolName, toolInput, toolOutput, customPath) {
-  const entry = {
-    role: "assistant",
-    content: "",
-    timestamp: Date.now(),
-    toolName,
-    toolInput,
-    toolOutput
-  };
-  await appendTranscriptEntry(sessionId, entry, customPath);
-}
-
-// src/storage/index.ts
-var STORAGE_DIR = path4.join(os4.homedir(), ".opencode", "kraken-code");
-var SESSIONS_DIR = path4.join(STORAGE_DIR, "sessions");
-function getStateFilePath(sessionID) {
-  return path4.join(SESSIONS_DIR, `${sessionID}.json`);
-}
-function ensureDirectories() {
-  if (!fs2.existsSync(STORAGE_DIR)) {
-    fs2.mkdirSync(STORAGE_DIR, { recursive: true });
-  }
-  if (!fs2.existsSync(SESSIONS_DIR)) {
-    fs2.mkdirSync(SESSIONS_DIR, { recursive: true });
-  }
-}
-function readState(sessionID) {
-  try {
-    ensureDirectories();
-    const filePath = getStateFilePath(sessionID);
-    if (!fs2.existsSync(filePath)) {
-      return null;
-    }
-    const data = fs2.readFileSync(filePath, "utf-8");
-    return JSON.parse(data);
-  } catch (error) {
-    console.error(`[storage] Error reading state for session ${sessionID}:`, error);
-    return null;
-  }
-}
-function writeState(sessionID, state) {
-  try {
-    ensureDirectories();
-    const filePath = getStateFilePath(sessionID);
-    fs2.writeFileSync(filePath, JSON.stringify(state, null, 2));
-  } catch (error) {
-    console.error(`[storage] Error writing state for session ${sessionID}:`, error);
-  }
-}
-
 // src/hooks/ralph-loop/index.ts
+init_storage();
 var RALPH_SYSTEM_PROMPT = `You are Ralph, a specialized iteration agent focused on achieving completion promises.
 
 Your methodology:
@@ -9974,12 +10779,12 @@ ${promptText}
 // src/hooks/auto-update-checker/index.ts
 import { exec } from "node:child_process";
 import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { existsSync as existsSync2 } from "node:fs";
-import { join as join5 } from "node:path";
-import { homedir as homedir5 } from "node:os";
+import { existsSync as existsSync4 } from "node:fs";
+import { join as join8 } from "node:path";
+import { homedir as homedir8 } from "node:os";
 var PACKAGE_NAME = "kraken-code";
 var DEFAULT_CACHE_TTL = 86400000;
-var DEFAULT_CACHE_DIR = join5(homedir5(), ".config", "kraken-code", "cache");
+var DEFAULT_CACHE_DIR = join8(homedir8(), ".config", "kraken-code", "cache");
 var CACHE_FILE = "update-check.json";
 var currentVersion = "";
 var updateCache = null;
@@ -9996,12 +10801,12 @@ function getCurrentVersion() {
 }
 function getCachePath(config) {
   const cacheDir = config.cacheDir ?? DEFAULT_CACHE_DIR;
-  return join5(cacheDir, CACHE_FILE);
+  return join8(cacheDir, CACHE_FILE);
 }
 async function loadCache(config) {
   try {
     const cachePath = getCachePath(config);
-    if (!existsSync2(cachePath)) {
+    if (!existsSync4(cachePath)) {
       return null;
     }
     const content = await readFile(cachePath, "utf-8");
@@ -10014,7 +10819,7 @@ async function loadCache(config) {
 async function saveCache(config, cache) {
   try {
     const cacheDir = config.cacheDir ?? DEFAULT_CACHE_DIR;
-    if (!existsSync2(cacheDir)) {
+    if (!existsSync4(cacheDir)) {
       await mkdir(cacheDir, { recursive: true });
     }
     const cachePath = getCachePath(config);
@@ -10024,23 +10829,23 @@ async function saveCache(config, cache) {
   }
 }
 async function checkNpmRegistry() {
-  return new Promise((resolve) => {
+  return new Promise((resolve2) => {
     exec(`npm view ${PACKAGE_NAME} version`, (error, stdout, stderr) => {
       if (error) {
         console.error("[auto-update-checker] Failed to check npm registry:", error);
-        resolve(null);
+        resolve2(null);
         return;
       }
       if (stderr) {
         console.error("[auto-update-checker] npm error:", stderr);
-        resolve(null);
+        resolve2(null);
         return;
       }
       const version = stdout.trim();
       if (version) {
-        resolve(version);
+        resolve2(version);
       } else {
-        resolve(null);
+        resolve2(null);
       }
     });
   });
@@ -10135,7 +10940,7 @@ function createAutoUpdateChecker(_input, options) {
       if (input.event?.type === "installation.updated") {
         console.log("[auto-update-checker] Installation was updated");
         const cacheDir = config.cacheDir ?? DEFAULT_CACHE_DIR;
-        const cachePath = join5(cacheDir, CACHE_FILE);
+        const cachePath = join8(cacheDir, CACHE_FILE);
         try {
           const { unlink } = await import("node:fs/promises");
           await unlink(cachePath);
@@ -10232,33 +11037,33 @@ var ast_grep_replace = tool2({
 });
 
 // src/tools/session/list.ts
-import * as fs3 from "fs";
-import * as path5 from "path";
-import * as os5 from "os";
+import * as fs6 from "fs";
+import * as path7 from "path";
+import * as os8 from "os";
 import { tool as tool3 } from "@opencode-ai/plugin";
 import { z as z3 } from "zod";
-var SESSION_STORAGE_DIR = path5.join(os5.homedir(), ".opencode", "sessions");
+var SESSION_STORAGE_DIR = path7.join(os8.homedir(), ".opencode", "sessions");
 function getSessionStorageDir() {
-  if (!fs3.existsSync(SESSION_STORAGE_DIR)) {
-    fs3.mkdirSync(SESSION_STORAGE_DIR, { recursive: true });
+  if (!fs6.existsSync(SESSION_STORAGE_DIR)) {
+    fs6.mkdirSync(SESSION_STORAGE_DIR, { recursive: true });
   }
   return SESSION_STORAGE_DIR;
 }
 function getAllSessionFiles() {
   const sessionsDir = getSessionStorageDir();
-  if (!fs3.existsSync(sessionsDir)) {
+  if (!fs6.existsSync(sessionsDir)) {
     return [];
   }
   const entries = [];
   try {
-    const files = fs3.readdirSync(sessionsDir);
+    const files = fs6.readdirSync(sessionsDir);
     for (const file of files) {
       if (!file.endsWith(".json"))
         continue;
       const sessionID = file.slice(0, -5);
-      const filePath = path5.join(sessionsDir, file);
+      const filePath = path7.join(sessionsDir, file);
       try {
-        const content = fs3.readFileSync(filePath, "utf-8");
+        const content = fs6.readFileSync(filePath, "utf-8");
         const data = JSON.parse(content);
         const metadata = {
           sessionID,
@@ -10362,12 +11167,12 @@ var session_list = tool3({
   }
 });
 // src/tools/session/read.ts
-import * as fs4 from "fs";
-import * as path6 from "path";
+import * as fs7 from "fs";
+import * as path8 from "path";
 import { tool as tool4 } from "@opencode-ai/plugin";
 import { z as z4 } from "zod";
 function getSessionFilePath(sessionID) {
-  return path6.join(getSessionStorageDir(), `${sessionID}.json`);
+  return path8.join(getSessionStorageDir(), `${sessionID}.json`);
 }
 var session_read = tool4({
   description: "Read messages from a specific session with pagination and filtering options.",
@@ -10381,14 +11186,14 @@ var session_read = tool4({
     try {
       const { sessionID, limit, offset, includeMetadata } = args;
       const filePath = getSessionFilePath(sessionID);
-      if (!fs4.existsSync(filePath)) {
+      if (!fs7.existsSync(filePath)) {
         return JSON.stringify({
           success: false,
           error: `Session ${sessionID} not found`,
           sessionID
         });
       }
-      const content = fs4.readFileSync(filePath, "utf-8");
+      const content = fs7.readFileSync(filePath, "utf-8");
       const data = JSON.parse(content);
       const messages = data.messages || [];
       let paginatedMessages = messages;
@@ -10436,15 +11241,15 @@ var session_read = tool4({
   }
 });
 // src/tools/session/search.ts
-import * as fs5 from "fs";
-import * as path7 from "path";
-import * as os6 from "os";
+import * as fs8 from "fs";
+import * as path9 from "path";
+import * as os9 from "os";
 import { tool as tool5 } from "@opencode-ai/plugin";
 import { z as z5 } from "zod";
-var SESSION_STORAGE_DIR2 = path7.join(os6.homedir(), ".opencode", "sessions");
+var SESSION_STORAGE_DIR2 = path9.join(os9.homedir(), ".opencode", "sessions");
 function indexSession(sessionFilePath) {
   try {
-    const content = fs5.readFileSync(sessionFilePath, "utf-8");
+    const content = fs8.readFileSync(sessionFilePath, "utf-8");
     const data = JSON.parse(content);
     const index = new Map;
     if (data.messages && Array.isArray(data.messages)) {
@@ -10495,19 +11300,19 @@ function calculateRelevanceScore(query, match) {
 }
 function getAllSessionFiles2() {
   const sessionsDir = getSessionStorageDir();
-  if (!fs5.existsSync(sessionsDir)) {
+  if (!fs8.existsSync(sessionsDir)) {
     return [];
   }
   const entries = [];
   try {
-    const files = fs5.readdirSync(sessionsDir);
+    const files = fs8.readdirSync(sessionsDir);
     for (const file of files) {
       if (!file.endsWith(".json"))
         continue;
       const sessionID = file.slice(0, -5);
-      const filePath = path7.join(sessionsDir, file);
+      const filePath = path9.join(sessionsDir, file);
       try {
-        const content = fs5.readFileSync(filePath, "utf-8");
+        const content = fs8.readFileSync(filePath, "utf-8");
         const data = JSON.parse(content);
         const metadata = {
           sessionID,
@@ -10555,7 +11360,7 @@ var session_search = tool5({
       let sessionFiles = [];
       if (sessionID) {
         const sessionDir = getSessionStorageDir();
-        const filePath = path7.join(sessionDir, `${sessionID}.json`);
+        const filePath = path9.join(sessionDir, `${sessionID}.json`);
         sessionFiles = [
           {
             sessionID,
@@ -10628,21 +11433,21 @@ var session_search = tool5({
   }
 });
 // src/tools/session/info.ts
-import * as fs6 from "fs";
-import * as path8 from "path";
+import * as fs9 from "fs";
+import * as path10 from "path";
 import { tool as tool6 } from "@opencode-ai/plugin";
 import { z as z6 } from "zod";
-var SESSION_STORAGE_DIR3 = path8.join(process.env.HOME || "", ".opencode", "sessions");
+var SESSION_STORAGE_DIR3 = path10.join(process.env.HOME || "", ".opencode", "sessions");
 function getSessionFilePath2(sessionID) {
-  return path8.join(getSessionStorageDir(), `${sessionID}.json`);
+  return path10.join(getSessionStorageDir(), `${sessionID}.json`);
 }
 function parseSessionFile(sessionID) {
   const filePath = getSessionFilePath2(sessionID);
-  if (!fs6.existsSync(filePath)) {
+  if (!fs9.existsSync(filePath)) {
     return null;
   }
   try {
-    const content = fs6.readFileSync(filePath, "utf-8");
+    const content = fs9.readFileSync(filePath, "utf-8");
     const data = JSON.parse(content);
     const metadata = {
       sessionID,
@@ -10914,6 +11719,9 @@ var call_kraken_agent = tool9({
   }
 });
 
+// src/index.ts
+init_storage();
+
 // src/tools/lsp/index.ts
 init_client();
 init_config();
@@ -10931,10 +11739,10 @@ var lsp_hover = tool10({
     line: z10.number().describe("0-indexed line number"),
     character: z10.number().describe("0-indexed character position")
   },
-  async execute({ path: path9, line, character }) {
+  async execute({ path: path11, line, character }) {
     try {
-      const result = await withLspClient(path9, async (client) => {
-        return await client.hover(path9, line, character);
+      const result = await withLspClient(path11, async (client) => {
+        return await client.hover(path11, line, character);
       });
       return JSON.stringify({
         success: true,
@@ -10955,10 +11763,10 @@ var lsp_goto_definition = tool10({
     line: z10.number().describe("0-indexed line number"),
     character: z10.number().describe("0-indexed character position")
   },
-  async execute({ path: path9, line, character }) {
+  async execute({ path: path11, line, character }) {
     try {
-      const result = await withLspClient(path9, async (client) => {
-        return await client.definition(path9, line, character);
+      const result = await withLspClient(path11, async (client) => {
+        return await client.definition(path11, line, character);
       });
       if (!result) {
         return JSON.stringify({
@@ -10988,10 +11796,10 @@ var lsp_find_references = tool10({
     character: z10.number().describe("0-indexed character position"),
     includeDeclaration: z10.boolean().optional().default(true).describe("Include the declaration location in results")
   },
-  async execute({ path: path9, line, character, includeDeclaration }) {
+  async execute({ path: path11, line, character, includeDeclaration }) {
     try {
-      const result = await withLspClient(path9, async (client) => {
-        return await client.references(path9, line, character, includeDeclaration);
+      const result = await withLspClient(path11, async (client) => {
+        return await client.references(path11, line, character, includeDeclaration);
       });
       if (!result) {
         return JSON.stringify({
@@ -11019,10 +11827,10 @@ var lsp_document_symbols = tool10({
   args: {
     path: z10.string().describe("Absolute path to the source file")
   },
-  async execute({ path: path9 }) {
+  async execute({ path: path11 }) {
     try {
-      const result = await withLspClient(path9, async (client) => {
-        return await client.documentSymbols(path9);
+      const result = await withLspClient(path11, async (client) => {
+        return await client.documentSymbols(path11);
       });
       if (!result) {
         return JSON.stringify({
@@ -11094,10 +11902,10 @@ var lsp_diagnostics = tool10({
     path: z10.string().describe("Absolute path to the source file"),
     severity: z10.enum(["error", "warning", "information", "hint", "all"]).optional().default("all").describe("Filter by severity level")
   },
-  async execute({ path: path9, severity }) {
+  async execute({ path: path11, severity }) {
     try {
-      const result = await withLspClient(path9, async (client) => {
-        return await client.diagnostics(path9);
+      const result = await withLspClient(path11, async (client) => {
+        return await client.diagnostics(path11);
       });
       const { filterDiagnosticsBySeverity: filterDiagnosticsBySeverity2 } = await Promise.resolve().then(() => (init_utils(), exports_utils));
       let items = result.items || [];
@@ -11131,10 +11939,10 @@ var lsp_prepare_rename = tool10({
     line: z10.number().describe("0-indexed line number"),
     character: z10.number().describe("0-indexed character position")
   },
-  async execute({ path: path9, line, character }) {
+  async execute({ path: path11, line, character }) {
     try {
-      const result = await withLspClient(path9, async (client) => {
-        return await client.prepareRename(path9, line, character);
+      const result = await withLspClient(path11, async (client) => {
+        return await client.prepareRename(path11, line, character);
       });
       if (!result) {
         return JSON.stringify({
@@ -11162,10 +11970,10 @@ var lsp_rename = tool10({
     character: z10.number().describe("0-indexed character position"),
     newName: z10.string().describe("New name for the symbol")
   },
-  async execute({ path: path9, line, character, newName }) {
+  async execute({ path: path11, line, character, newName }) {
     try {
-      const result = await withLspClient(path9, async (client) => {
-        return await client.rename(path9, line, character, newName);
+      const result = await withLspClient(path11, async (client) => {
+        return await client.rename(path11, line, character, newName);
       });
       const { formatWorkspaceEdit: formatWorkspaceEdit2, applyWorkspaceEdit: applyWorkspaceEdit2, formatApplyResult: formatApplyResult2 } = await Promise.resolve().then(() => (init_utils(), exports_utils));
       const editResult = await applyWorkspaceEdit2(result);
@@ -11193,10 +12001,10 @@ var lsp_code_actions = tool10({
     endChar: z10.number().describe("0-indexed end character"),
     only: z10.array(z10.string()).optional().describe("Filter by action kind (e.g., 'quickfix', 'refactor')")
   },
-  async execute({ path: path9, startLine, startChar, endLine, endChar, only }) {
+  async execute({ path: path11, startLine, startChar, endLine, endChar, only }) {
     try {
-      const result = await withLspClient(path9, async (client) => {
-        return await client.codeAction(path9, startLine, startChar, endLine, endChar, only);
+      const result = await withLspClient(path11, async (client) => {
+        return await client.codeAction(path11, startLine, startChar, endLine, endChar, only);
       });
       const { formatCodeActions: formatCodeActions2 } = await Promise.resolve().then(() => (init_utils(), exports_utils));
       const actions = Array.isArray(result) ? result : [];
@@ -11279,6 +12087,498 @@ var lsp_servers = tool10({
     }
   }
 });
+// src/hooks/think-mode/mode-detector.ts
+var KEYWORD_DATABASE = [
+  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "English", aliases: ["ulw", "max", "full"] },
+  { keyword: "ultra work", mode: "blitzkrieg", language: "English" },
+  { keyword: "max performance", mode: "blitzkrieg", language: "English" },
+  { keyword: "go all out", mode: "blitzkrieg", language: "English" },
+  { keyword: "full power", mode: "blitzkrieg", language: "English" },
+  { keyword: "search", mode: "search", language: "English", aliases: ["find", "locate", "look for"] },
+  { keyword: "find", mode: "search", language: "English" },
+  { keyword: "locate", mode: "search", language: "English" },
+  { keyword: "look for", mode: "search", language: "English" },
+  { keyword: "explore", mode: "search", language: "English" },
+  { keyword: "analyze", mode: "analyze", language: "English", aliases: ["investigate", "examine"] },
+  { keyword: "investigate", mode: "analyze", language: "English" },
+  { keyword: "examine", mode: "analyze", language: "English" },
+  { keyword: "deep analysis", mode: "analyze", language: "English" },
+  { keyword: "detailed analysis", mode: "analyze", language: "English" },
+  { keyword: "ultrathink", mode: "ultrathink", language: "English", aliases: ["think deeply", "deep think"] },
+  { keyword: "think deeply", mode: "ultrathink", language: "English" },
+  { keyword: "deep think", mode: "ultrathink", language: "English" },
+  { keyword: "extended thinking", mode: "ultrathink", language: "English" },
+  { keyword: "careful reasoning", mode: "ultrathink", language: "English" },
+  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "Spanish", aliases: ["ulw", "trabajo ultra"] },
+  { keyword: "trabajo ultra", mode: "blitzkrieg", language: "Spanish" },
+  { keyword: "máximo rendimiento", mode: "blitzkrieg", language: "Spanish" },
+  { keyword: "buscar", mode: "search", language: "Spanish", aliases: ["encontrar", "localizar"] },
+  { keyword: "encontrar", mode: "search", language: "Spanish" },
+  { keyword: "localizar", mode: "search", language: "Spanish" },
+  { keyword: "analizar", mode: "analyze", language: "Spanish", aliases: ["investigar", "examinar"] },
+  { keyword: "investigar", mode: "analyze", language: "Spanish" },
+  { keyword: "examinar", mode: "analyze", language: "Spanish" },
+  { keyword: "pensar profundamente", mode: "ultrathink", language: "Spanish", aliases: ["piensa", "razonamiento profundo"] },
+  { keyword: "piensa", mode: "ultrathink", language: "Spanish" },
+  { keyword: "razonamiento profundo", mode: "ultrathink", language: "Spanish" },
+  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "French", aliases: ["ulw", "travail ultra"] },
+  { keyword: "travail ultra", mode: "blitzkrieg", language: "French" },
+  { keyword: "chercher", mode: "search", language: "French", aliases: ["rechercher", "trouver"] },
+  { keyword: "rechercher", mode: "search", language: "French" },
+  { keyword: "trouver", mode: "search", language: "French" },
+  { keyword: "analyser", mode: "analyze", language: "French", aliases: ["investiguer", "examiner"] },
+  { keyword: "investiguer", mode: "analyze", language: "French" },
+  { keyword: "examiner", mode: "analyze", language: "French" },
+  { keyword: "réfléchir profondément", mode: "ultrathink", language: "French", aliases: ["réfléchis", "pensée profonde"] },
+  { keyword: "réfléchis", mode: "ultrathink", language: "French" },
+  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "German", aliases: ["ulw", "maximal"] },
+  { keyword: "maximale leistung", mode: "blitzkrieg", language: "German" },
+  { keyword: "suchen", mode: "search", language: "German", aliases: ["finden", "lokalisieren"] },
+  { keyword: "finden", mode: "search", language: "German" },
+  { keyword: "analysieren", mode: "analyze", language: "German", aliases: ["untersuchen", "prüfen"] },
+  { keyword: "untersuchen", mode: "analyze", language: "German" },
+  { keyword: "nachdenken", mode: "ultrathink", language: "German", aliases: ["denk nach", "sorgfältig denken"] },
+  { keyword: "denk nach", mode: "ultrathink", language: "German" },
+  { keyword: "sorgfältig denken", mode: "ultrathink", language: "German" },
+  { keyword: "강력한", mode: "blitzkrieg", language: "Korean", aliases: ["울트라워크", "최대"] },
+  { keyword: "울트라워크", mode: "blitzkrieg", language: "Korean" },
+  { keyword: "최대", mode: "blitzkrieg", language: "Korean" },
+  { keyword: "최고 성능", mode: "blitzkrieg", language: "Korean" },
+  { keyword: "검색", mode: "search", language: "Korean", aliases: ["찾아", "찾기"] },
+  { keyword: "찾아", mode: "search", language: "Korean" },
+  { keyword: "찾기", mode: "search", language: "Korean" },
+  { keyword: "분석", mode: "analyze", language: "Korean", aliases: ["조사", "검토"] },
+  { keyword: "조사", mode: "analyze", language: "Korean" },
+  { keyword: "검토", mode: "analyze", language: "Korean" },
+  { keyword: "생각해", mode: "ultrathink", language: "Korean", aliases: ["깊게 생각", "신중한 사고"] },
+  { keyword: "깊게 생각", mode: "ultrathink", language: "Korean" },
+  { keyword: "신중한 사고", mode: "ultrathink", language: "Korean" },
+  { keyword: "强力", mode: "blitzkrieg", language: "Chinese (Simplified)", aliases: ["超神", "最大"] },
+  { keyword: "超神", mode: "blitzkrieg", language: "Chinese (Simplified)" },
+  { keyword: "最大", mode: "blitzkrieg", language: "Chinese (Simplified)" },
+  { keyword: "搜索", mode: "search", language: "Chinese (Simplified)", aliases: ["查找", "定位"] },
+  { keyword: "查找", mode: "search", language: "Chinese (Simplified)" },
+  { keyword: "定位", mode: "search", language: "Chinese (Simplified)" },
+  { keyword: "分析", mode: "analyze", language: "Chinese (Simplified)", aliases: ["调查", "检查"] },
+  { keyword: "调查", mode: "analyze", language: "Chinese (Simplified)" },
+  { keyword: "检查", mode: "analyze", language: "Chinese (Simplified)" },
+  { keyword: "深度思考", mode: "ultrathink", language: "Chinese (Simplified)", aliases: ["仔细思考", "让我想想"] },
+  { keyword: "仔细思考", mode: "ultrathink", language: "Chinese (Simplified)" },
+  { keyword: "让我想想", mode: "ultrathink", language: "Chinese (Simplified)" },
+  { keyword: "强力", mode: "blitzkrieg", language: "Chinese (Traditional)", aliases: ["超神", "最大"] },
+  { keyword: "超神", mode: "blitzkrieg", language: "Chinese (Traditional)" },
+  { keyword: "最大", mode: "blitzkrieg", language: "Chinese (Traditional)" },
+  { keyword: "搜索", mode: "search", language: "Chinese (Traditional)", aliases: ["查找", "定位"] },
+  { keyword: "查找", mode: "search", language: "Chinese (Traditional)" },
+  { keyword: "定位", mode: "search", language: "Chinese (Traditional)" },
+  { keyword: "分析", mode: "analyze", language: "Chinese (Traditional)", aliases: ["調查", "檢查"] },
+  { keyword: "調查", mode: "analyze", language: "Chinese (Traditional)" },
+  { keyword: "檢查", mode: "analyze", language: "Chinese (Traditional)" },
+  { keyword: "深度思考", mode: "ultrathink", language: "Chinese (Traditional)", aliases: ["仔細思考", "讓我思考"] },
+  { keyword: "仔細思考", mode: "ultrathink", language: "Chinese (Traditional)" },
+  { keyword: "讓我思考", mode: "ultrathink", language: "Chinese (Traditional)" },
+  { keyword: "強力", mode: "blitzkrieg", language: "Japanese", aliases: ["最大", "フルパワー"] },
+  { keyword: "最大", mode: "blitzkrieg", language: "Japanese" },
+  { keyword: "フルパワー", mode: "blitzkrieg", language: "Japanese" },
+  { keyword: "検索", mode: "search", language: "Japanese", aliases: ["探す", "見つける"] },
+  { keyword: "探す", mode: "search", language: "Japanese" },
+  { keyword: "見つける", mode: "search", language: "Japanese" },
+  { keyword: "分析", mode: "analyze", language: "Japanese", aliases: ["調査", "検討"] },
+  { keyword: "調査", mode: "analyze", language: "Japanese" },
+  { keyword: "検討", mode: "analyze", language: "Japanese" },
+  { keyword: "深く考える", mode: "ultrathink", language: "Japanese", aliases: ["思考", "注意深く考える"] },
+  { keyword: "思考", mode: "ultrathink", language: "Japanese" },
+  { keyword: "注意深く考える", mode: "ultrathink", language: "Japanese" },
+  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "Portuguese", aliases: ["ulw", "trabalho ultra"] },
+  { keyword: "trabalho ultra", mode: "blitzkrieg", language: "Portuguese" },
+  { keyword: "pesquisar", mode: "search", language: "Portuguese", aliases: ["procurar", "encontrar"] },
+  { keyword: "procurar", mode: "search", language: "Portuguese" },
+  { keyword: "encontrar", mode: "search", language: "Portuguese" },
+  { keyword: "analisar", mode: "analyze", language: "Portuguese", aliases: ["investigar", "examinar"] },
+  { keyword: "investigar", mode: "analyze", language: "Portuguese" },
+  { keyword: "examinar", mode: "analyze", language: "Portuguese" },
+  { keyword: "pensar profundamente", mode: "ultrathink", language: "Portuguese", aliases: ["pense", "raciocínio profundo"] },
+  { keyword: "pense", mode: "ultrathink", language: "Portuguese" },
+  { keyword: "raciocínio profundo", mode: "ultrathink", language: "Portuguese" },
+  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "Italian", aliases: ["ulw", "lavoro ultra"] },
+  { keyword: "lavoro ultra", mode: "blitzkrieg", language: "Italian" },
+  { keyword: "cercare", mode: "search", language: "Italian", aliases: ["trovare", "ricercare"] },
+  { keyword: "trovare", mode: "search", language: "Italian" },
+  { keyword: "ricercare", mode: "search", language: "Italian" },
+  { keyword: "analizzare", mode: "analyze", language: "Italian", aliases: ["indagare", "esaminare"] },
+  { keyword: "indagare", mode: "analyze", language: "Italian" },
+  { keyword: "esaminare", mode: "analyze", language: "Italian" },
+  { keyword: "pensare attentamente", mode: "ultrathink", language: "Italian", aliases: ["pensa", "pensiero profondo"] },
+  { keyword: "pensa", mode: "ultrathink", language: "Italian" },
+  { keyword: "pensiero profondo", mode: "ultrathink", language: "Italian" },
+  { keyword: "ультраворк", mode: "blitzkrieg", language: "Russian", aliases: ["ulw", "максимально"] },
+  { keyword: "максимально", mode: "blitzkrieg", language: "Russian" },
+  { keyword: "поиск", mode: "search", language: "Russian", aliases: ["найти", "искать"] },
+  { keyword: "найти", mode: "search", language: "Russian" },
+  { keyword: "искать", mode: "search", language: "Russian" },
+  { keyword: "анализировать", mode: "analyze", language: "Russian", aliases: ["исследовать", "изучить"] },
+  { keyword: "исследовать", mode: "analyze", language: "Russian" },
+  { keyword: "изучить", mode: "analyze", language: "Russian" },
+  { keyword: "подумать", mode: "ultrathink", language: "Russian", aliases: ["подумай", "тщательно подумать"] },
+  { keyword: "подумай", mode: "ultrathink", language: "Russian" },
+  { keyword: "тщательно подумать", mode: "ultrathink", language: "Russian" },
+  { keyword: "ألترا وورك", mode: "blitzkrieg", language: "Arabic", aliases: ["العمل القوي", "الأقصى"] },
+  { keyword: "بحث", mode: "search", language: "Arabic", aliases: ["إيجاد", "تحديد موقع"] },
+  { keyword: "تحليل", mode: "analyze", language: "Arabic", aliases: ["تحقيق", "فحص"] },
+  { keyword: "تفكير عميق", mode: "ultrathink", language: "Arabic", aliases: ["فكر", "تفكر بعناية"] },
+  { keyword: "فكر", mode: "ultrathink", language: "Arabic" },
+  { keyword: "अल्ट्रावर्क", mode: "blitzkrieg", language: "Hindi", aliases: ["अधिकतम", "अधिक कार्य"] },
+  { keyword: "अधिकतम", mode: "blitzkrieg", language: "Hindi" },
+  { keyword: "अधिक कार्य", mode: "blitzkrieg", language: "Hindi" },
+  { keyword: "खोज", mode: "search", language: "Hindi", aliases: ["ढूंढना", "ढूंढो"] },
+  { keyword: "विश्लेषण", mode: "analyze", language: "Hindi", aliases: ["जांच", "जांचना"] },
+  { keyword: "जांच", mode: "analyze", language: "Hindi" },
+  { keyword: "जांचना", mode: "analyze", language: "Hindi" },
+  { keyword: "गहरी सोच", mode: "ultrathink", language: "Hindi", aliases: ["सोचो", "ध्यानपूर्वक सोच"] },
+  { keyword: "सोचो", mode: "ultrathink", language: "Hindi" },
+  { keyword: "ध्यानपूर्वक सोच", mode: "ultrathink", language: "Hindi" }
+];
+function detectMode(text) {
+  const lowercaseText = text.toLowerCase();
+  const modeMatches = new Map;
+  for (const keywordDef of KEYWORD_DATABASE) {
+    const keywordLower = keywordDef.keyword.toLowerCase();
+    if (lowercaseText.includes(keywordLower)) {
+      if (!modeMatches.has(keywordDef.mode)) {
+        modeMatches.set(keywordDef.mode, new Set);
+      }
+      modeMatches.get(keywordDef.mode).add(keywordDef.keyword);
+    }
+    if (keywordDef.aliases) {
+      for (const alias of keywordDef.aliases) {
+        const aliasLower = alias.toLowerCase();
+        if (lowercaseText.includes(aliasLower)) {
+          if (!modeMatches.has(keywordDef.mode)) {
+            modeMatches.set(keywordDef.mode, new Set);
+          }
+          modeMatches.get(keywordDef.mode).add(keywordDef.keyword);
+        }
+      }
+    }
+  }
+  if (modeMatches.size === 0) {
+    return null;
+  }
+  let bestMode = "";
+  let bestKeywordCount = 0;
+  for (const [mode, keywords2] of modeMatches.entries()) {
+    if (keywords2.size > bestKeywordCount) {
+      bestMode = mode;
+      bestKeywordCount = keywords2.size;
+    }
+  }
+  const keywords = Array.from(modeMatches.get(bestMode));
+  const confidence = bestKeywordCount > 2 ? 0.9 : bestKeywordCount > 1 ? 0.7 : 0.5;
+  console.log(`[mode-detector] Detected mode "${bestMode}" with ${bestKeywordCount} keyword matches (confidence: ${confidence})`);
+  return {
+    mode: bestMode,
+    keywords,
+    confidence
+  };
+}
+
+// src/hooks/think-mode/modes.ts
+var DEFAULT_MODES = {
+  blitzkrieg: {
+    name: "Ultrawork",
+    enabled: true,
+    parallelAgents: 4,
+    concurrencyLimits: {
+      anthropic: 2,
+      openai: 3,
+      google: 3
+    }
+  },
+  search: {
+    name: "Search",
+    enabled: true,
+    maxResults: 50,
+    useExplore: true,
+    useLibrarian: true
+  },
+  analyze: {
+    name: "Analyze",
+    enabled: true,
+    consultationPhases: 3,
+    expertAgents: ["oracle", "Abyssal", "Siren"]
+  },
+  ultrathink: {
+    name: "Ultrathink",
+    enabled: true,
+    thinkingBudget: 32000,
+    autoVariantSwitch: true
+  }
+};
+function getModeConfig(modeName) {
+  return DEFAULT_MODES[modeName];
+}
+
+// src/hooks/think-mode/mode-switcher.ts
+var activeModes = new Map;
+function activateMode(sessionID, modeName, options) {
+  const config2 = getModeConfig(modeName);
+  if (!config2 || !config2.enabled) {
+    console.log(`[mode-switcher] Mode "${modeName}" not found or disabled`);
+    return false;
+  }
+  const activeMode = {
+    name: modeName,
+    activatedAt: Date.now(),
+    config: config2
+  };
+  activeModes.set(sessionID, activeMode);
+  console.log(`[mode-switcher] Activated mode "${modeName}" for session ${sessionID}`);
+  if (options?.onModeActivate) {
+    options.onModeActivate({
+      mode: modeName,
+      keyword: ""
+    });
+  }
+  return true;
+}
+
+// src/hooks/mode-hooks.ts
+function createModeHooks(input, options) {
+  const config2 = input.config || {};
+  const modesConfig = config2.modes || {};
+  if (modesConfig.enabled === false) {
+    return {};
+  }
+  return {
+    "chat.message": async (input2, output) => {
+      if (!output.parts)
+        return;
+      const { sessionID } = input2;
+      for (const part of output.parts) {
+        if (part.type === "text") {
+          const content = part.text;
+          if (content && sessionID) {
+            const detected = detectMode(content);
+            if (detected && options?.autoActivate !== false) {
+              console.log(`[mode-hooks] Detected mode "${detected.mode}" with ${detected.keywords.length} keywords for session ${sessionID}`);
+              activateMode(sessionID, detected.mode);
+              if (detected.mode === "blitzkrieg") {
+                const modeConfig = modesConfig.blitzkrieg;
+                console.log(`[mode-hooks] Activating Blitzkrieg mode with ${modeConfig?.parallelAgents || 4} parallel agents`);
+              } else if (detected.mode === "search") {
+                console.log(`[mode-hooks] Activating Search mode`);
+              } else if (detected.mode === "analyze") {
+                console.log(`[mode-hooks] Activating Analyze mode`);
+              } else if (detected.mode === "ultrathink") {
+                console.log(`[mode-hooks] Activating Ultrathink mode`);
+              }
+            }
+          }
+        }
+      }
+    }
+  };
+}
+
+// src/hooks/session-storage.ts
+function createSessionStorageHook(input, options) {
+  const config2 = input.config || {};
+  const storageConfig = config2.claudeCodeCompatibility?.dataStorage || {};
+  if (storageConfig.enabled === false) {
+    return {};
+  }
+  return {
+    "tool.execute.after": async (input2, output) => {
+      if (!output.output)
+        return;
+      const { tool: tool11, sessionID } = input2;
+      if (sessionID) {
+        console.log(`[session-storage] Tool ${tool11} completed for session ${sessionID}`);
+        const { appendTranscriptEntry: appendTranscriptEntry3 } = (init_storage(), __toCommonJS(exports_storage));
+        const { recordToolUse: recordToolUse3 } = (init_storage(), __toCommonJS(exports_storage));
+        if (output.output && output.output.toolOutput) {
+          await recordToolUse3(sessionID, tool11, output.output.toolInput, output.output.toolOutput);
+        }
+      }
+    },
+    "chat.message": async (input2, output) => {
+      if (!output.parts)
+        return;
+      const { sessionID } = input2;
+      const { recordUserMessage: recordUserMessage3 } = (init_storage(), __toCommonJS(exports_storage));
+      for (const part of output.parts) {
+        if (part.type === "text") {
+          await recordUserMessage3(sessionID, part.text);
+        }
+      }
+    },
+    "session.idle": async (input2, output) => {
+      if (!input2.sessionID)
+        return;
+      const { sessionID } = input2;
+      const { loadOpenCodeTodos: loadOpenCodeTodos2 } = (init_storage(), __toCommonJS(exports_storage));
+      try {
+        const todos = await loadOpenCodeTodos2(sessionID);
+        console.log(`[session-storage] Saved ${todos.length} todos for session ${sessionID}`);
+      } catch (error) {
+        console.error("[session-storage] Error saving todos:", error);
+      }
+    }
+  };
+}
+
+// src/hooks/claude-code-hooks/index.ts
+function createClaudeCodeHooks(_input, options) {
+  const config2 = options?.config ?? {
+    enabled: true,
+    mcp: true,
+    commands: true,
+    skills: true,
+    agents: true
+  };
+  return {
+    "tool.execute.before": async (input, output) => {
+      if (!config2.enabled)
+        return;
+      console.log("[claude-code-hooks] Processing tool execution");
+    },
+    "tool.execute.after": async (input, output) => {
+      if (!config2.enabled)
+        return;
+      console.log("[claude-code-hooks] Tool execution completed");
+    }
+  };
+}
+
+// src/hooks/think-mode/index.ts
+var THINKING_SUPPORTED_PROVIDERS = [
+  "anthropic",
+  "bedrock",
+  "google",
+  "openai"
+];
+var THINK_KEYWORDS = [
+  "think",
+  "let me think",
+  "i need to think",
+  "take time to think",
+  "think about this",
+  "think carefully",
+  "piensa",
+  "déjame pensar",
+  "necesito pensar",
+  "piénsalo",
+  "piensa cuidadosamente",
+  "réfléchis",
+  "laissez-moi réfléchir",
+  "je dois réfléchir",
+  "réfléchissez-y",
+  "réfléchir attentivement",
+  "denk nach",
+  "lass mich nachdenken",
+  "ich muss nachdenken",
+  "denk darüber nach",
+  "denke sorgfältig",
+  "pense",
+  "deixe-me pensar",
+  "preciso pensar",
+  "pense sobre isso",
+  "pense cuidadosamente",
+  "pensa",
+  "fammi pensare",
+  "devo pensare",
+  "pensa a questo",
+  "pensa attentamente",
+  "подумай",
+  "дай мне подумать",
+  "мне нужно подумать",
+  "подумай об этом",
+  "подумай внимательно",
+  "考えて",
+  "考えさせて",
+  "考える必要がある",
+  "これについて考えて",
+  "注意深く考えて",
+  "思考",
+  "让我想想",
+  "我需要思考",
+  "思考这个",
+  "仔细思考",
+  "思考",
+  "讓我思考",
+  "我需要思考",
+  "思考這個",
+  "仔細思考",
+  "생각해",
+  "생각하게 해줘",
+  "생각해야 해",
+  "이것에 대해 생각해",
+  "신중하게 생각해"
+];
+function isThinkingSupported(provider) {
+  return THINKING_SUPPORTED_PROVIDERS.some((supported) => provider.toLowerCase().includes(supported.toLowerCase()));
+}
+var thinkModeSessions = new Map;
+function getSessionState(sessionID) {
+  return thinkModeSessions.get(sessionID);
+}
+function setSessionState(sessionID, enabled) {
+  thinkModeSessions.set(sessionID, {
+    enabled,
+    activatedAt: Date.now()
+  });
+}
+function clearSessionState(sessionID) {
+  thinkModeSessions.delete(sessionID);
+}
+function shouldActivateThinkMode(content) {
+  const lowercaseContent = content.toLowerCase();
+  for (const keyword of THINK_KEYWORDS) {
+    if (lowercaseContent.includes(keyword)) {
+      return true;
+    }
+  }
+  return false;
+}
+function createThinkModeHook(input) {
+  return {
+    "message.updated": async (messageInput, messageOutput) => {
+      const { sessionID } = messageInput;
+      const parts = messageOutput?.parts || [];
+      const content = parts.filter((p) => p.type === "text").map((p) => p.text).join(`
+`).trim();
+      if (typeof content === "string" && content.length > 0) {
+        const shouldActivate = shouldActivateThinkMode(content);
+        if (shouldActivate) {
+          console.log(`[think-mode] Activated for session ${sessionID}`);
+          setSessionState(sessionID, true);
+        }
+      }
+      return;
+    },
+    "tool.execute.before": async (toolInput, toolOutput) => {
+      const { sessionID } = toolInput;
+      const { provider } = toolInput;
+      const sessionState = getSessionState(sessionID);
+      if (sessionState?.enabled && toolInput.tool === "task") {
+        console.log(`[think-mode] Applying think mode for session ${sessionID}`);
+        const providerID = provider?.info?.id || provider?.options?.providerID || "";
+        if (isThinkingSupported(providerID)) {
+          console.log(`[think-mode] Would apply think mode for provider ${providerID}`);
+        }
+      }
+      return;
+    },
+    "session.deleted": async (input2) => {
+      const { info } = input2;
+      const sessionId = info?.id;
+      if (sessionId) {
+        clearSessionState(sessionId);
+      }
+    }
+  };
+}
+
 // src/features/background-agent/tool.ts
 import { tool as tool11 } from "@opencode-ai/plugin";
 import { z as z11 } from "zod";
@@ -11450,9 +12750,9 @@ class BackgroundManager {
       this.counts.set(model, current + 1);
       return;
     }
-    return new Promise((resolve) => {
+    return new Promise((resolve2) => {
       const queue = this.queues.get(model) ?? [];
-      queue.push(resolve);
+      queue.push(resolve2);
       this.queues.set(model, queue);
     });
   }
@@ -11485,7 +12785,7 @@ class BackgroundManager {
     return newTask;
   }
   waitForTask(taskId, timeout = 30000) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       const checkInterval = setInterval(() => {
         const task = this.tasks.get(taskId);
         if (!task) {
@@ -11495,7 +12795,7 @@ class BackgroundManager {
         }
         if (task.status === "completed" || task.status === "failed") {
           clearInterval(checkInterval);
-          resolve(task);
+          resolve2(task);
         }
       }, 100);
       setTimeout(() => {
@@ -12045,8 +13345,8 @@ function createAutoSlashCommand(_input, options) {
 }
 
 // src/hooks/context/rules-injector.ts
-import * as fs7 from "fs";
-import * as path9 from "path";
+import * as fs10 from "fs";
+import * as path11 from "path";
 var RULE_EXTENSIONS = [".md", ".mdc"];
 function parseRuleFrontmatter(content) {
   const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
@@ -12092,10 +13392,10 @@ function extractRules(content) {
   return rules;
 }
 function matchGlob(pattern, filePath) {
-  const relativePath = path9.relative(process.cwd(), filePath);
+  const relativePath = path11.relative(process.cwd(), filePath);
   const globPattern = pattern.replace(/\*\*/g, "*").replace(/\?/g, "?");
   const parts = globPattern.split("/");
-  const pathParts = relativePath.split(path9.sep);
+  const pathParts = relativePath.split(path11.sep);
   let matchCount = 0;
   for (let i = 0;i < parts.length; i++) {
     const part = parts[i];
@@ -12111,21 +13411,21 @@ function matchGlob(pattern, filePath) {
   return matchCount === parts.length;
 }
 function loadRuleFiles(directory) {
-  if (!fs7.existsSync(directory)) {
+  if (!fs10.existsSync(directory)) {
     return [];
   }
   const ruleFiles = [];
   function walk(dir, baseDir = dir) {
-    const entries = fs7.readdirSync(dir, { withFileTypes: true });
+    const entries = fs10.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
-      const fullPath = path9.join(dir, entry.name);
+      const fullPath = path11.join(dir, entry.name);
       if (entry.isDirectory()) {
         walk(fullPath, baseDir);
       } else if (entry.isFile()) {
-        const ext = path9.extname(entry.name).toLowerCase();
+        const ext = path11.extname(entry.name).toLowerCase();
         if (RULE_EXTENSIONS.includes(ext)) {
           try {
-            const content = fs7.readFileSync(fullPath, "utf-8");
+            const content = fs10.readFileSync(fullPath, "utf-8");
             const frontmatter = parseRuleFrontmatter(content);
             const rules = extractRules(content);
             ruleFiles.push({
@@ -12145,14 +13445,14 @@ function loadRuleFiles(directory) {
   return ruleFiles;
 }
 function calculateDistance(rulePath, targetPath) {
-  const relativePath = path9.relative(path9.dirname(rulePath), targetPath);
-  const parts = relativePath.split(path9.sep);
+  const relativePath = path11.relative(path11.dirname(rulePath), targetPath);
+  const parts = relativePath.split(path11.sep);
   let distance = 0;
   for (const part of parts) {
     if (part.startsWith(".")) {
       distance++;
-    } else if (part.includes(path9.sep)) {
-      distance += part.split(path9.sep).length;
+    } else if (part.includes(path11.sep)) {
+      distance += part.split(path11.sep).length;
     } else {
       distance++;
     }
@@ -12170,10 +13470,10 @@ function createRulesInjector(_input, options) {
       return rulesCache.get(cacheKey) || [];
     }
     const ruleDirectories = [
-      path9.join(process.cwd(), "rules"),
-      path9.join(process.cwd(), ".opencode", "rules"),
-      path9.join(path9.dirname(targetPath), "rules"),
-      path9.join(path9.dirname(targetPath), ".opencode", "rules")
+      path11.join(process.cwd(), "rules"),
+      path11.join(process.cwd(), ".opencode", "rules"),
+      path11.join(path11.dirname(targetPath), "rules"),
+      path11.join(path11.dirname(targetPath), ".opencode", "rules")
     ];
     const allRules = [];
     for (const dir of ruleDirectories) {
@@ -12298,18 +13598,11 @@ function createAnthropicContextWindowLimitRecovery(_input, options) {
 }
 
 // src/hooks/compaction-context-injector/index.ts
-function getTextFromParts(parts) {
-  return parts.filter((p) => p.type === "text").map((p) => p.text).join(`
-`).trim();
-}
 function createCompactionContextInjector(_input, options) {
   const config2 = options?.config ?? { enabled: true };
   return {
-    "chat.message": async (input, output) => {
+    "message.updated": async (input, output) => {
       if (!config2.enabled)
-        return;
-      const text = getTextFromParts(output.parts);
-      if (!text)
         return;
       console.log("[compaction-context-injector] Processing message before compaction");
     },
@@ -12322,7 +13615,7 @@ function createCompactionContextInjector(_input, options) {
 }
 
 // src/hooks/directory-agents-injector/index.ts
-import { readFileSync as readFileSync7, existsSync as existsSync8 } from "node:fs";
+import { readFileSync as readFileSync9, existsSync as existsSync10 } from "node:fs";
 function createDirectoryAgentsInjector(_input, options) {
   const config2 = options?.config ?? { enabled: true };
   return {
@@ -12330,9 +13623,9 @@ function createDirectoryAgentsInjector(_input, options) {
       if (!config2.enabled)
         return;
       const agentFile = config2.agentFile ?? ".opencode-agents";
-      if (existsSync8(agentFile)) {
+      if (existsSync10(agentFile)) {
         try {
-          const content = readFileSync7(agentFile, "utf-8");
+          const content = readFileSync9(agentFile, "utf-8");
           console.log("[directory-agents-injector] Found local agent definitions");
         } catch {
           console.log("[directory-agents-injector] Could not read agent file");
@@ -12343,7 +13636,7 @@ function createDirectoryAgentsInjector(_input, options) {
 }
 
 // src/hooks/directory-readme-injector/index.ts
-import { readFileSync as readFileSync8, existsSync as existsSync9 } from "node:fs";
+import { readFileSync as readFileSync10, existsSync as existsSync11 } from "node:fs";
 function createDirectoryReadmeInjector(_input, options) {
   const config2 = options?.config ?? { enabled: true };
   return {
@@ -12352,9 +13645,9 @@ function createDirectoryReadmeInjector(_input, options) {
         return;
       const readmePaths = ["README.md", "readme.md", "Readme.md"];
       for (const readme of readmePaths) {
-        if (existsSync9(readme)) {
+        if (existsSync11(readme)) {
           try {
-            const content = readFileSync8(readme, "utf-8");
+            const content = readFileSync10(readme, "utf-8");
             console.log("[directory-readme-injector] Found README, injecting context");
           } catch {
             console.log("[directory-readme-injector] Could not read README");
@@ -12368,7 +13661,7 @@ function createDirectoryReadmeInjector(_input, options) {
 
 // src/hooks/interactive-bash-session/index.ts
 var sessionStates = new Map;
-function getSessionState(sessionID) {
+function getSessionState2(sessionID) {
   let state = sessionStates.get(sessionID);
   if (!state) {
     state = {
@@ -12380,7 +13673,7 @@ function getSessionState(sessionID) {
   return state;
 }
 function getBashSession(sessionID) {
-  const state = getSessionState(sessionID);
+  const state = getSessionState2(sessionID);
   return state.sessions.get(sessionID);
 }
 function createBashSession(sessionID, initialDir) {
@@ -12392,7 +13685,7 @@ function createBashSession(sessionID, initialDir) {
     childProcesses: new Set,
     lastActiveTime: Date.now()
   };
-  const state = getSessionState(sessionID);
+  const state = getSessionState2(sessionID);
   state.sessions.set(sessionID, session);
   return session;
 }
@@ -12480,7 +13773,7 @@ function createInteractiveBashSession(_input, options) {
         if (session) {
           console.log(`[interactive-bash-session] Cleaning up bash session for ${sessionID}`);
           killSessionProcesses(session);
-          const state = getSessionState(sessionID);
+          const state = getSessionState2(sessionID);
           state.sessions.delete(sessionID);
           console.log(`[interactive-bash-session] Session cleanup completed. ` + `Commands executed: ${session.commandHistory.length}, ` + `Working dir: ${session.workingDirectory}`);
         }
@@ -12490,7 +13783,7 @@ function createInteractiveBashSession(_input, options) {
         if (session && config2.autoCleanup) {
           console.log(`[interactive-bash-session] Session timeout for ${sessionID}`);
           killSessionProcesses(session);
-          const state = getSessionState(sessionID);
+          const state = getSessionState2(sessionID);
           state.sessions.delete(sessionID);
         }
       }
@@ -12546,7 +13839,7 @@ function getSessionHistory(sessionID) {
   }
   return history;
 }
-function getTextFromParts2(parts) {
+function getTextFromParts(parts) {
   return parts.filter((p) => p.type === "text").map((p) => p.text).join(`
 `);
 }
@@ -12736,7 +14029,7 @@ function createThinkingBlockValidator(_input, options) {
       if (!config2.enabled)
         return;
       const { sessionID } = input;
-      const text = getTextFromParts2(output.parts);
+      const text = getTextFromParts(output.parts);
       if (!text.includes("<thinking>") && !text.includes("</thinking>")) {
         return;
       }
@@ -13062,7 +14355,7 @@ function getLanguageFromFile(filename) {
 }
 
 // src/hooks/comment-checker/index.ts
-function getTextFromParts3(parts) {
+function getTextFromParts2(parts) {
   return parts.filter((p) => p.type === "text").map((p) => p.text).join(`
 `).trim();
 }
@@ -13156,7 +14449,7 @@ function createCommentChecker(_input, options) {
       if (!config2.enabled) {
         return;
       }
-      const text = getTextFromParts3(output.parts);
+      const text = getTextFromParts2(output.parts);
       const comments = [];
       const lines = text.split(`
 `);
@@ -13236,6 +14529,2035 @@ ${"=".repeat(60)}
   };
 }
 
+// src/notifications/platform-detector.ts
+function getPlatform() {
+  const platform = process.platform;
+  if (platform === "darwin") {
+    return "darwin";
+  }
+  if (platform === "linux") {
+    return "linux";
+  }
+  if (platform === "win32") {
+    return "win32";
+  }
+  return "unsupported";
+}
+async function getNotifySendPath() {
+  if (process.platform !== "linux") {
+    return null;
+  }
+  try {
+    const { spawn: spawn2 } = await import("node:child_process");
+    const result = spawn2("which", ["notify-send"]);
+    return new Promise((resolve2) => {
+      let output = "";
+      result.stdout.on("data", (data) => {
+        output += data.toString();
+      });
+      result.on("close", (code) => {
+        if (code === 0 && output.trim()) {
+          resolve2(output.trim());
+        } else {
+          resolve2(null);
+        }
+      });
+      result.on("error", () => {
+        resolve2(null);
+      });
+    });
+  } catch {
+    return null;
+  }
+}
+async function getOsascriptPath() {
+  if (process.platform !== "darwin") {
+    return null;
+  }
+  try {
+    const { spawn: spawn2 } = await import("node:child_process");
+    const result = spawn2("which", ["osascript"]);
+    return new Promise((resolve2) => {
+      let output = "";
+      result.stdout.on("data", (data) => {
+        output += data.toString();
+      });
+      result.on("close", (code) => {
+        if (code === 0 && output.trim()) {
+          resolve2(output.trim());
+        } else {
+          resolve2(null);
+        }
+      });
+      result.on("error", () => {
+        resolve2(null);
+      });
+    });
+  } catch {
+    return null;
+  }
+}
+async function getPowershellPath() {
+  if (process.platform !== "win32") {
+    return null;
+  }
+  try {
+    const { exec: exec2 } = await import("node:child_process");
+    return new Promise((resolve2) => {
+      exec2("where powershell", (error, stdout, stderr) => {
+        if (!error && stdout.trim()) {
+          resolve2(stdout.trim());
+        } else {
+          resolve2(null);
+        }
+      });
+    });
+  } catch {
+    return null;
+  }
+}
+async function getNotificationCommand() {
+  const platform = getPlatform();
+  if (platform === "linux") {
+    const notifySendPath = await getNotifySendPath();
+    if (notifySendPath) {
+      return {
+        command: notifySendPath,
+        args: [],
+        platform: "linux"
+      };
+    }
+  }
+  if (platform === "darwin") {
+    const osascriptPath = await getOsascriptPath();
+    if (osascriptPath) {
+      return {
+        command: osascriptPath,
+        args: ["-e"],
+        platform: "darwin"
+      };
+    }
+  }
+  if (platform === "win32") {
+    const powershellPath = await getPowershellPath();
+    if (powershellPath) {
+      return {
+        command: powershellPath,
+        args: ["-Command"],
+        platform: "win32"
+      };
+    }
+  }
+  return null;
+}
+
+// src/notifications/sound-player.ts
+var DEFAULT_SOUND_PATHS = {
+  darwin: {
+    task_complete: "/System/Library/Sounds/Ping.aiff",
+    agent_idle: "/System/Library/Sounds/Glass.aiff",
+    notification: "/System/Library/Sounds/Purr.aiff",
+    error: "/System/Library/Sounds/Basso.aiff"
+  },
+  linux: {
+    task_complete: "/usr/share/sounds/freedesktop/stereo/complete.oga",
+    agent_idle: "/usr/share/sounds/freedesktop/stereo/message.oga",
+    notification: "/usr/share/sounds/freedesktop/stereo/dialog-information.oga",
+    error: "/usr/share/sounds/freedesktop/stereo/dialog-error.oga"
+  },
+  win32: {
+    task_complete: "C:\\Windows\\Media\\notify.wav",
+    agent_idle: "C:\\Windows\\Media\\Windows Hardware Fail.wav",
+    notification: "C:\\Windows\\Media\\Windows Notify.wav",
+    error: "C:\\Windows\\Media\\Windows Error.wav"
+  },
+  unsupported: {
+    task_complete: "",
+    agent_idle: "",
+    notification: "",
+    error: ""
+  }
+};
+var PLATFORM_SOUND_COMMANDS = {
+  darwin: {
+    command: "afplay",
+    args: []
+  },
+  linux: {
+    command: "paplay",
+    args: []
+  },
+  win32: {
+    command: "powershell",
+    args: ["-Command"]
+  },
+  unsupported: null
+};
+function getSoundPath(event, config2 = { enabled: true }) {
+  if (!config2.enabled) {
+    return null;
+  }
+  const platform = getPlatform();
+  if (config2.customPaths && config2.customPaths[platform]) {
+    const platformSounds = config2.customPaths[platform];
+    if (platformSounds && event.type in platformSounds) {
+      const eventType = event.type;
+      const customSound = platformSounds[eventType];
+      if (customSound) {
+        return customSound;
+      }
+    }
+  }
+  const defaultSounds = DEFAULT_SOUND_PATHS[platform];
+  if (defaultSounds && event.type in defaultSounds) {
+    const eventType = event.type;
+    return defaultSounds[eventType];
+  }
+  return null;
+}
+async function playSound(event, config2 = { enabled: true, volume: 1 }) {
+  if (!config2.enabled) {
+    return false;
+  }
+  const soundPath = getSoundPath(event, config2);
+  if (!soundPath) {
+    console.log(`[sound-player] No sound path for event ${event.type}`);
+    return false;
+  }
+  const platform = getPlatform();
+  const platformCommand = PLATFORM_SOUND_COMMANDS !== null ? PLATFORM_SOUND_COMMANDS[platform] : null;
+  if (!platformCommand) {
+    console.log(`[sound-player] No sound command for platform ${platform}`);
+    return false;
+  }
+  try {
+    const { spawn: spawn2 } = await import("node:child_process");
+    const args = [];
+    if (platform === "win32") {
+      const volume = config2.volume || 1;
+      const sound = `(New-Object Media.SoundPlayer "${soundPath}").Volume = ${volume}; $sound.PlaySync()`;
+      args.push(`(Add-Type -AssemblyName PresentationCore; ${sound})`);
+    } else {
+      const volumeArg = config2.volume !== undefined && config2.volume !== 1 ? [`--volume=${config2.volume.toFixed(2)}`] : [];
+      args.push(...platformCommand.args, ...volumeArg, soundPath);
+    }
+    const result = spawn2(platformCommand.command, args, {
+      detached: true,
+      stdio: "ignore"
+    });
+    result.unref();
+    console.log(`[sound-player] Playing ${event.type} sound for ${platform}`);
+    return true;
+  } catch (error) {
+    console.error(`[sound-player] Error playing sound:`, error);
+    return false;
+  }
+}
+
+// src/notifications/manager.ts
+var DEFAULT_CONFIG = {
+  enabled: true,
+  batchSize: 5,
+  batchDelay: 100,
+  maxRetries: 3,
+  soundConfig: { enabled: true, volume: 1 }
+};
+
+class NotificationManager {
+  queue = [];
+  processing = false;
+  sentNotifications = new Set;
+  config;
+  constructor(config2 = {}) {
+    this.config = { ...DEFAULT_CONFIG, ...config2 };
+  }
+  enqueue(title, message, soundEvent, id) {
+    const notificationId = id || this.generateId();
+    this.queue.push({
+      id: notificationId,
+      title,
+      message,
+      soundEvent,
+      timestamp: Date.now(),
+      retryCount: 0
+    });
+    console.log(`[notification-manager] Enqueued: ${notificationId} - ${title}`);
+    this.processQueue();
+    return notificationId;
+  }
+  generateId() {
+    return `notify-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+  }
+  async processQueue() {
+    if (this.processing || this.queue.length === 0) {
+      return;
+    }
+    this.processing = true;
+    try {
+      const batch = this.queue.splice(0, this.config.batchSize);
+      const dedupedBatch = batch.filter((n) => !this.sentNotifications.has(n.id));
+      if (dedupedBatch.length === 0) {
+        this.processing = false;
+        return;
+      }
+      for (const notification of dedupedBatch) {
+        await this.sendNotification(notification);
+        this.sentNotifications.add(notification.id);
+      }
+      if (this.queue.length > 0) {
+        await new Promise((resolve2) => setTimeout(resolve2, this.config.batchDelay));
+        this.processQueue();
+      }
+    } finally {
+      this.processing = false;
+    }
+  }
+  async sendNotification(notification) {
+    const commandResult = await getNotificationCommand();
+    if (!commandResult) {
+      console.log(`[notification-manager] No notification command available for ${notification.id}`);
+      return false;
+    }
+    try {
+      let success = false;
+      if (commandResult.platform === "linux") {
+        success = await this.sendLinuxNotification(notification, commandResult);
+      } else if (commandResult.platform === "darwin") {
+        success = await this.sendDarwinNotification(notification, commandResult);
+      } else if (commandResult.platform === "win32") {
+        success = await this.sendWindowsNotification(notification, commandResult);
+      }
+      if (success && notification.soundEvent) {
+        await playSound(notification.soundEvent, this.config.soundConfig);
+      }
+      return success;
+    } catch (error) {
+      console.error(`[notification-manager] Error sending notification ${notification.id}:`, error);
+      if (notification.retryCount < this.config.maxRetries) {
+        notification.retryCount++;
+        this.queue.push(notification);
+        setTimeout(() => this.processQueue(), 1000 * (notification.retryCount + 1));
+      }
+      return false;
+    }
+  }
+  async sendLinuxNotification(notification, command) {
+    try {
+      const { spawn: spawn2 } = await import("node:child_process");
+      const args = [
+        ...command.args,
+        `--app-name=Kraken-Code`,
+        `--icon=kraken-code`,
+        notification.id,
+        notification.title,
+        notification.message
+      ];
+      const result = spawn2(command.command, args, {
+        detached: true,
+        stdio: "ignore"
+      });
+      result.unref();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  async sendDarwinNotification(notification, command) {
+    try {
+      const { execFile: execFile4 } = await import("node:child_process");
+      const script = `
+        display notification with title "${notification.title}"           subtitle "Kraken-Code"           message "${notification.message}"           sound name "${notification.soundEvent || "notification"}"
+      `;
+      await new Promise((resolve2, reject) => {
+        execFile4(command.command, [...command.args, "-e", script], (error) => {
+          if (error)
+            reject(error);
+          else
+            resolve2();
+        });
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  async sendWindowsNotification(notification, command) {
+    try {
+      const { spawn: spawn2 } = await import("node:child_process");
+      const script = `
+        Add-Type -AssemblyName System.Windows.Forms
+        Add-Type -AssemblyName System.Drawing
+
+        $balloon = New-Object System.Windows.Forms.NotifyIcon
+        $balloon.Visible = $false
+        $balloon.BalloonTipIcon = [System.Drawing.ToolTipIcon]::Info
+        $balloon.BalloonTipTitle = "${notification.title}"
+        $balloon.BalloonTipText = "${notification.message}"
+        $balloon.Icon = [System.Drawing.Icon]::Information
+        $balloon.Text = "Kraken-Code"
+        $balloon.ShowBalloonTip(5000)
+        $balloon.Dispose()
+      `;
+      const result = spawn2(command.command, [...command.args, script], {
+        detached: true,
+        stdio: "ignore"
+      });
+      result.unref();
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  clearQueue() {
+    this.queue = [];
+    this.sentNotifications.clear();
+    console.log("[notification-manager] Queue cleared");
+  }
+  getQueueLength() {
+    return this.queue.length;
+  }
+  isProcessing() {
+    return this.processing;
+  }
+  clearSentHistory() {
+    this.sentNotifications.clear();
+  }
+}
+var globalManager = null;
+function createNotificationManager(config2) {
+  if (!globalManager) {
+    globalManager = new NotificationManager(config2);
+  }
+  return globalManager;
+}
+function sendNotification(title, message, soundEvent, config2) {
+  const manager2 = createNotificationManager(config2);
+  return manager2.enqueue(title, message, soundEvent);
+}
+
+// src/hooks/notifications/index.ts
+function createNotificationsHook(input, options) {
+  const config2 = options?.config ?? { enabled: true };
+  if (!config2.enabled) {
+    return {};
+  }
+  const notificationConfig = {
+    enabled: config2.enabled,
+    soundConfig: config2.soundConfig,
+    batchSize: config2.batchSize,
+    batchDelay: config2.batchDelay,
+    maxRetries: config2.maxRetries
+  };
+  const manager2 = createNotificationManager(notificationConfig);
+  return {
+    "tool.execute.after": async (toolInput, toolOutput) => {
+      if (!config2.enabled)
+        return;
+      const { tool: tool12 } = toolInput;
+      if (!toolOutput?.output)
+        return;
+      let soundEvent;
+      let message = "";
+      let title = "Kraken-Code";
+      if (tool12 === "session_list") {
+        title = "Sessions Listed";
+        message = "Session list retrieved successfully";
+      } else if (tool12 === "session_create") {
+        title = "Session Created";
+        message = "New session started";
+        soundEvent = { type: "task_complete" };
+      } else if (tool12 === "session_close") {
+        title = "Session Closed";
+        message = "Session closed";
+        soundEvent = { type: "task_complete" };
+      } else if (tool12 === "write" || tool12 === "edit" || tool12 === "multiEdit") {
+        title = "File Modified";
+        message = "File operation completed";
+        soundEvent = { type: "task_complete" };
+      } else if (tool12 === "ast_grep_replace") {
+        title = "Code Refactored";
+        message = "AST grep replace completed";
+        soundEvent = { type: "task_complete" };
+      } else if (tool12.startsWith("lsp_")) {
+        title = "LSP Operation";
+        message = `${tool12} completed`;
+      }
+      if (message) {
+        sendNotification(title, message, soundEvent, config2);
+      }
+    }
+  };
+}
+
+// src/hooks/empty-task-response-detector/index.ts
+var sessionHistories2 = new Map;
+function getSessionHistory2(sessionID) {
+  let history = sessionHistories2.get(sessionID);
+  if (!history) {
+    history = {
+      sessionID,
+      emptyCount: 0,
+      lastEmptyTime: null,
+      history: []
+    };
+    sessionHistories2.set(sessionID, history);
+  }
+  return history;
+}
+function isOutputEmpty(output) {
+  if (!output) {
+    return { empty: true, reason: "output is null/undefined" };
+  }
+  if (output.output === null || output.output === undefined) {
+    return { empty: true, reason: "output.output is null/undefined" };
+  }
+  let outputContent = "";
+  if (output.content && Array.isArray(output.content)) {
+    outputContent = output.content.join("");
+  } else if (output.output && typeof output.output === "string") {
+    outputContent = output.output;
+  } else if (typeof output === "string") {
+    outputContent = output;
+  } else if (typeof output.output === "object") {
+    outputContent = JSON.stringify(output.output);
+  }
+  if (outputContent.trim().length === 0) {
+    return { empty: true, reason: "output content is empty or whitespace-only" };
+  }
+  try {
+    if (typeof outputContent === "string") {
+      const parsed = JSON.parse(outputContent);
+      if (typeof parsed === "object" && Object.keys(parsed).length === 0) {
+        return { empty: true, reason: "output is empty JSON object" };
+      }
+    }
+  } catch {}
+  return { empty: false, reason: "" };
+}
+function getRetryDelay(retryCount, baseDelay) {
+  return baseDelay * Math.pow(2, retryCount);
+}
+async function handleEmptyTaskResponse(input, output, config2, retryCount = 0) {
+  const { sessionID, callID } = input;
+  const maxRetries = config2.maxRetries ?? 3;
+  const retryDelay = config2.retryDelay ?? 1000;
+  const check = isOutputEmpty(output);
+  if (!check.empty) {
+    return false;
+  }
+  const history = getSessionHistory2(sessionID);
+  history.emptyCount++;
+  history.lastEmptyTime = Date.now();
+  history.history.push({
+    timestamp: Date.now(),
+    callID: callID || "unknown",
+    reason: check.reason
+  });
+  console.warn(`[empty-task-response-detector] Task tool returned empty response ` + `(session: ${sessionID}, call: ${callID}, reason: ${check.reason})`);
+  const notifyThreshold = config2.notifyOnThreshold ?? 3;
+  if (history.emptyCount >= notifyThreshold) {
+    console.warn(`[empty-task-response-detector] Threshold exceeded: ${history.emptyCount} empty responses in session ${sessionID}. ` + `This may indicate a recurring issue with the agent or model.`);
+  }
+  if (config2.autoRecover && retryCount < maxRetries) {
+    const delay = getRetryDelay(retryCount, retryDelay);
+    console.log(`[empty-task-response-detector] Auto-recovering: retry in ${delay}ms ` + `(attempt ${retryCount + 1}/${maxRetries})`);
+    await new Promise((resolve2) => setTimeout(resolve2, delay));
+    console.log("[empty-task-response-detector] [session recovered - continuing previous task]");
+    return true;
+  }
+  return false;
+}
+function createEmptyTaskResponseDetectorHook(_input, options) {
+  const config2 = options?.config ?? {
+    enabled: true,
+    maxRetries: 3,
+    retryDelay: 1000,
+    trackPatterns: true,
+    autoRecover: false,
+    notifyOnThreshold: 3
+  };
+  return {
+    "tool.execute.after": async (toolInput, toolOutput) => {
+      if (!config2.enabled)
+        return;
+      if (toolInput.tool !== "task") {
+        return;
+      }
+      await handleEmptyTaskResponse(toolInput, toolOutput, config2);
+    }
+  };
+}
+
+// src/hooks/edit-error-recovery/index.ts
+var fileHistories = new Map;
+var editRetries = new Map;
+function getFileHistory(filePath) {
+  let history = fileHistories.get(filePath);
+  if (!history) {
+    history = {
+      filePath,
+      failures: [],
+      lastGoodContent: null,
+      conflictCount: 0
+    };
+    fileHistories.set(filePath, history);
+  }
+  return history;
+}
+function getRetryDelay2(retryCount, baseDelay, maxDelay) {
+  const delay = baseDelay * Math.pow(2, retryCount);
+  return Math.min(delay, maxDelay);
+}
+function detectEditErrorType(error) {
+  const errorMessage = String(error).toLowerCase();
+  if (errorMessage.includes("no such file") || errorMessage.includes("file not found")) {
+    return "file_not_found";
+  }
+  if (errorMessage.includes("permission denied") || errorMessage.includes("eacces")) {
+    return "permission_denied";
+  }
+  if (errorMessage.includes("not found") || errorMessage.includes("string not found")) {
+    return "merge_conflict";
+  }
+  if (errorMessage.includes("concurrent") || errorMessage.includes("modified")) {
+    return "concurrent_edit";
+  }
+  return "unknown";
+}
+function getRecoveryAction(errorType, filePath, config2) {
+  switch (errorType) {
+    case "file_not_found":
+      if (config2.autoCreateDirs) {
+        return {
+          canRecover: true,
+          action: "create_directories",
+          suggestion: "Create parent directories and retry edit"
+        };
+      }
+      return {
+        canRecover: false,
+        action: "none",
+        suggestion: "Create the file or parent directories manually"
+      };
+    case "permission_denied":
+      return {
+        canRecover: false,
+        action: "check_permissions",
+        suggestion: "Check file permissions and user access"
+      };
+    case "merge_conflict":
+      return {
+        canRecover: true,
+        action: "refresh_and_retry",
+        suggestion: "Read file again and retry with current content"
+      };
+    case "concurrent_edit":
+      return {
+        canRecover: true,
+        action: "retry_with_backoff",
+        suggestion: "Wait and retry edit with fresh content"
+      };
+    default:
+      return {
+        canRecover: false,
+        action: "none",
+        suggestion: "Investigate the error and try again"
+      };
+  }
+}
+async function applyRecovery2(errorType, filePath, config2) {
+  const action = getRecoveryAction(errorType, filePath, config2);
+  if (!action.canRecover) {
+    console.log(`[edit-error-recovery] Cannot recover from error type: ${errorType}`);
+    console.log(`[edit-error-recovery] Suggestion: ${action.suggestion}`);
+    return false;
+  }
+  console.log(`[edit-error-recovery] Attempting recovery action: ${action.action}`);
+  console.log(`[edit-error-recovery] Suggestion: ${action.suggestion}`);
+  if (errorType === "file_not_found" && config2.autoCreateDirs) {
+    try {
+      const { mkdir: mkdir2 } = await import("node:fs/promises");
+      const dir = filePath.split("/").slice(0, -1).join("/");
+      if (dir) {
+        await mkdir2(dir, { recursive: true });
+        console.log(`[edit-error-recovery] Created directory: ${dir}`);
+      }
+      return true;
+    } catch (e) {
+      console.error(`[edit-error-recovery] Failed to create directory: ${e}`);
+      return false;
+    }
+  }
+  return true;
+}
+function createEditErrorRecovery(_input, options) {
+  const config2 = options?.config ?? {
+    enabled: true,
+    maxRetries: 5,
+    baseDelay: 500,
+    maxDelay: 1e4,
+    autoCreateDirs: true,
+    trackConflicts: true
+  };
+  return {
+    "tool.execute.after": async (input, output) => {
+      if (!config2.enabled)
+        return;
+      if (input.tool !== "edit" && input.tool !== "write") {
+        return;
+      }
+      const sessionID = input.sessionID;
+      const filePath = input.filePath;
+      const maxRetries = config2.maxRetries ?? 5;
+      const baseDelay = config2.baseDelay ?? 500;
+      const maxDelay = config2.maxDelay ?? 1e4;
+      const outputAny = output;
+      if (outputAny.error || outputAny.status === "error") {
+        const error = outputAny.error || outputAny.output || "Unknown error";
+        const errorType = detectEditErrorType(error);
+        const retryKey = `${sessionID}-${filePath || "unknown"}`;
+        const currentRetries = editRetries.get(retryKey) ?? 0;
+        if (currentRetries < maxRetries) {
+          if (filePath) {
+            const history = getFileHistory(filePath);
+            history.failures.push({
+              timestamp: Date.now(),
+              filePath,
+              errorType,
+              errorMessage: String(error),
+              retryAttempt: currentRetries + 1
+            });
+            if (errorType === "merge_conflict" && config2.trackConflicts) {
+              history.conflictCount++;
+            }
+          }
+          console.log(`[edit-error-recovery] Edit error detected (attempt ${currentRetries + 1}/${maxRetries})`);
+          if (filePath) {
+            console.log(`[edit-error-recovery] File: ${filePath}`);
+          }
+          console.log(`[edit-error-recovery] Error type: ${errorType}`);
+          console.log(`[edit-error-recovery] Error: ${error}`);
+          const recovered = await applyRecovery2(errorType, filePath || "", config2);
+          if (recovered) {
+            const delay = getRetryDelay2(currentRetries, baseDelay, maxDelay);
+            editRetries.set(retryKey, currentRetries + 1);
+            console.log(`[edit-error-recovery] Retry scheduled in ${delay}ms`);
+            console.log("[edit-error-recovery] [session recovered - continuing previous task]");
+            setTimeout(() => {
+              editRetries.delete(retryKey);
+            }, delay);
+          } else {
+            console.error(`[edit-error-recovery] Recovery failed for ${filePath || "unknown"}`);
+            editRetries.delete(retryKey);
+          }
+        } else {
+          console.error(`[edit-error-recovery] Max retries (${maxRetries}) exceeded for ${filePath || "unknown"}`);
+          editRetries.delete(retryKey);
+        }
+      } else {
+        if (filePath) {
+          editRetries.delete(`${sessionID}-${filePath}`);
+        }
+      }
+    }
+  };
+}
+
+// src/hooks/grep-output-truncator/index.ts
+var DEFAULT_CONFIG2 = {
+  maxTokens: 50000,
+  headroomRatio: 0.5
+};
+function truncateGrepOutput(output, maxTokens, headroomRatio) {
+  const usableTokens = maxTokens * (1 - headroomRatio);
+  const maxChars = Math.floor(usableTokens * 4);
+  if (output.length <= maxChars) {
+    return output;
+  }
+  const lines = output.split(`
+`);
+  const charCountLimit = maxChars;
+  let currentCount = 0;
+  let truncateIndex = lines.length;
+  for (let i = 0;i < lines.length; i++) {
+    currentCount += lines[i].length + 1;
+    if (currentCount > charCountLimit) {
+      truncateIndex = i;
+      break;
+    }
+  }
+  if (truncateIndex === lines.length) {
+    return output;
+  }
+  const truncated = lines.slice(0, truncateIndex).join(`
+`);
+  const omittedLines = lines.length - truncateIndex;
+  const estimatedTokens = Math.ceil(output.length / 4);
+  return `${truncated}
+
+` + `[Grep output truncated: ${estimatedTokens.toLocaleString()} tokens estimated, ` + `${omittedLines.toLocaleString()} matches omitted]`;
+}
+async function grepToolExecuteAfter(input, output, config2) {
+  if (input.tool !== "grep") {
+    return;
+  }
+  if (output?.content && Array.isArray(output.content)) {
+    output.content = output.content.map((content) => {
+      if (typeof content === "string") {
+        return truncateGrepOutput(content, config2.maxTokens, config2.headroomRatio);
+      }
+      return content;
+    });
+  } else if (output?.output && typeof output.output === "string") {
+    output.output = truncateGrepOutput(output.output, config2.maxTokens, config2.headroomRatio);
+  }
+}
+function createGrepOutputTruncatorHook(_input, options) {
+  const finalConfig = { ...DEFAULT_CONFIG2, ...options?.config };
+  return {
+    "tool.execute.after": async (toolInput, toolOutput) => {
+      await grepToolExecuteAfter(toolInput, toolOutput, finalConfig);
+    }
+  };
+}
+
+// src/hooks/session-recovery/index.ts
+init_detector();
+var sessionErrorStates = new Map;
+function createSessionRecovery(_input, options) {
+  const config2 = options?.config ?? { enabled: true, autoRecover: false };
+  if (!config2.enabled) {
+    return {
+      "chat.message": async () => {}
+    };
+  }
+  return {
+    "chat.message": async (input) => {
+      const { sessionID } = input;
+      if (!sessionID)
+        return;
+      const state = getOrCreateSessionState2(sessionID);
+      state.errorType = null;
+    },
+    event: async (input) => {
+      const { sessionID, type, error } = input;
+      if (type !== "session.error")
+        return;
+      if (!sessionID)
+        return;
+      const { detectErrorType: detectErrorType2 } = await Promise.resolve().then(() => (init_detector(), exports_detector));
+      const errorType = detectErrorType2(error);
+      const state = getOrCreateSessionState2(sessionID);
+      state.errorType = errorType;
+      state.lastErrorTime = Date.now();
+      state.errorCount++;
+      console.log(`[session-recovery] Detected error type: ${errorType}`);
+      console.log(`[session-recovery] Error count for session ${sessionID}: ${state.errorCount}`);
+      if (config2.autoRecover && isRecoverableError(errorType)) {
+        const { attemptRecovery: attemptRecovery2 } = await Promise.resolve().then(() => (init_strategies(), exports_strategies));
+        const context = {
+          sessionID,
+          error,
+          timestamp: Date.now()
+        };
+        try {
+          await attemptRecovery2(errorType, context, { maxRetries: 3 });
+          console.log(`[session-recovery] Auto-recovery attempted for ${errorType}`);
+        } catch (recoveryError) {
+          console.error("[session-recovery] Auto-recovery failed:", recoveryError);
+        }
+      }
+    }
+  };
+}
+function getOrCreateSessionState2(sessionID) {
+  let state = sessionErrorStates.get(sessionID);
+  if (!state) {
+    state = {
+      sessionID,
+      errorType: null,
+      errorCount: 0,
+      lastErrorTime: null,
+      recoveryAttempts: 0,
+      messagesBeforeError: 0
+    };
+    sessionErrorStates.set(sessionID, state);
+  }
+  return state;
+}
+
+// src/features/blitzkrieg/blitzkrieg-test-plan.ts
+var DEFAULT_TEST_PLAN_VALIDATION_OPTIONS = {
+  enforceMinimumTestCases: true,
+  enforceCoverageThreshold: true,
+  requireApproval: false,
+  allowPartialImplementation: false
+};
+function validateTestPlan(state, requirements, options = DEFAULT_TEST_PLAN_VALIDATION_OPTIONS) {
+  const violations = [];
+  const recommendations = [];
+  if (!state.exists) {
+    if (requirements.requiredBeforeImplementation) {
+      violations.push({
+        type: "missing-test-cases",
+        details: "No test plan exists for this feature",
+        severity: "error"
+      });
+    }
+    return { valid: false, violations, recommendations };
+  }
+  if (options.enforceMinimumTestCases) {
+    const testCaseCount = state.testCases.length;
+    if (testCaseCount < requirements.minTestCases) {
+      violations.push({
+        type: "missing-test-cases",
+        details: `Test plan has ${testCaseCount} test cases, minimum required is ${requirements.minTestCases}`,
+        severity: "error"
+      });
+      recommendations.push(`Add ${requirements.minTestCases - testCaseCount} more test cases`);
+    }
+  }
+  if (options.enforceCoverageThreshold && requirements.requireCoverageThreshold && requirements.coverageThresholdPercent > 0) {
+    if (state.coverageTarget === undefined) {
+      violations.push({
+        type: "insufficient-coverage",
+        details: "Coverage target is not specified in test plan",
+        severity: "warning"
+      });
+      recommendations.push(`Specify coverage target (min ${requirements.coverageThresholdPercent}%)`);
+    } else if (state.coverageTarget < requirements.coverageThresholdPercent) {
+      violations.push({
+        type: "insufficient-coverage",
+        details: `Coverage target ${state.coverageTarget}% is below required ${requirements.coverageThresholdPercent}%`,
+        severity: "error"
+      });
+      recommendations.push(`Increase coverage target to at least ${requirements.coverageThresholdPercent}%`);
+    }
+  }
+  if (options.requireApproval && !state.approved) {
+    violations.push({
+      type: "missing-approval",
+      details: "Test plan has not been approved",
+      severity: "error"
+    });
+    recommendations.push("Request approval for the test plan");
+  }
+  const testCaseCategories = new Set(state.testCases.map((tc) => tc.category));
+  if (!testCaseCategories.has("edge-case") && options.enforceMinimumTestCases) {
+    recommendations.push("Consider adding edge case tests for more comprehensive coverage");
+  }
+  if (!testCaseCategories.has("error-path") && options.enforceMinimumTestCases) {
+    recommendations.push("Consider adding error path tests for error handling coverage");
+  }
+  return {
+    valid: violations.filter((v) => v.severity === "error").length === 0,
+    violations,
+    recommendations
+  };
+}
+function generateTestPlanSummary(state) {
+  const summary = {
+    totalTestCases: state.testCases.length,
+    happyPathCases: 0,
+    edgeCaseCases: 0,
+    errorPathCases: 0,
+    integrationCases: 0,
+    coveragePercentage: state.coverageTarget,
+    approvalStatus: state.approved ? "approved" : "pending"
+  };
+  if (!state.exists) {
+    summary.approvalStatus = "none";
+    return summary;
+  }
+  for (const testCase of state.testCases) {
+    switch (testCase.category) {
+      case "happy-path":
+        summary.happyPathCases++;
+        break;
+      case "edge-case":
+        summary.edgeCaseCases++;
+        break;
+      case "error-path":
+        summary.errorPathCases++;
+        break;
+      case "integration":
+        summary.integrationCases++;
+        break;
+    }
+  }
+  return summary;
+}
+function canBeginImplementation(state, requirements) {
+  if (!state.exists) {
+    return !requirements.requiredBeforeImplementation;
+  }
+  const result = validateTestPlan(state, requirements, {
+    enforceMinimumTestCases: true,
+    enforceCoverageThreshold: requirements.requireCoverageThreshold,
+    requireApproval: false,
+    allowPartialImplementation: false
+  });
+  return result.valid;
+}
+
+// src/hooks/blitzkrieg-test-plan-enforcer/index.ts
+var testPlanStore = {};
+function isImplementationFile(filePath) {
+  const testPatterns = [
+    /\.test\.[jt]sx?$/,
+    /\.spec\.[jt]sx?$/,
+    /__tests__/,
+    /\/test\//,
+    /\/tests\//,
+    /node_modules/,
+    /\.md$/,
+    /\.json$/
+  ];
+  return !testPatterns.some((pattern) => pattern.test(filePath));
+}
+function getFeaturePath(filePath) {
+  const normalized = filePath.replace(/\.(ts|tsx|js|jsx)$/, "");
+  return normalized.replace(/\.test$|\.spec$/, "");
+}
+function getTestPlanState(featurePath) {
+  const plan = testPlanStore[featurePath];
+  return plan ? {
+    exists: true,
+    testCases: Array(plan.testCases).fill({}),
+    coverageTarget: plan.coverageTarget,
+    approved: plan.approved
+  } : {
+    exists: false,
+    testCases: [],
+    approved: false
+  };
+}
+function getBlitzkriegConfig(input) {
+  const config2 = input.config;
+  return config2?.blitzkrieg;
+}
+function createBlitzkriegTestPlanEnforcerHook(input) {
+  return {
+    "tool.execute.before": async (toolInput, toolOutput) => {
+      const blitzkriegConfig = getBlitzkriegConfig(input);
+      if (!blitzkriegConfig?.enabled) {
+        return;
+      }
+      const toolName = toolInput.tool;
+      if (toolName !== "edit" && toolName !== "write") {
+        return;
+      }
+      const args = toolOutput;
+      const filePath = args?.filePath;
+      if (!filePath || !isImplementationFile(filePath)) {
+        return;
+      }
+      const testPlanConfig = blitzkriegConfig.testPlan;
+      if (!testPlanConfig?.requiredBeforeImplementation) {
+        return;
+      }
+      const featurePath = getFeaturePath(filePath);
+      const testPlanState = getTestPlanState(featurePath);
+      const requirements = {
+        minTestCases: testPlanConfig.minTestCases,
+        requireCoverageThreshold: testPlanConfig.requireCoverageThreshold,
+        coverageThresholdPercent: testPlanConfig.coverageThresholdPercent,
+        requiredBeforeImplementation: testPlanConfig.requiredBeforeImplementation
+      };
+      if (!canBeginImplementation(testPlanState, requirements)) {
+        const validation = validateTestPlan(testPlanState, requirements);
+        const violations = validation.violations.map((v) => v.details).join("; ");
+        throw new Error(`Blitzkrieg Test Plan Violation: ${violations}. Please create a test plan for this feature before implementing. Use registerTestPlan('${featurePath}', testCaseCount, coverageTarget, approved) to register a test plan.`);
+      }
+    }
+  };
+}
+
+// src/features/blitzkrieg/blitzkrieg-tdd.ts
+var DEFAULT_TDD_ENFORCEMENT_CONFIG = {
+  enforceWriteTestFirst: true,
+  forbidCodeWithoutTest: true,
+  allowRefactorWithoutTest: true,
+  enforceTestFirstSeverity: "block",
+  forbidCodeWithoutTestSeverity: "block"
+};
+function isTestFile(filePath) {
+  const testPatterns = [
+    /\.test\.[jt]sx?$/,
+    /\.spec\.[jt]sx?$/,
+    /\/__tests__\/.*\.[jt]sx?$/,
+    /\/test\/[^\/]*\.[jt]sx?$/,
+    /\/tests\/[^\/]*\.[jt]sx?$/
+  ];
+  return testPatterns.some((pattern) => pattern.test(filePath));
+}
+function isImplementationFile2(filePath) {
+  const testPatterns = [
+    /\.test\.[jt]sx?$/,
+    /\.spec\.[jt]sx?$/,
+    /\/__tests__\//,
+    /\/test\/[^\/]*\.[jt]sx?$/,
+    /\/tests\/[^\/]*\.[jt]sx?$/,
+    /node_modules/,
+    /\/dist\//,
+    /\/build\//
+  ];
+  return !testPatterns.some((pattern) => pattern.test(filePath));
+}
+function isRefactorOperation(content, previousContent) {
+  if (!previousContent)
+    return false;
+  const refactorKeywords = [
+    /refactor/i,
+    /extract/i,
+    /restructure/i,
+    /reorganize/i,
+    /rename/i,
+    /move.*function/i
+  ];
+  const hasRefactorKeywords = refactorKeywords.some((pattern) => pattern.test(content));
+  const isStructuralChange = content.length > previousContent.length * 0.8 && content.length < previousContent.length * 1.5;
+  return hasRefactorKeywords && isStructuralChange;
+}
+function evaluateTddCompliance(operation, session, config2 = DEFAULT_TDD_ENFORCEMENT_CONFIG, previousContent) {
+  const violations = [];
+  const suggestions = [];
+  const isTest = isTestFile(operation.filePath);
+  const isImpl = isImplementationFile2(operation.filePath);
+  if (isTest) {
+    session.testsWritten.push(operation);
+    session.currentCompliance.testWrittenFirst = true;
+    session.currentCompliance.testFilePaths.push(operation.filePath);
+    return {
+      decision: "allow",
+      reason: "Test file operations are always allowed",
+      violations: [],
+      suggestions: []
+    };
+  }
+  if (!isImpl) {
+    return {
+      decision: "allow",
+      reason: "Non-implementation file operations are not subject to TDD enforcement",
+      violations: [],
+      suggestions: []
+    };
+  }
+  session.filesWritten.push(operation);
+  session.currentCompliance.implementationFilePaths.push(operation.filePath);
+  const isRefactor = isRefactorOperation(operation.content, previousContent);
+  session.currentCompliance.isRefactor = isRefactor;
+  if (isRefactor && config2.allowRefactorWithoutTest) {
+    return {
+      decision: "allow",
+      reason: "Refactor operations are allowed without new tests when configured",
+      violations: [],
+      suggestions: []
+    };
+  }
+  if (config2.enforceWriteTestFirst && !session.currentCompliance.testWrittenFirst) {
+    violations.push({
+      type: "test-not-first",
+      file: operation.filePath,
+      severity: config2.enforceTestFirstSeverity
+    });
+    suggestions.push("Write tests before implementing the feature (TDD test-first principle)");
+  }
+  if (config2.forbidCodeWithoutTest && session.testsWritten.length === 0) {
+    violations.push({
+      type: "code-without-test",
+      file: operation.filePath,
+      severity: config2.forbidCodeWithoutTestSeverity
+    });
+    suggestions.push("Write corresponding test files before implementation code");
+  }
+  const hasBlockingViolation = violations.some((v) => v.severity === "error");
+  if (hasBlockingViolation) {
+    return {
+      decision: "block",
+      reason: "TDD violation detected. See violation details for more information.",
+      violations,
+      suggestions
+    };
+  } else if (violations.length > 0) {
+    return {
+      decision: "warn",
+      reason: "TDD best practice not followed. Consider the following suggestions.",
+      violations,
+      suggestions
+    };
+  }
+  return {
+    decision: "allow",
+    reason: "Operation is TDD-compliant",
+    violations: [],
+    suggestions: []
+  };
+}
+
+// src/hooks/blitzkrieg-tdd-workflow/index.ts
+var activeSessions = new Map;
+function getOrCreateSession(sessionId) {
+  if (!activeSessions.has(sessionId)) {
+    activeSessions.set(sessionId, {
+      sessionId,
+      testsWritten: [],
+      implementationFilesWritten: []
+    });
+  }
+  return activeSessions.get(sessionId);
+}
+function getBlitzkriegConfig2(input) {
+  const config2 = input.config;
+  return config2?.blitzkrieg;
+}
+async function getPreviousFileContent(filePath) {
+  return;
+}
+function createBlitzkriegTddWorkflowHook(input) {
+  return {
+    "tool.execute.before": async (toolInput, toolOutput) => {
+      const blitzkriegConfig = getBlitzkriegConfig2(input);
+      if (!blitzkriegConfig?.enabled) {
+        return;
+      }
+      const toolName = toolInput.tool;
+      const sessionId = toolInput.sessionID;
+      if (toolName !== "edit" && toolName !== "write") {
+        return;
+      }
+      const args = toolOutput;
+      const filePath = args?.filePath;
+      if (!filePath) {
+        return;
+      }
+      const session = getOrCreateSession(sessionId);
+      if (isTestFile(filePath)) {
+        session.testsWritten.push(filePath);
+        return;
+      }
+      if (!isImplementationFile2(filePath)) {
+        return;
+      }
+      const tddConfig = blitzkriegConfig.tddWorkflow;
+      const enforcementConfig = {
+        enforceWriteTestFirst: tddConfig.enforceWriteTestFirst,
+        forbidCodeWithoutTest: tddConfig.forbidCodeWithoutTest,
+        allowRefactorWithoutTest: tddConfig.allowRefactorWithoutTest,
+        enforceTestFirstSeverity: "block",
+        forbidCodeWithoutTestSeverity: "block"
+      };
+      const previousContent = await getPreviousFileContent(filePath);
+      const operation = {
+        filePath,
+        operation: toolName,
+        content: args?.content || "",
+        timestamp: new Date().toISOString()
+      };
+      const result = evaluateTddCompliance(operation, {
+        sessionId,
+        startTime: new Date().toISOString(),
+        filesWritten: session.implementationFilesWritten.map((fp) => ({
+          filePath: fp,
+          operation: "write",
+          content: "",
+          timestamp: new Date().toISOString()
+        })),
+        testsWritten: session.testsWritten.map((tp) => ({
+          filePath: tp,
+          operation: "write",
+          content: "",
+          timestamp: new Date().toISOString()
+        })),
+        currentCompliance: {
+          testWrittenFirst: session.testsWritten.length > 0,
+          codeHasTest: false,
+          isRefactor: isRefactorOperation(operation.content, previousContent),
+          violations: [],
+          testFilePaths: session.testsWritten,
+          implementationFilePaths: session.implementationFilesWritten
+        }
+      }, enforcementConfig, previousContent);
+      session.implementationFilesWritten.push(filePath);
+      if (result.decision === "block") {
+        const violations = result.violations.map((v) => `${v.type}: ${v.file}`).join("; ");
+        throw new Error(`Blitzkrieg TDD Violation: ${violations}. ${result.reason}
+
+Suggestions:
+${result.suggestions.map((s) => `  - ${s}`).join(`
+`)}`);
+      }
+      if (result.decision === "warn" && result.violations.length > 0) {
+        console.warn(`Blitzkrieg TDD Warning: ${result.reason}`);
+      }
+    },
+    "tool.execute.after": async (toolInput) => {
+      const sessionId = toolInput.sessionID;
+    }
+  };
+}
+
+// src/features/blitzkrieg/blitzkrieg-verification.ts
+var DEFAULT_VERIFICATION_OPTIONS = {
+  strictMode: false,
+  ignoreWarnings: false,
+  coverageThreshold: 80,
+  minAssertions: 1,
+  minEdgeCases: 1
+};
+
+class BuildOutputParser {
+  parse(output, exitCode) {
+    const errors = this.parseErrors(output);
+    const warnings = this.countWarnings(output);
+    return {
+      success: exitCode === 0,
+      exitCode,
+      output,
+      errors,
+      warnings
+    };
+  }
+  parseErrors(output) {
+    const errors = [];
+    const tsPattern = /(.+?):(\d+):(\d+)\s*[-–]\s*(error|warning)\s*(TS\d+|ESLint)\s*:\s*(.+)/g;
+    let match;
+    while ((match = tsPattern.exec(output)) !== null) {
+      errors.push({
+        file: match[1],
+        line: parseInt(match[2], 10),
+        column: parseInt(match[3], 10),
+        message: match[6],
+        code: match[5],
+        severity: match[4] === "error" ? "error" : "warning"
+      });
+    }
+    const pyPattern = /File "(.+?)", line (\d+), in .+?(.+)/g;
+    while ((match = pyPattern.exec(output)) !== null) {
+      if (!errors.some((e) => e.file === match[1] && e.line === parseInt(match[2], 10))) {
+        errors.push({
+          file: match[1],
+          line: parseInt(match[2], 10),
+          message: match[3].trim(),
+          code: "PythonError",
+          severity: "error"
+        });
+      }
+    }
+    const genericPattern = /(error|Error|ERROR)[:\s]+(.+)/g;
+    while ((match = genericPattern.exec(output)) !== null) {
+      const existingError = match[2].substring(0, 50);
+      if (!errors.some((e) => e.message.includes(existingError))) {
+        errors.push({
+          message: match[2].trim(),
+          code: "GenericError",
+          severity: "error"
+        });
+      }
+    }
+    return errors;
+  }
+  countWarnings(output) {
+    const warningPatterns = [
+      /(warning|Warning|WARNING)[:\s]+/g,
+      /warn[:\s]+/gi
+    ];
+    let count = 0;
+    for (const pattern of warningPatterns) {
+      const matches = output.match(pattern);
+      if (matches) {
+        count += matches.length;
+      }
+    }
+    return count;
+  }
+}
+
+class TestOutputParser {
+  parse(output) {
+    const assertions = this.countAssertions(output);
+    const edgeCases = this.identifyEdgeCases(output);
+    const testPath = this.extractTestPath(output);
+    return {
+      testPath,
+      assertions,
+      edgeCasesCovered: edgeCases.length,
+      executionLog: output
+    };
+  }
+  countAssertions(output) {
+    const assertionPatterns = [
+      /\b(assert|expect|should|it\.only|test\.only)\s*\(/gi,
+      /passes|failures/gi
+    ];
+    let count = 0;
+    for (const pattern of assertionPatterns) {
+      const matches = output.match(pattern);
+      if (matches) {
+        count += matches.length;
+      }
+    }
+    const summaryMatch = output.match(/(\d+)\s+(?:passes|fail|tests?)/i);
+    if (summaryMatch) {
+      const num = parseInt(summaryMatch[1], 10);
+      if (num > count) {
+        count = num;
+      }
+    }
+    return count;
+  }
+  identifyEdgeCases(output) {
+    const edgeCaseIndicators = [
+      /null/i,
+      /undefined/i,
+      /empty/gi,
+      /zero/gi,
+      /negative/i,
+      /overflow/i,
+      /underflow/i,
+      /async|await/gi,
+      /error|exception/gi,
+      /timeout/i,
+      /boundary/i,
+      /edge/gi
+    ];
+    const covered = [];
+    for (const pattern of edgeCaseIndicators) {
+      if (pattern.test(output)) {
+        const name = pattern.source.replace(/^\^?|\\b|\\/gi, "").substring(0, 30);
+        if (!covered.includes(name)) {
+          covered.push(name);
+        }
+      }
+    }
+    return covered;
+  }
+  extractTestPath(output) {
+    const pathPatterns = [
+      /Running\s+(.+?test.+\.(?:ts|js|py))/i,
+      /Test\s+Files.*[\n\r]+.*(.+\.(?:test|spec)\.[jt]sx?)/i
+    ];
+    for (const pattern of pathPatterns) {
+      const match = output.match(pattern);
+      if (match) {
+        return match[1];
+      }
+    }
+    return "";
+  }
+}
+
+class CoverageOutputParser {
+  parse(output, threshold) {
+    const coverage = this.parseCoveragePercentages(output);
+    return {
+      statementCoverage: coverage.statement,
+      branchCoverage: coverage.branch,
+      functionCoverage: coverage.function,
+      lineCoverage: coverage.line,
+      coverageOutput: output,
+      meetsThreshold: this.checkThreshold(coverage, threshold)
+    };
+  }
+  parseCoveragePercentages(output) {
+    const result = {
+      statement: 0,
+      branch: 0,
+      function: 0,
+      line: 0
+    };
+    const patterns = [
+      [/Statements?\s*[:\s]+(\d+(?:\.\d+)?)%/i, "statement"],
+      [/Branches?\s*[:\s]+(\d+(?:\.\d+)?)%/i, "branch"],
+      [/Functions?\s*[:\s]+(\d+(?:\.\d+)?)%/i, "function"],
+      [/Lines?\s*[:\s]+(\d+(?:\.\d+)?)%/i, "line"],
+      [/coverage:\s+(\d+(?:\.\d+)?)%/i, "statement"]
+    ];
+    for (const [pattern, key] of patterns) {
+      const match = output.match(pattern);
+      if (match) {
+        result[key] = parseFloat(match[1]);
+      }
+    }
+    return result;
+  }
+  checkThreshold(coverage, threshold) {
+    const coverages = [coverage.statement, coverage.branch, coverage.function, coverage.line];
+    const validCoverages = coverages.filter((c) => c > 0);
+    if (validCoverages.length === 0) {
+      return false;
+    }
+    const averageCoverage = validCoverages.reduce((sum, c) => sum + c, 0) / validCoverages.length;
+    return averageCoverage >= threshold;
+  }
+}
+
+class BlitzkriegVerification {
+  buildParser = new BuildOutputParser;
+  testParser = new TestOutputParser;
+  coverageParser = new CoverageOutputParser;
+  verify(buildOutput, buildExitCode, testOutput, coverageOutput, config2, options = DEFAULT_VERIFICATION_OPTIONS) {
+    const evidence = this.collectEvidence(buildOutput, buildExitCode, testOutput, coverageOutput, options.coverageThreshold);
+    const violations = [];
+    const warnings = [];
+    this.checkBuildEvidence(evidence.buildEvidence, violations, warnings);
+    this.checkTestEvidence(evidence.testEvidence, config2, violations, warnings, options);
+    this.checkCoverageEvidence(evidence.coverageEvidence, config2, violations, warnings, options);
+    const summary = this.generateSummary(evidence, violations, warnings);
+    const hasBlockingViolation = violations.some((v) => v.severity === "error");
+    const compliant = !hasBlockingViolation && !summary.failedTests;
+    return {
+      compliant,
+      evidence,
+      violations,
+      warnings,
+      summary
+    };
+  }
+  collectEvidence(buildOutput, buildExitCode, testOutput, coverageOutput, coverageThreshold) {
+    const buildEvidence = this.buildParser.parse(buildOutput, buildExitCode);
+    const testEvidence = this.testParser.parse(testOutput);
+    const coverageEvidence = this.coverageParser.parse(coverageOutput, coverageThreshold);
+    return {
+      buildEvidence,
+      testEvidence,
+      coverageEvidence,
+      timestamp: new Date().toISOString()
+    };
+  }
+  checkBuildEvidence(evidence, violations, warnings) {
+    if (!evidence.success) {
+      violations.push({
+        type: "build-failed",
+        message: `Build failed with exit code ${evidence.exitCode}`,
+        severity: "error",
+        details: {
+          exitCode: evidence.exitCode,
+          errorCount: evidence.errors.length
+        }
+      });
+    } else if (evidence.warnings > 0) {
+      warnings.push({
+        type: "build-warnings",
+        message: `Build completed with ${evidence.warnings} warning(s)`,
+        suggestion: "Review warnings and fix if necessary"
+      });
+    }
+  }
+  checkTestEvidence(evidence, config2, violations, warnings, options) {
+    if (config2.requireTestExecutionEvidence && evidence.executionLog === undefined) {
+      violations.push({
+        type: "no-test-execution",
+        message: "No test execution evidence found",
+        severity: "error"
+      });
+    }
+    if (config2.requireAssertionEvidence && evidence.assertions < options.minAssertions) {
+      violations.push({
+        type: "no-assertions",
+        message: `Insufficient assertions: found ${evidence.assertions}, minimum required is ${options.minAssertions}`,
+        severity: "error",
+        details: { actual: evidence.assertions, required: options.minAssertions }
+      });
+    }
+    if (config2.requireEdgeCaseEvidence && evidence.edgeCasesCovered < options.minEdgeCases) {
+      violations.push({
+        type: "no-edge-cases",
+        message: `No edge cases covered: minimum required is ${options.minEdgeCases}`,
+        severity: "error",
+        details: { actual: evidence.edgeCasesCovered, required: options.minEdgeCases }
+      });
+    }
+  }
+  checkCoverageEvidence(evidence, config2, violations, warnings, options) {
+    if (!evidence.coverageOutput) {
+      warnings.push({
+        type: "missing-coverage-data",
+        message: "No coverage data found",
+        suggestion: "Run tests with coverage to get coverage metrics"
+      });
+      return;
+    }
+    if (config2.requireEdgeCaseEvidence && evidence.statementCoverage < options.coverageThreshold) {
+      if (options.strictMode) {
+        violations.push({
+          type: "insufficient-coverage",
+          message: `Coverage ${evidence.statementCoverage.toFixed(1)}% below threshold ${options.coverageThreshold}%`,
+          severity: "error",
+          details: {
+            statement: evidence.statementCoverage,
+            branch: evidence.branchCoverage,
+            function: evidence.functionCoverage,
+            line: evidence.lineCoverage,
+            threshold: options.coverageThreshold
+          }
+        });
+      } else {
+        warnings.push({
+          type: "low-coverage",
+          message: `Coverage ${evidence.statementCoverage.toFixed(1)}% is below optimal threshold ${options.coverageThreshold}%`,
+          suggestion: "Consider adding more tests to improve coverage"
+        });
+      }
+    }
+  }
+  generateSummary(evidence, violations, warnings) {
+    const testOutput = evidence.testEvidence.executionLog || "";
+    const passedMatch = testOutput.match(/(\d+)\s+(?:passes?|passed|success)/i);
+    const failedMatch = testOutput.match(/(\d+)\s+(?:failures?|failed)/i);
+    const skippedMatch = testOutput.match(/(\d+)\s+(?:skipped|pending)/i);
+    const totalTests = (passedMatch ? parseInt(passedMatch[1], 10) : 0) + (failedMatch ? parseInt(failedMatch[1], 10) : 0) + (skippedMatch ? parseInt(skippedMatch[1], 10) : 0);
+    const passedTests = passedMatch ? parseInt(passedMatch[1], 10) : 0;
+    const failedTests = failedMatch ? parseInt(failedMatch[1], 10) : 0;
+    const skippedTests = skippedMatch ? parseInt(skippedMatch[1], 10) : 0;
+    let overallScore = 100;
+    if (failedTests > 0) {
+      overallScore -= failedTests / totalTests * 100;
+    }
+    if (evidence.coverageEvidence.statementCoverage > 0) {
+      overallScore = (overallScore + evidence.coverageEvidence.statementCoverage) / 2;
+    }
+    return {
+      totalTests,
+      passedTests,
+      failedTests,
+      skippedTests,
+      totalAssertions: evidence.testEvidence.assertions,
+      passedAssertions: evidence.testEvidence.assertions,
+      edgeCasesCovered: evidence.testEvidence.edgeCasesCovered,
+      overallScore: Math.round(overallScore * 100) / 100
+    };
+  }
+  verifyWithTestPlan(buildOutput, buildExitCode, testOutput, coverageOutput, testPlanState, config2, options = DEFAULT_VERIFICATION_OPTIONS) {
+    const result = this.verify(buildOutput, buildExitCode, testOutput, coverageOutput, config2.evidence, options);
+    const testPlanSummary = generateTestPlanSummary(testPlanState);
+    const testPlanResult = validateTestPlan(testPlanState, {
+      minTestCases: config2.testPlan.minTestCases,
+      requireCoverageThreshold: config2.testPlan.requireCoverageThreshold,
+      coverageThresholdPercent: config2.testPlan.coverageThresholdPercent,
+      requiredBeforeImplementation: config2.testPlan.requiredBeforeImplementation
+    }, DEFAULT_TEST_PLAN_VALIDATION_OPTIONS);
+    if (!testPlanResult.valid && options.strictMode) {
+      for (const violation of testPlanResult.violations) {
+        result.violations.push({
+          type: "missing-evidence",
+          message: `Test Plan: ${violation.details}`,
+          severity: violation.severity
+        });
+      }
+    }
+    result.summary = {
+      ...result.summary,
+      totalTests: testPlanSummary.totalTestCases + result.summary.totalTests
+    };
+    const hasBlockingViolation = result.violations.some((v) => v.severity === "error");
+    result.compliant = !hasBlockingViolation && result.summary.failedTests === 0;
+    return result;
+  }
+}
+function createEvidenceReport(testFilePaths = []) {
+  return {
+    testFilePaths,
+    timestamp: new Date().toISOString()
+  };
+}
+
+// src/hooks/blitzkrieg-evidence-verifier/index.ts
+var evidenceStore = {};
+function registerEvidence(taskId, evidence) {
+  if (!evidenceStore[taskId]) {
+    evidenceStore[taskId] = {
+      testFilePaths: []
+    };
+  }
+  const existing = evidenceStore[taskId].evidence || createEvidenceReport();
+  evidenceStore[taskId].evidence = {
+    ...existing,
+    ...evidence,
+    testFilePaths: [...existing.testFilePaths, ...evidence.testFilePaths || []]
+  };
+}
+function getBlitzkriegConfig3(input) {
+  const config2 = input.config;
+  return config2?.blitzkrieg;
+}
+function getTaskId(toolInput) {
+  return toolInput.sessionID || "default";
+}
+function isTaskCompletion(toolName) {
+  const completionKeywords = ["todowrite", "task", "complete", "done"];
+  return completionKeywords.some((keyword) => toolName.toLowerCase().includes(keyword));
+}
+function createBlitzkriegEvidenceVerifierHook(input) {
+  return {
+    "tool.execute.before": async (toolInput, toolOutput) => {
+      const blitzkriegConfig = getBlitzkriegConfig3(input);
+      if (!blitzkriegConfig?.enabled) {
+        return;
+      }
+      const toolName = toolInput.tool;
+      if (!isTaskCompletion(toolName)) {
+        return;
+      }
+      const evidenceConfig = blitzkriegConfig.evidence;
+      if (!evidenceConfig.requireTestExecutionEvidence && !evidenceConfig.requireAssertionEvidence && !evidenceConfig.requireEdgeCaseEvidence) {
+        return;
+      }
+      const taskId = getTaskId(toolInput);
+      const taskEvidence = evidenceStore[taskId];
+      if (!taskEvidence) {
+        throw new Error(`Blitzkrieg Evidence Verification: No evidence registered for task "${taskId}". Please register test files and evidence before marking task complete.`);
+      }
+      const evidence = taskEvidence.evidence || createEvidenceReport();
+      console.log(`[blitzkrieg-evidence-verifier] Evidence verification is not fully implemented. Skipping verification for task ${taskId}.`);
+    },
+    "tool.execute.after": async (toolInput, toolOutput) => {
+      const blitzkriegConfig = getBlitzkriegConfig3(input);
+      if (!blitzkriegConfig?.enabled) {
+        return;
+      }
+      const toolName = toolInput.tool;
+      if (toolName === "bash") {
+        const args = toolOutput;
+        const command = args?.command;
+        if (command && isTestCommand(command)) {
+          const taskId = getTaskId(toolInput);
+          const output = toolOutput.output;
+          if (output) {
+            registerEvidence(taskId, {
+              testExecutionEvidence: output
+            });
+          }
+        }
+      }
+    }
+  };
+}
+function isTestCommand(command) {
+  const testPatterns = [
+    /npm\s+test/i,
+    /yarn\s+test/i,
+    /pnpm\s+test/i,
+    /pytest/i,
+    /jest/i,
+    /mocha/i,
+    /vitest/i,
+    /karma/i,
+    /cypress/i,
+    /playwright/i,
+    /test\s+--?/
+  ];
+  return testPatterns.some((pattern) => pattern.test(command));
+}
+
+// src/features/blitzkrieg/blitzkrieg-planner.ts
+var DEFAULT_PLANNER_CONSTRAINT_CONFIG = {
+  requireTestStep: true,
+  requireVerificationStep: true,
+  maxImplementationStepComplexity: 3,
+  enforceComplexitySeverity: "block",
+  enforceStructureSeverity: "block"
+};
+function createPlanningStep(id, description, type, complexity = 1, dependencies = []) {
+  return {
+    id,
+    description,
+    type,
+    complexity: Math.max(1, Math.min(10, complexity)),
+    dependencies
+  };
+}
+function inferStepType(description) {
+  const lowerDesc = description.toLowerCase();
+  const verificationKeywords = [
+    "verify implementation",
+    "validate results",
+    "review code",
+    "approve",
+    "confirm",
+    "verify",
+    "validate",
+    "check",
+    "review"
+  ];
+  const planningKeywords = ["plan architecture", "design solution", "plan", "design", "architect", "outline"];
+  const testKeywords = ["test", "spec", "assert", "mock", "stub"];
+  if (verificationKeywords.some((kw) => lowerDesc.includes(kw))) {
+    return "verification";
+  }
+  if (planningKeywords.some((kw) => lowerDesc.includes(kw))) {
+    return "planning";
+  }
+  if (testKeywords.some((kw) => lowerDesc.includes(kw))) {
+    return "test";
+  }
+  return "implementation";
+}
+function estimateComplexity(description) {
+  const lowerDesc = description.toLowerCase();
+  let complexity = 1;
+  const complexityKeywords = {
+    simple: 1,
+    basic: 1,
+    add: 2,
+    create: 2,
+    implement: 2,
+    modify: 2,
+    update: 2,
+    refactor: 3,
+    restructure: 3,
+    reorganize: 3,
+    integrate: 4,
+    complex: 4,
+    difficult: 5,
+    "multi-file": 4,
+    "cross-module": 5,
+    very: 3,
+    extremely: 4
+  };
+  for (const [keyword, value] of Object.entries(complexityKeywords)) {
+    if (lowerDesc.includes(keyword)) {
+      complexity = Math.max(complexity, value);
+    }
+  }
+  const wordCount = description.split(/\s+/).length;
+  if (wordCount > 10)
+    complexity += 1;
+  if (wordCount > 20)
+    complexity += 1;
+  if (wordCount > 30)
+    complexity += 1;
+  return Math.min(10, complexity);
+}
+function mapSeverity(severity) {
+  switch (severity) {
+    case "block":
+      return "error";
+    case "warn":
+      return "warning";
+    default:
+      return "warning";
+  }
+}
+function checkPlanningConstraints(steps, config2 = DEFAULT_PLANNER_CONSTRAINT_CONFIG) {
+  const violations = [];
+  const hasTestStep = steps.some((s) => s.type === "test");
+  const hasVerificationStep = steps.some((s) => s.type === "verification");
+  const implementationSteps = steps.filter((s) => s.type === "implementation");
+  if (config2.requireTestStep && implementationSteps.length > 0 && !hasTestStep) {
+    violations.push({
+      type: "missing-test-step",
+      taskId: "plan",
+      severity: mapSeverity(config2.enforceStructureSeverity),
+      message: "Plan contains implementation steps but no test step"
+    });
+  }
+  if (config2.requireVerificationStep && implementationSteps.length > 0 && !hasVerificationStep) {
+    violations.push({
+      type: "missing-verification",
+      taskId: "plan",
+      severity: mapSeverity(config2.enforceStructureSeverity),
+      message: "Plan contains implementation steps but no verification step"
+    });
+  }
+  let complexityValid = true;
+  for (const step of implementationSteps) {
+    if (step.complexity > config2.maxImplementationStepComplexity) {
+      violations.push({
+        type: "excessive-complexity",
+        taskId: step.id,
+        severity: mapSeverity(config2.enforceComplexitySeverity),
+        message: `Step "${step.description}" has complexity ${step.complexity}, exceeding maximum of ${config2.maxImplementationStepComplexity}`
+      });
+      complexityValid = false;
+    }
+  }
+  return {
+    hasTestStep,
+    hasVerificationStep,
+    complexityValid,
+    violations
+  };
+}
+function generatePlanningComplianceReport(steps, config2 = DEFAULT_PLANNER_CONSTRAINT_CONFIG) {
+  const check = checkPlanningConstraints(steps, config2);
+  const suggestions = [];
+  if (!check.hasTestStep && config2.requireTestStep) {
+    suggestions.push("Add test steps to verify the implementation works correctly");
+  }
+  if (!check.hasVerificationStep && config2.requireVerificationStep) {
+    suggestions.push("Add a verification step to ensure quality before completion");
+  }
+  for (const violation of check.violations) {
+    if (violation.type === "excessive-complexity") {
+      suggestions.push(`Break down complex step "${violation.taskId}" into smaller, more manageable tasks`);
+    }
+  }
+  const stats = calculatePlanningStepStatistics(steps);
+  const complexityScore = calculateComplexityScore(stats);
+  return {
+    compliant: check.violations.filter((v) => v.severity === "error").length === 0,
+    steps,
+    violations: check.violations,
+    suggestions,
+    complexityScore
+  };
+}
+function calculatePlanningStepStatistics(steps) {
+  const stats = {
+    totalSteps: steps.length,
+    implementationSteps: 0,
+    testSteps: 0,
+    verificationSteps: 0,
+    planningSteps: 0,
+    averageComplexity: 0,
+    maxComplexity: 0
+  };
+  if (steps.length === 0) {
+    return stats;
+  }
+  for (const step of steps) {
+    switch (step.type) {
+      case "implementation":
+        stats.implementationSteps++;
+        break;
+      case "test":
+        stats.testSteps++;
+        break;
+      case "verification":
+        stats.verificationSteps++;
+        break;
+      case "planning":
+        stats.planningSteps++;
+        break;
+    }
+    stats.maxComplexity = Math.max(stats.maxComplexity, step.complexity);
+  }
+  const totalComplexity = steps.reduce((sum, s) => sum + s.complexity, 0);
+  stats.averageComplexity = totalComplexity / steps.length;
+  return stats;
+}
+function calculateComplexityScore(stats) {
+  let score = 100;
+  if (stats.averageComplexity > 5) {
+    score -= (stats.averageComplexity - 5) * 10;
+  }
+  if (stats.maxComplexity > 7) {
+    score -= (stats.maxComplexity - 7) * 5;
+  }
+  const hasTests = stats.testSteps > 0;
+  const hasVerification = stats.verificationSteps > 0;
+  const hasPlanning = stats.planningSteps > 0;
+  if (hasTests)
+    score += 5;
+  if (hasVerification)
+    score += 5;
+  if (hasPlanning)
+    score += 5;
+  return Math.max(0, Math.min(100, score));
+}
+
+// src/hooks/blitzkrieg-planner-constraints/index.ts
+var planningStore = {};
+function clearPlanning(sessionId) {
+  delete planningStore[sessionId];
+}
+function getBlitzkriegConfig4(input) {
+  const config2 = input.config;
+  return config2?.blitzkrieg;
+}
+function isPlanningOperation(toolName, args) {
+  if (toolName === "todowrite") {
+    return true;
+  }
+  if (toolName === "task") {
+    return true;
+  }
+  if (args?.prompt?.includes("plan")) {
+    return true;
+  }
+  return false;
+}
+function extractPlanningSteps(args) {
+  const todos = args?.todos;
+  if (!todos || !Array.isArray(todos)) {
+    return [];
+  }
+  return todos.map((t) => t.content || "");
+}
+function createBlitzkriegPlannerConstraintsHook(input) {
+  return {
+    "tool.execute.before": async (toolInput, toolOutput) => {
+      const blitzkriegConfig = getBlitzkriegConfig4(input);
+      if (!blitzkriegConfig?.enabled) {
+        return;
+      }
+      const toolName = toolInput.tool;
+      const sessionId = toolInput.sessionID;
+      if (!isPlanningOperation(toolName, toolOutput)) {
+        return;
+      }
+      const plannerConfig = blitzkriegConfig.plannerConstraints;
+      if (!plannerConfig.requireTestStep && !plannerConfig.requireVerificationStep) {
+        return;
+      }
+      const args = toolOutput;
+      const stepDescriptions = extractPlanningSteps(args);
+      if (stepDescriptions.length === 0) {
+        return;
+      }
+      const steps = stepDescriptions.map((desc, index) => createPlanningStep(`${sessionId}-step-${index}`, desc, inferStepType(desc), estimateComplexity(desc)));
+      planningStore[sessionId] = { steps };
+      const check = checkPlanningConstraints(steps, {
+        requireTestStep: plannerConfig.requireTestStep,
+        requireVerificationStep: plannerConfig.requireVerificationStep,
+        maxImplementationStepComplexity: plannerConfig.maxImplementationStepComplexity,
+        enforceComplexitySeverity: "block",
+        enforceStructureSeverity: "block"
+      });
+      const blockingViolations = check.violations.filter((v) => v.severity === "error");
+      if (blockingViolations.length > 0) {
+        const report = generatePlanningComplianceReport(steps, {
+          requireTestStep: plannerConfig.requireTestStep,
+          requireVerificationStep: plannerConfig.requireVerificationStep,
+          maxImplementationStepComplexity: plannerConfig.maxImplementationStepComplexity,
+          enforceComplexitySeverity: "block",
+          enforceStructureSeverity: "block"
+        });
+        const violationsMsg = blockingViolations.map((v) => `- [${v.severity}] ${v.type}: ${v.message}`).join(`
+`);
+        const suggestionsMsg = report.suggestions.map((s) => `- ${s}`).join(`
+`);
+        throw new Error(`Blitzkrieg Planner Constraint Violation:
+
+${violationsMsg}
+
+Suggestions:
+${suggestionsMsg}`);
+      }
+      const warningViolations = check.violations.filter((v) => v.severity === "warning");
+      if (warningViolations.length > 0) {
+        const warningsMsg = warningViolations.map((v) => `- [${v.severity}] ${v.type}: ${v.message}`).join(`
+`);
+        console.warn(`Blitzkrieg Planner Warnings:
+${warningsMsg}`);
+      }
+    },
+    "tool.execute.after": async (toolInput, toolOutput) => {
+      const toolName = toolInput.tool;
+      if (toolName === "todowrite") {
+        const args = toolOutput;
+        const todos = args?.todos;
+        const allCompleted = todos?.every((t) => t.status === "completed" || t.status === "cancelled");
+        if (allCompleted && todos && todos.length > 0) {
+          const sessionId = toolInput.sessionID;
+          clearPlanning(sessionId);
+        }
+      }
+    }
+  };
+}
+
 // src/features/mcp/websearch.ts
 import { tool as tool12 } from "@opencode-ai/plugin";
 
@@ -13274,7 +16596,7 @@ class RateLimiter {
       const oldestRequest = this.requests[0];
       const waitTime = this.windowMs - (now - oldestRequest);
       if (waitTime > 0) {
-        await new Promise((resolve) => setTimeout(resolve, waitTime));
+        await new Promise((resolve2) => setTimeout(resolve2, waitTime));
       }
     }
     this.requests.push(now);
@@ -13603,12 +16925,12 @@ async function searchDocumentation(query, options = {}) {
     throw error;
   }
 }
-async function getDocumentation(library, path10, options = {}) {
+async function getDocumentation(library, path12, options = {}) {
   const apiKey = currentConfig2.apiKey || process.env.CONTEXT7_API_KEY;
   if (!apiKey) {
     throw new Error("CONTEXT7_API_KEY is required for documentation lookup. Please set the environment variable.");
   }
-  const cacheKey = `doc:${library}:${path10}:${options.version || "latest"}`;
+  const cacheKey = `doc:${library}:${path12}:${options.version || "latest"}`;
   try {
     return await getCachedOrFetch(cacheKey, async () => {
       await context7RateLimiter.waitIfNeeded();
@@ -13621,7 +16943,7 @@ async function getDocumentation(library, path10, options = {}) {
         },
         body: JSON.stringify({
           library,
-          path: path10,
+          path: path12,
           version: options.version,
           maxTokens: options.maxTokens ?? currentConfig2.maxTokens ?? DEFAULT_MAX_TOKENS
         }),
@@ -13834,7 +17156,7 @@ async function searchGitHubCode(query, options = {}) {
     throw error;
   }
 }
-async function getGitHubFile(owner, repo, path10, options = {}) {
+async function getGitHubFile(owner, repo, path12, options = {}) {
   const githubToken = currentConfig3.githubToken || process.env.GITHUB_TOKEN;
   try {
     await githubRateLimiter.waitIfNeeded();
@@ -13845,7 +17167,7 @@ async function getGitHubFile(owner, repo, path10, options = {}) {
     if (githubToken) {
       headers["Authorization"] = `token ${githubToken}`;
     }
-    const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/contents/${path10}${options.ref ? `?ref=${options.ref}` : ""}`;
+    const url = `${GITHUB_API_BASE_URL}/repos/${owner}/${repo}/contents/${path12}${options.ref ? `?ref=${options.ref}` : ""}`;
     const response = await fetch(url, {
       method: "GET",
       headers,
@@ -13853,7 +17175,7 @@ async function getGitHubFile(owner, repo, path10, options = {}) {
     });
     if (!response.ok) {
       if (response.status === 404) {
-        throw new Error(`File not found: ${owner}/${repo}/${path10}`);
+        throw new Error(`File not found: ${owner}/${repo}/${path12}`);
       }
       if (response.status === 403) {
         const rateLimitReset = response.headers.get("X-RateLimit-Reset");
@@ -13863,8 +17185,8 @@ async function getGitHubFile(owner, repo, path10, options = {}) {
       throw new Error(`GitHub API error (${response.status}): ${errorText}`);
     }
     const content = await response.text();
-    const language = inferLanguageFromPath(path10);
-    const fileUrl = `https://github.com/${owner}/${repo}/blob/${options.ref || "main"}/${path10}`;
+    const language = inferLanguageFromPath(path12);
+    const fileUrl = `https://github.com/${owner}/${repo}/blob/${options.ref || "main"}/${path12}`;
     return {
       content,
       url: fileUrl,
@@ -13880,8 +17202,8 @@ async function getGitHubFile(owner, repo, path10, options = {}) {
     throw error;
   }
 }
-function inferLanguageFromPath(path10) {
-  const ext = path10.split(".").pop()?.toLowerCase();
+function inferLanguageFromPath(path12) {
+  const ext = path12.split(".").pop()?.toLowerCase();
   const languageMap = {
     ts: "TypeScript",
     tsx: "TypeScript",
@@ -14013,22 +17335,22 @@ var grepAppMCP = {
 
 // src/features/mcp/kratos.ts
 import { spawn as spawn2 } from "child_process";
-import * as path10 from "path";
-import * as os7 from "os";
-import * as fs8 from "fs";
+import * as path12 from "path";
+import * as os10 from "os";
+import * as fs11 from "fs";
 import { tool as tool15 } from "@opencode-ai/plugin";
 var z15 = tool15.schema;
 var kratosProcess = null;
 var requestId = 0;
 var pendingRequests = new Map;
-var KRATOS_STORAGE_PATH = path10.join(os7.homedir(), ".kratos");
+var KRATOS_STORAGE_PATH = path12.join(os10.homedir(), ".kratos");
 async function initializeKratos() {
   if (kratosProcess) {
     console.log("[Kratos MCP] Already initialized");
     return;
   }
-  if (!fs8.existsSync(KRATOS_STORAGE_PATH)) {
-    fs8.mkdirSync(KRATOS_STORAGE_PATH, { recursive: true });
+  if (!fs11.existsSync(KRATOS_STORAGE_PATH)) {
+    fs11.mkdirSync(KRATOS_STORAGE_PATH, { recursive: true });
   }
   kratosProcess = spawn2("npx", ["--yes", "kratos-mcp@latest"], {
     stdio: ["pipe", "pipe", "pipe"],
@@ -14090,8 +17412,8 @@ async function sendKratosRequest(method, params = {}) {
     throw new Error("Kratos MCP not initialized. Call initializeKratos() first.");
   }
   const id = ++requestId;
-  return new Promise((resolve, reject) => {
-    pendingRequests.set(id, { resolve, reject });
+  return new Promise((resolve2, reject) => {
+    pendingRequests.set(id, { resolve: resolve2, reject });
     const request = {
       jsonrpc: "2.0",
       id,
@@ -14106,7 +17428,7 @@ async function sendKratosRequest(method, params = {}) {
       pendingRequests.delete(id);
       reject(new Error("Kratos MCP request timeout"));
     }, 30000);
-    const originalResolve = resolve;
+    const originalResolve = resolve2;
     const wrappedResolve = (value) => {
       clearTimeout(timeout);
       originalResolve(value);
@@ -15642,7 +18964,7 @@ class Protocol {
           return;
         }
         const pollInterval = task2.pollInterval ?? this._options?.defaultTaskPollInterval ?? 1000;
-        await new Promise((resolve) => setTimeout(resolve, pollInterval));
+        await new Promise((resolve2) => setTimeout(resolve2, pollInterval));
         options?.signal?.throwIfAborted();
       }
     } catch (error) {
@@ -15654,7 +18976,7 @@ class Protocol {
   }
   request(request, resultSchema, options) {
     const { relatedRequestId, resumptionToken, onresumptiontoken, task, relatedTask } = options ?? {};
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       const earlyReject = (error) => {
         reject(error);
       };
@@ -15732,7 +19054,7 @@ class Protocol {
           if (!parseResult.success) {
             reject(parseResult.error);
           } else {
-            resolve(parseResult.data);
+            resolve2(parseResult.data);
           }
         } catch (error) {
           reject(error);
@@ -15923,12 +19245,12 @@ class Protocol {
         interval = task.pollInterval;
       }
     } catch {}
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       if (signal.aborted) {
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
         return;
       }
-      const timeoutId = setTimeout(resolve, interval);
+      const timeoutId = setTimeout(resolve2, interval);
       signal.addEventListener("abort", () => {
         clearTimeout(timeoutId);
         reject(new McpError(ErrorCode.InvalidRequest, "Request cancelled"));
@@ -16707,7 +20029,7 @@ class StdioClientTransport {
     if (this._process) {
       throw new Error("StdioClientTransport already started! If using Client class, note that connect() calls start() automatically.");
     }
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve2, reject) => {
       this._process = import_cross_spawn.default(this._serverParams.command, this._serverParams.args ?? [], {
         env: {
           ...getDefaultEnvironment(),
@@ -16723,7 +20045,7 @@ class StdioClientTransport {
         this.onerror?.(error);
       });
       this._process.on("spawn", () => {
-        resolve();
+        resolve2();
       });
       this._process.on("close", (_code) => {
         this._process = undefined;
@@ -16770,20 +20092,20 @@ class StdioClientTransport {
     if (this._process) {
       const processToClose = this._process;
       this._process = undefined;
-      const closePromise = new Promise((resolve) => {
+      const closePromise = new Promise((resolve2) => {
         processToClose.once("close", () => {
-          resolve();
+          resolve2();
         });
       });
       try {
         processToClose.stdin?.end();
       } catch {}
-      await Promise.race([closePromise, new Promise((resolve) => setTimeout(resolve, 2000).unref())]);
+      await Promise.race([closePromise, new Promise((resolve2) => setTimeout(resolve2, 2000).unref())]);
       if (processToClose.exitCode === null) {
         try {
           processToClose.kill("SIGTERM");
         } catch {}
-        await Promise.race([closePromise, new Promise((resolve) => setTimeout(resolve, 2000).unref())]);
+        await Promise.race([closePromise, new Promise((resolve2) => setTimeout(resolve2, 2000).unref())]);
       }
       if (processToClose.exitCode === null) {
         try {
@@ -16794,15 +20116,15 @@ class StdioClientTransport {
     this._readBuffer.clear();
   }
   send(message) {
-    return new Promise((resolve) => {
+    return new Promise((resolve2) => {
       if (!this._process?.stdin) {
         throw new Error("Not connected");
       }
       const json = serializeMessage(message);
       if (this._process.stdin.write(json)) {
-        resolve();
+        resolve2();
       } else {
-        this._process.stdin.once("drain", resolve);
+        this._process.stdin.once("drain", resolve2);
       }
     });
   }
@@ -17061,18 +20383,26 @@ var builtinTools = {
 var createOpenCodeXPlugin = async (input) => {
   const config2 = input.config || {};
   const hooks = [];
+  console.log("[kraken-code] Initializing plugin...");
+  const modeHooks = createModeHooks(input, config2.modes);
+  Object.assign(hooks, modeHooks);
+  const sessionStorageHooks = createSessionStorageHook(input, config2.claudeCodeCompatibility?.dataStorage);
+  Object.assign(hooks, sessionStorageHooks);
+  const claudeCodeHooks = createClaudeCodeHooks(input, config2.claudeCodeCompatibility);
+  Object.assign(hooks, claudeCodeHooks);
   hooks.push({ tool: builtinTools });
   hooks.push({
-    config: async (config3) => {
-      if (!config3.agent)
-        config3.agent = {};
+    config: async (newConfig) => {
+      console.log("[kraken-code] Configuration updated");
+      if (!newConfig.agent)
+        newConfig.agent = {};
       const agents = getSeaThemedAgents();
       for (const [name, agentConfig] of Object.entries(agents)) {
-        if (!config3.agent[name])
-          config3.agent[name] = agentConfig;
+        if (!newConfig.agent[name])
+          newConfig.agent[name] = agentConfig;
       }
-      if (!config3.default_agent && config3.agent["Kraken"])
-        config3.default_agent = "Kraken";
+      if (!newConfig.default_agent && newConfig.agent["Kraken"])
+        newConfig.default_agent = "Kraken";
       try {
         await initializeCommandLoader();
         console.log("[kraken-code] Command loader initialized");
@@ -17091,7 +20421,7 @@ var createOpenCodeXPlugin = async (input) => {
       } catch (e) {
         console.error("[kraken-code] Error initializing Kratos:", e);
       }
-      const mcpConfig = config3.mcp || {};
+      const mcpConfig = newConfig.mcp || {};
       try {
         await initializeAllMcpServers(mcpConfig);
         console.log("[kraken-code] MCP servers initialized");
@@ -17101,9 +20431,11 @@ var createOpenCodeXPlugin = async (input) => {
     }
   });
   try {
+    hooks.push(createThinkModeHook(input));
     hooks.push({ tool: createBackgroundAgentFeature(input).tools });
     hooks.push(createContextWindowMonitorHook(input));
     hooks.push(createRalphLoopHook(input));
+    hooks.push(createContextInjector(input));
     hooks.push(createKeywordDetector(input));
     hooks.push(createAutoSlashCommand(input));
     hooks.push(createRulesInjector(input));
@@ -17113,34 +20445,33 @@ var createOpenCodeXPlugin = async (input) => {
     hooks.push(createCompactionContextInjector(input));
     hooks.push(createDirectoryAgentsInjector(input));
     hooks.push(createDirectoryReadmeInjector(input));
+    hooks.push(createEditErrorRecovery(input));
+    hooks.push(createEmptyTaskResponseDetectorHook(input));
     hooks.push(createInteractiveBashSession(input));
     hooks.push(createNonInteractiveEnv(input));
     hooks.push(createPreemptiveCompaction(input));
+    hooks.push(createSessionRecovery(input));
     hooks.push(createThinkingBlockValidator(input));
     hooks.push(createCommentChecker(input));
+    hooks.push(createBlitzkriegTestPlanEnforcerHook(input));
+    hooks.push(createBlitzkriegTddWorkflowHook(input));
+    hooks.push(createBlitzkriegEvidenceVerifierHook(input));
+    hooks.push(createBlitzkriegPlannerConstraintsHook(input));
+    hooks.push(createGrepOutputTruncatorHook(input));
+    hooks.push(createNotificationsHook(input));
   } catch (e) {
     console.error("Kraken Code: Error initializing hooks", e);
   }
   hooks.push({
-    "tool.execute.after": async (input2, output) => {
-      if (!output.output)
+    "tool.execute.after": async (hookInput, hookOutput) => {
+      if (!hookOutput.output)
         return;
-      const { tool: tool16, sessionID } = input2;
-      if (output.output && output.output.toolOutput) {
-        await recordToolUse(sessionID, tool16, output.output.toolInput, output.output.toolOutput);
+      const { tool: tool16, sessionID } = hookInput;
+      if (hookOutput.output && hookOutput.output.toolOutput) {
+        await recordToolUse2(sessionID, tool16, hookOutput.output.toolInput, hookOutput.output.toolOutput);
       }
       if (sessionID) {
         console.log(`[storage-hooks] Tool ${tool16} completed for session ${sessionID}`);
-      }
-    }
-  });
-  hooks.push({
-    config: async (config3) => {
-      const mcpConfig = config3.mcp || {};
-      try {
-        await initializeAllMcpServers(mcpConfig);
-      } catch (e) {
-        console.error("Kraken Code: Error initializing MCP servers", e);
       }
     }
   });
@@ -17152,7 +20483,9 @@ var createOpenCodeXPlugin = async (input) => {
       console.error("Kraken Code: Error shutting down services", e);
     }
   });
-  return mergeHooks(...hooks);
+  const mergedHooks = mergeHooks(...hooks);
+  console.log("[kraken-code] Plugin initialized with", Object.keys(mergedHooks).length, "hooks");
+  return mergedHooks;
 };
 var src_default = createOpenCodeXPlugin;
 export {

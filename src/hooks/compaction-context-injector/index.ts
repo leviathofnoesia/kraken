@@ -1,4 +1,4 @@
-import type { Hooks } from "@opencode-ai/plugin"
+import type { Hooks, PluginInput } from "@opencode-ai/plugin"
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { Part } from "@opencode-ai/sdk"
 
@@ -21,10 +21,9 @@ export function createCompactionContextInjector(
   const config = options?.config ?? { enabled: true }
 
   return {
-    "chat.message": async (input, output) => {
+    // FIXED: Using proper OpenCode hooks instead of chat.message
+    "message.updated": async (input, output) => {
       if (!config.enabled) return
-      const text = getTextFromParts(output.parts)
-      if (!text) return
       console.log("[compaction-context-injector] Processing message before compaction")
     },
     "experimental.session.compacting": async (input, output) => {

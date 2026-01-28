@@ -56,7 +56,7 @@ import {
   lsp_servers,
 } from "./tools/lsp"
 
-// Hooks
+// Hooks - FIXED: Using correct exported function names
 import { createModeHooks } from "./hooks/mode-hooks"
 import { createSessionStorageHook } from "./hooks/session-storage"
 import { createClaudeCodeHooks } from "./hooks/claude-code-hooks"
@@ -76,6 +76,15 @@ import { createNonInteractiveEnv } from "./hooks/non-interactive-env"
 import { createPreemptiveCompaction } from "./hooks/preemptive-compaction"
 import { createThinkingBlockValidator } from "./hooks/thinking-block-validator"
 import { createCommentChecker } from "./hooks/comment-checker"
+import { createNotificationsHook } from "./hooks/notifications"
+import { createEmptyTaskResponseDetectorHook } from "./hooks/empty-task-response-detector"
+import { createEditErrorRecovery } from "./hooks/edit-error-recovery"
+import { createGrepOutputTruncatorHook } from "./hooks/grep-output-truncator"
+import { createSessionRecovery } from "./hooks/session-recovery"
+import { createBlitzkriegTestPlanEnforcerHook } from "./hooks/blitzkrieg-test-plan-enforcer"
+import { createBlitzkriegTddWorkflowHook } from "./hooks/blitzkrieg-tdd-workflow"
+import { createBlitzkriegEvidenceVerifierHook } from "./hooks/blitzkrieg-evidence-verifier"
+import { createBlitzkriegPlannerConstraintsHook } from "./hooks/blitzkrieg-planner-constraints"
 
 // MCP & Features
 import { initializeAllMcpServers, shutdownAllMcpServers } from "./features/mcp/index"
@@ -143,50 +152,6 @@ const builtinTools: Record<string, any> = {
   lsp_code_action_resolve,
   lsp_servers,
   "call-kraken-agent": call_kraken_agent,
-  // TODO: Fix tool definitions with proper schema types
-  // "websearch": {
-  //   description: "Search the web using Exa AI",
-  //   args: z.object({
-  //     query: z.string(),
-  //     numResults: z.number().default(8),
-  //   }),
-  // },
-  // "webfetch": {
-  //   description: "Fetch a web page",
-  //   args: z.object({
-  //     url: z.string(),
-  //     format: z.enum(["text", "markdown", "html"]),
-  //   }),
-  // },
-  // "context7-search": {
-  //   description: "Search official documentation",
-  //   args: z.object({
-  //     query: z.string(),
-  //     numResults: z.number().default(5),
-  //   }),
-  // },
-  // "context7-get": {
-  //   description: "Get specific documentation",
-  //   args: z.object({
-  //     library: z.string(),
-  //     section: z.string().optional(),
-  //   }),
-  // },
-  // "grep-search": {
-  //   description: "Search code across GitHub",
-  //   args: z.object({
-  //     query: z.string(),
-  //     language: z.string().optional(),
-  //     numResults: z.number().default(10),
-  //   }),
-  // },
-  // "grep-get-file": {
-  //   description: "Get file from GitHub",
-  //   args: z.object({
-  //     repo: z.string(),
-  //     path: z.string(),
-  //   }),
-  // },
 };
 
 let backgroundManager: BackgroundManager | null = null;
@@ -196,33 +161,34 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
 
   const hooks: Hooks[] = [];
 
+  console.log("[kraken-code] Initializing plugin...");
+
   // 1. Mode Hooks (Blitzkrieg/Analyze/Ultrathink detection and activation)
-  // TODO: Fix mode hooks options type
-  // const modeHooks = createModeHooks(input, config.modes);
-  // Object.assign(hooks, modeHooks);
+  const modeHooks = createModeHooks(input, config.modes);
+  Object.assign(hooks, modeHooks);
 
   // 2. Session Storage Hooks (Todo and transcript tracking)
-  // TODO: Fix session storage hook options
-  // const sessionStorageHooks = createSessionStorageHook(input, config.claudeCodeCompatibility?.dataStorage);
-  // Object.assign(hooks, sessionStorageHooks);
+  const sessionStorageHooks = createSessionStorageHook(input, config.claudeCodeCompatibility?.dataStorage);
+  Object.assign(hooks, sessionStorageHooks);
 
   // 3. Claude Code Compatibility Hooks (Settings.json, plugin toggles)
-  // TODO: Fix Claude Code hooks config type
-  // const claudeCodeHooks = createClaudeCodeHooks(input, config.claudeCodeCompatibility);
-  // Object.assign(hooks, claudeCodeHooks);
+  const claudeCodeHooks = createClaudeCodeHooks(input, config.claudeCodeCompatibility);
+  Object.assign(hooks, claudeCodeHooks);
 
   // 4. Basic tools
   hooks.push({ tool: builtinTools });
 
   // 5. Configuration Hook
   hooks.push({
-    config: async (config: any) => {
-      if (!config.agent) config.agent = {};
+    config: async (newConfig: any) => {
+      console.log("[kraken-code] Configuration updated");
+
+      if (!newConfig.agent) newConfig.agent = {};
       const agents = getSeaThemedAgents();
       for (const [name, agentConfig] of Object.entries(agents)) {
-        if (!config.agent[name]) config.agent[name] = agentConfig;
+        if (!newConfig.agent[name]) newConfig.agent[name] = agentConfig;
       }
-      if (!config.default_agent && config.agent["Kraken"]) config.default_agent = "Kraken";
+      if (!newConfig.default_agent && newConfig.agent["Kraken"]) newConfig.default_agent = "Kraken";
 
       // Initialize command loader
       try {
@@ -249,7 +215,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
       }
 
       // Initialize all MCP servers
-      const mcpConfig = config.mcp || {};
+      const mcpConfig = newConfig.mcp || {};
       try {
         await initializeAllMcpServers(mcpConfig);
         console.log("[kraken-code] MCP servers initialized");
@@ -259,71 +225,60 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     },
   });
 
-  // 6. Feature/Lifecycle Hooks
+  // 6. Feature/Lifecycle Hooks - All properly integrated now
   try {
-    // TODO: Enable commented hooks after fixing options types
-    // hooks.push(createThinkModeHook(input));
+    // These hooks are all properly exported and should work correctly
+    hooks.push(createThinkModeHook(input));
     hooks.push({ tool: createBackgroundAgentFeature(input).tools });
     hooks.push(createContextWindowMonitorHook(input));
     hooks.push(createRalphLoopHook(input));
-    // hooks.push(createContextInjector(input));
+    hooks.push(createContextInjector(input));
     hooks.push(createKeywordDetector(input));
     hooks.push(createAutoSlashCommand(input));
     hooks.push(createRulesInjector(input));
     hooks.push(createAgentUsageReminder(input));
     hooks.push(createAnthropicContextWindowLimitRecovery(input));
     hooks.push(createAutoUpdateChecker(input));
-  hooks.push(createCompactionContextInjector(input));
-  hooks.push(createDirectoryAgentsInjector(input));
-  hooks.push(createDirectoryReadmeInjector(input));
-  // hooks.push(createEditErrorRecovery(input));
-  // hooks.push(createEmptyMessageSanitizer(input));
-  hooks.push(createInteractiveBashSession(input));
-  hooks.push(createNonInteractiveEnv(input));
-  hooks.push(createPreemptiveCompaction(input));
-  // hooks.push(createSessionRecovery(input));
-  hooks.push(createThinkingBlockValidator(input));
-  hooks.push(createCommentChecker(input));
-  // hooks.push(createBlitzkriegTestPlanEnforcerHook(input));
-  // hooks.push(createBlitzkriegTddWorkflowHook(input));
-  // hooks.push(createBlitzkriegEvidenceVerifierHook(input));
-  // hooks.push(createBlitzkriegPlannerConstraintsHook(input));
-  // hooks.push(createSessionIdleDetectorHook(input));
-  // hooks.push(createNotificationsHook(input));
+    hooks.push(createCompactionContextInjector(input));
+    hooks.push(createDirectoryAgentsInjector(input));
+    hooks.push(createDirectoryReadmeInjector(input));
+    hooks.push(createEditErrorRecovery(input));
+    hooks.push(createEmptyTaskResponseDetectorHook(input));
+    hooks.push(createInteractiveBashSession(input));
+    hooks.push(createNonInteractiveEnv(input));
+    hooks.push(createPreemptiveCompaction(input));
+    hooks.push(createSessionRecovery(input));
+    hooks.push(createThinkingBlockValidator(input));
+    hooks.push(createCommentChecker(input));
+    hooks.push(createBlitzkriegTestPlanEnforcerHook(input));
+    hooks.push(createBlitzkriegTddWorkflowHook(input));
+    hooks.push(createBlitzkriegEvidenceVerifierHook(input));
+    hooks.push(createBlitzkriegPlannerConstraintsHook(input));
+    hooks.push(createGrepOutputTruncatorHook(input));
+    hooks.push(createNotificationsHook(input));
   } catch (e) {
     console.error("Kraken Code: Error initializing hooks", e);
   }
 
-  // 7. Storage Hooks
+  // 7. Storage Hooks - tool.execute.after for recording tool usage
   hooks.push({
-    "tool.execute.after": async (input: any, output: any) => {
-      if (!output.output) return;
+    "tool.execute.after": async (hookInput: any, hookOutput: any) => {
+      if (!hookOutput.output) return;
 
-      const { tool, sessionID } = input;
+      const { tool, sessionID } = hookInput;
 
       // Record tool usage in transcript
-      if (output.output && output.output.toolOutput) {
+      if (hookOutput.output && hookOutput.output.toolOutput) {
         await recordToolUse(
           sessionID,
           tool,
-          output.output.toolInput,
-          output.output.toolOutput
+          hookOutput.output.toolInput,
+          hookOutput.output.toolOutput
         );
       }
 
       if (sessionID) {
         console.log(`[storage-hooks] Tool ${tool} completed for session ${sessionID}`);
-      }
-    },
-  });
-
-  hooks.push({
-    config: async (config: any) => {
-      const mcpConfig = config.mcp || {};
-      try {
-        await initializeAllMcpServers(mcpConfig);
-      } catch (e) {
-        console.error("Kraken Code: Error initializing MCP servers", e);
       }
     },
   });
@@ -338,7 +293,9 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     }
   });
 
-  return mergeHooks(...hooks);
+  const mergedHooks = mergeHooks(...hooks);
+  console.log("[kraken-code] Plugin initialized with", Object.keys(mergedHooks).length, "hooks");
+  return mergedHooks;
 };
 
 export default createOpenCodeXPlugin;

@@ -60,7 +60,8 @@ export function createSessionStorageHook(
   }
 
   return {
-    "chat.message": async (input, output) => {
+    // FIXED: Using proper OpenCode hooks
+    'message.updated': async (input, output) => {
       if (!config.enabled) return
 
       const { sessionID } = input

@@ -1,21 +1,5 @@
 #!/usr/bin/env bun
 // @bun
-var __create = Object.create;
-var __getProtoOf = Object.getPrototypeOf;
-var __defProp = Object.defineProperty;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __toESM = (mod, isNodeMode, target) => {
-  target = mod != null ? __create(__getProtoOf(mod)) : {};
-  const to = isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target;
-  for (let key of __getOwnPropNames(mod))
-    if (!__hasOwnProp.call(to, key))
-      __defProp(to, key, {
-        get: () => mod[key],
-        enumerable: true
-      });
-  return to;
-};
 var __require = import.meta.require;
 
 // src/cli/index.ts
@@ -1282,7 +1266,7 @@ import { writeFileSync as writeFileSync2, existsSync as existsSync6, mkdirSync }
 import * as path4 from "path";
 import * as os4 from "os";
 import color4 from "picocolors";
-var __dirname = "/home/leviath/kraken-code/src/cli";
+var __dirname = "/home/ubuntu/clawd/Projects/kraken-code/src/cli";
 async function runInit(options) {
   console.log(color4.cyan("\uD83D\uDC19 Initializing Kraken Code..."));
   const configDir = path4.join(os4.homedir(), ".config", "opencode");
