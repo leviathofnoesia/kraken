@@ -86,7 +86,7 @@ export function createExperienceRecorderHook(
         }
 
         // Determine current state from context
-        const state = determineCurrentState(toolInput)
+        const state = determineCurrentState(toolInput, {currentState, outcome})
 
         // Create and record experience
         const experience = await experienceStore.addExperience({
