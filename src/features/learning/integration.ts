@@ -16,8 +16,11 @@ import { PatternDetector } from "./pattern-detection"
 import { StateMachineEngine } from "./state-machine"
 import { FSRScheduler } from "./fsrs-scheduler"
 
+// Import unified context type
+import type { LearningSystemContext } from "../../types/learning-context"
+
 // Import hooks
-import { createLearningHooks, type LearningSystemContext } from "../../hooks/learning"
+import { createLearningHooks } from "../../hooks/learning"
 import type { Hooks } from "@opencode-ai/plugin"
 
 // Import tools
