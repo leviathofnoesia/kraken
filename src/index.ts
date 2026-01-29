@@ -196,24 +196,42 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
 
   console.log("[kraken-code] Initializing plugin...");
 
+  // Initialize Learning System (Unified AI Memory) - must be done before config hook returns
+  let learningTools: Record<string, any> = {};
+  try {
+    const learningSystem = initializeLearningSystem(input, config.learning);
+    hooks.push(learningSystem.hooks);
+    learningTools = {
+      "learning-experience": learningSystem.tools.experienceTool,
+      "learning-knowledge": learningSystem.tools.knowledgeTool,
+      "learning-pattern": learningSystem.tools.patternTool,
+      "learning-fsm": learningSystem.tools.fsmTool,
+      "learning-stats": learningSystem.tools.statsTool
+    };
+    hooks.push({ tool: learningTools });
+    console.log("[kraken-code] Learning system initialized");
+  } catch (e) {
+    console.error("[kraken-code] Error initializing learning system:", e);
+  }
+
   // 1. Mode Hooks (Blitzkrieg/Analyze/Ultrathink detection and activation)
-  const modeHooks = createModeHooks(input, { 
+  const modeHooks = createModeHooks(input, {
     enabled: config.modes?.ultrawork?.enabled ?? true,
     autoActivate: true
   });
-  Object.assign(hooks, modeHooks);
+  hooks.push(modeHooks);
 
   // 2. Session Storage Hooks (Todo and transcript tracking)
   const sessionStorageHooks = createSessionStorageHook(input, {
     enabled: config.claudeCodeCompatibility?.dataStorage ?? true
   });
-  Object.assign(hooks, sessionStorageHooks);
+  hooks.push(sessionStorageHooks);
 
   // 3. Claude Code Compatibility Hooks (Settings.json, plugin toggles)
   const claudeCodeHooks = createClaudeCodeHooks(input, {
     config: config.claudeCodeCompatibility as any
   });
-  Object.assign(hooks, claudeCodeHooks);
+  hooks.push(claudeCodeHooks);
 
   // 4. Basic tools
   hooks.push({ tool: builtinTools });
@@ -314,24 +332,6 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         console.log("[kraken-code] MCP servers initialized");
       } catch (e) {
         console.error("[kraken-code] Error initializing MCP servers:", e);
-      }
-
-      // Initialize Learning System (Unified AI Memory)
-      try {
-        const learningSystem = initializeLearningSystem(input, newConfig.learning);
-        Object.assign(hooks, learningSystem.hooks);
-        // Convert array to object for tool registration
-        const learningTools = {
-          "learning-experience": learningSystem.tools.experienceTool,
-          "learning-knowledge": learningSystem.tools.knowledgeTool,
-          "learning-pattern": learningSystem.tools.patternTool,
-          "learning-fsm": learningSystem.tools.fsmTool,
-          "learning-stats": learningSystem.tools.statsTool
-        };
-        hooks.push({ tool: learningTools });
-        console.log("[kraken-code] Learning system initialized");
-      } catch (e) {
-        console.error("[kraken-code] Error initializing learning system:", e);
       }
     },
   });
