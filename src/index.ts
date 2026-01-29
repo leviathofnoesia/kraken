@@ -167,15 +167,22 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
   console.log("[kraken-code] Initializing plugin...");
 
   // 1. Mode Hooks (Blitzkrieg/Analyze/Ultrathink detection and activation)
-  const modeHooks = createModeHooks(input, config.modes);
+  const modeHooks = createModeHooks(input, { 
+    enabled: config.modes?.ultrawork?.enabled ?? true,
+    autoActivate: true
+  });
   Object.assign(hooks, modeHooks);
 
   // 2. Session Storage Hooks (Todo and transcript tracking)
-  const sessionStorageHooks = createSessionStorageHook(input, config.claudeCodeCompatibility?.dataStorage);
+  const sessionStorageHooks = createSessionStorageHook(input, {
+    enabled: config.claudeCodeCompatibility?.dataStorage ?? true
+  });
   Object.assign(hooks, sessionStorageHooks);
 
   // 3. Claude Code Compatibility Hooks (Settings.json, plugin toggles)
-  const claudeCodeHooks = createClaudeCodeHooks(input, config.claudeCodeCompatibility);
+  const claudeCodeHooks = createClaudeCodeHooks(input, {
+    config: config.claudeCodeCompatibility as any
+  });
   Object.assign(hooks, claudeCodeHooks);
 
   // 4. Basic tools

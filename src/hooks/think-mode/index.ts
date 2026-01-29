@@ -175,18 +175,17 @@ export function shouldActivateThinkMode(content: string): boolean {
 
 /**
  * Create think mode hook
- * FIXED: Uses correct OpenCode hooks (message.updated instead of chat.message)
- * FIXED: Uses tool.execute.before for model/variant modification instead of chat.params
+ * Uses session and tool hooks for think mode detection and activation.
  *
  * @param input - The plugin input context
  * @returns A Hooks object with think mode functionality
  */
 export function createThinkModeHook(input: PluginInput): Hooks {
   return {
-    // Hook executed for chat messages - detect think keywords
-    'message.updated': async (messageInput: any, messageOutput: any) => {
-      const { sessionID } = messageInput;
-      const parts = messageOutput?.parts || [];
+    // Detect think mode keywords in chat messages
+    'chat.message': async (chatInput: any, chatOutput: any) => {
+      const { sessionID } = chatInput;
+      const parts = chatOutput?.parts || [];
       const content = parts
         .filter((p: any) => p.type === 'text')
         .map((p: any) => p.text)
@@ -203,14 +202,9 @@ export function createThinkModeHook(input: PluginInput): Hooks {
           setSessionState(sessionID, true);
         }
       }
-
-      // Allow execution to continue
-      return;
     },
 
-    // FIXED: Hook executed to modify chat parameters - apply think mode settings
-    // Note: In OpenCode, model/variant changes should be done through tool.execute.before
-    // This is simplified for now - a proper implementation would need to intercept tool calls
+    // Hook executed to modify chat parameters - apply think mode settings
     'tool.execute.before': async (toolInput: any, toolOutput: any) => {
       const { sessionID } = toolInput;
       const { provider } = toolInput;
@@ -235,15 +229,6 @@ export function createThinkModeHook(input: PluginInput): Hooks {
 
       // Allow execution to continue
       return;
-    },
-
-    // Hook executed when session is deleted to clean up state
-    'session.deleted': async (input: any) => {
-      const { info } = input;
-      const sessionId = info?.id as string | undefined;
-      if (sessionId) {
-        clearSessionState(sessionId);
-      }
     },
   };
 }

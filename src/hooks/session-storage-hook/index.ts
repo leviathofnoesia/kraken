@@ -60,30 +60,8 @@ export function createSessionStorageHook(
   }
 
   return {
-    // FIXED: Using proper OpenCode hooks
-    'message.updated': async (input, output) => {
-      if (!config.enabled) return
-
-      const { sessionID } = input
-
-      if (!sessionID) return
-
-      if (config.recordTodos) {
-        const todo = extractTodoFromParts(output.parts)
-
-        if (todo) {
-          recordKrakenUserMessage(sessionID, `TODO: ${todo.content}`)
-        }
-      }
-
-      if (config.recordTranscripts) {
-        const text = getTextFromParts(output.parts)
-        if (text) {
-          recordKrakenAssistantMessage(sessionID, text)
-        }
-      }
-    },
-    "tool.execute.after": async (input, output) => {
+    // Record tool usage for transcripts
+    "tool.execute.after": async (input: any, output: any) => {
       if (!config.enabled) return
 
       const { tool, sessionID } = input
@@ -94,9 +72,7 @@ export function createSessionStorageHook(
         recordKrakenToolUse(sessionID, tool, {}, output.output || "")
       }
 
-      if (sessionID) {
-        console.log(`[storage-hooks] Tool ${tool} completed for session ${sessionID}`)
-      }
+      console.log(`[storage-hooks] Tool ${tool} completed for session ${sessionID}`)
     },
   }
 }

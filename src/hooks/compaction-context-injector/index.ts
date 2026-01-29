@@ -1,5 +1,4 @@
 import type { Hooks, PluginInput } from "@opencode-ai/plugin"
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { Part } from "@opencode-ai/sdk"
 
 export interface CompactionContextInjectorConfig {
@@ -21,14 +20,15 @@ export function createCompactionContextInjector(
   const config = options?.config ?? { enabled: true }
 
   return {
-    // FIXED: Using proper OpenCode hooks instead of chat.message
-    "message.updated": async (input, output) => {
+    // Use experimental.session.compacting for context injection
+    "experimental.session.compacting": async (input: any, output: any) => {
       if (!config.enabled) return
-      console.log("[compaction-context-injector] Processing message before compaction")
-    },
-    "experimental.session.compacting": async (input, output) => {
-      if (!config.enabled) return
+      
       console.log("[compaction-context-injector] Adding context for session compaction")
+      
+      // Add custom context for compaction
+      output.context = output.context || []
+      output.context.push("Include important decisions and learnings in the summary.")
     },
   }
 }
