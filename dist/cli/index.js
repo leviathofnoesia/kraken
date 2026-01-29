@@ -1271,58 +1271,61 @@ async function runInit(options) {
   console.log(color4.cyan("\uD83D\uDC19 Initializing Kraken Code..."));
   const configDir = path4.join(os4.homedir(), ".config", "opencode");
   const configPath = path4.join(configDir, "opencode.json");
+  const krakenConfigPath = path4.join(configDir, "kraken-code.json");
   if (!existsSync6(configDir)) {
     mkdirSync(configDir, { recursive: true });
   }
   const isMinimal = options.minimal;
   const isFull = options.full;
-  const defaultConfig = {
-    plugin: ["kraken-code"],
-    kraken_code: {
-      agents: {
-        default: "kraken",
-        enabled: isMinimal ? ["kraken", "atlas"] : ["kraken", "atlas", "nautilus", "abyssal", "coral", "siren", "scylla", "pearl"]
+  const opencodeConfig = {
+    plugin: ["kraken-code"]
+  };
+  const krakenConfig = {
+    agents: {
+      default: "kraken",
+      enabled: isMinimal ? ["kraken", "atlas"] : ["kraken", "atlas", "nautilus", "abyssal", "coral", "siren", "scylla", "pearl"]
+    },
+    blitzkrieg: {
+      enabled: true,
+      testPlan: {
+        requiredBeforeImplementation: !isMinimal,
+        minTestCases: 3,
+        requireCoverageThreshold: !isMinimal,
+        coverageThresholdPercent: 80
       },
-      blitzkrieg: {
-        enabled: true,
-        testPlan: {
-          requiredBeforeImplementation: !isMinimal,
-          minTestCases: 3,
-          requireCoverageThreshold: !isMinimal,
-          coverageThresholdPercent: 80
-        },
-        tddWorkflow: {
-          enforceWriteTestFirst: !isMinimal,
-          forbidCodeWithoutTest: !isMinimal,
-          allowRefactorWithoutTest: true
-        },
-        evidence: {
-          requireTestExecutionEvidence: !isMinimal,
-          requireAssertionEvidence: !isMinimal,
-          requireEdgeCaseEvidence: !isMinimal
-        },
-        plannerConstraints: {
-          requireTestStep: !isMinimal,
-          requireVerificationStep: !isMinimal,
-          maxImplementationStepComplexity: 3
-        }
+      tddWorkflow: {
+        enforceWriteTestFirst: !isMinimal,
+        forbidCodeWithoutTest: !isMinimal,
+        allowRefactorWithoutTest: true
       },
-      skills: {
-        autoLoad: true,
-        directories: [
-          path4.join(configDir, "skill"),
-          path4.join(__dirname, "../../templates/skills")
-        ]
+      evidence: {
+        requireTestExecutionEvidence: !isMinimal,
+        requireAssertionEvidence: !isMinimal,
+        requireEdgeCaseEvidence: !isMinimal
       },
-      kratos: {
-        enabled: true,
-        autoSave: true,
-        storagePath: path4.join(os4.homedir(), ".kratos")
+      plannerConstraints: {
+        requireTestStep: !isMinimal,
+        requireVerificationStep: !isMinimal,
+        maxImplementationStepComplexity: 3
       }
+    },
+    skills: {
+      autoLoad: true,
+      directories: [
+        path4.join(configDir, "skill"),
+        path4.join(__dirname, "../../templates/skills")
+      ]
+    },
+    kratos: {
+      enabled: true,
+      autoSave: true,
+      storagePath: path4.join(os4.homedir(), ".kratos")
     }
   };
-  writeFileSync2(configPath, JSON.stringify(defaultConfig, null, 2), "utf-8");
-  console.log(color4.green(`\u2713 Configuration written to ${configPath}`));
+  writeFileSync2(configPath, JSON.stringify(opencodeConfig, null, 2), "utf-8");
+  console.log(color4.green(`\u2713 OpenCode config written to ${configPath}`));
+  writeFileSync2(krakenConfigPath, JSON.stringify(krakenConfig, null, 2), "utf-8");
+  console.log(color4.green(`\u2713 Kraken Code config written to ${krakenConfigPath}`));
   await installSkillTemplates();
   console.log(color4.green(`
 \uD83C\uDF89 Kraken Code initialized!`));

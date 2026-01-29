@@ -9,6 +9,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean }) {
 
   const configDir = path.join(os.homedir(), ".config", "opencode")
   const configPath = path.join(configDir, "opencode.json")
+  const krakenConfigPath = path.join(configDir, "kraken-code.json")
 
   if (!existsSync(configDir)) {
     mkdirSync(configDir, { recursive: true })
@@ -17,56 +18,64 @@ export async function runInit(options: { minimal?: boolean; full?: boolean }) {
   const isMinimal = options.minimal
   const isFull = options.full
 
-  const defaultConfig = {
+  // OpenCode config - minimal, only plugin reference
+  const opencodeConfig = {
     plugin: ["kraken-code"],
-    kraken_code: {
-      agents: {
-        default: "kraken",
-        enabled: isMinimal
-          ? ["kraken", "atlas"]
-          : ["kraken", "atlas", "nautilus", "abyssal", "coral", "siren", "scylla", "pearl"]
+  }
+
+  // Kraken Code specific config in separate file
+  const krakenConfig = {
+    agents: {
+      default: "kraken",
+      enabled: isMinimal
+        ? ["kraken", "atlas"]
+        : ["kraken", "atlas", "nautilus", "abyssal", "coral", "siren", "scylla", "pearl"]
+    },
+    blitzkrieg: {
+      enabled: true,
+      testPlan: {
+        requiredBeforeImplementation: !isMinimal,
+        minTestCases: 3,
+        requireCoverageThreshold: !isMinimal,
+        coverageThresholdPercent: 80
       },
-      blitzkrieg: {
-        enabled: true,
-        testPlan: {
-          requiredBeforeImplementation: !isMinimal,
-          minTestCases: 3,
-          requireCoverageThreshold: !isMinimal,
-          coverageThresholdPercent: 80
-        },
-        tddWorkflow: {
-          enforceWriteTestFirst: !isMinimal,
-          forbidCodeWithoutTest: !isMinimal,
-          allowRefactorWithoutTest: true
-        },
-        evidence: {
-          requireTestExecutionEvidence: !isMinimal,
-          requireAssertionEvidence: !isMinimal,
-          requireEdgeCaseEvidence: !isMinimal
-        },
-        plannerConstraints: {
-          requireTestStep: !isMinimal,
-          requireVerificationStep: !isMinimal,
-          maxImplementationStepComplexity: 3
-        }
+      tddWorkflow: {
+        enforceWriteTestFirst: !isMinimal,
+        forbidCodeWithoutTest: !isMinimal,
+        allowRefactorWithoutTest: true
       },
-      skills: {
-        autoLoad: true,
-        directories: [
-          path.join(configDir, "skill"),
-          path.join(__dirname, "../../templates/skills")
-        ]
+      evidence: {
+        requireTestExecutionEvidence: !isMinimal,
+        requireAssertionEvidence: !isMinimal,
+        requireEdgeCaseEvidence: !isMinimal
       },
-      kratos: {
-        enabled: true,
-        autoSave: true,
-        storagePath: path.join(os.homedir(), ".kratos")
+      plannerConstraints: {
+        requireTestStep: !isMinimal,
+        requireVerificationStep: !isMinimal,
+        maxImplementationStepComplexity: 3
       }
+    },
+    skills: {
+      autoLoad: true,
+      directories: [
+        path.join(configDir, "skill"),
+        path.join(__dirname, "../../templates/skills")
+      ]
+    },
+    kratos: {
+      enabled: true,
+      autoSave: true,
+      storagePath: path.join(os.homedir(), ".kratos")
     }
   }
 
-  writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), "utf-8")
-  console.log(color.green(`✓ Configuration written to ${configPath}`))
+  // Write OpenCode config
+  writeFileSync(configPath, JSON.stringify(opencodeConfig, null, 2), "utf-8")
+  console.log(color.green(`✓ OpenCode config written to ${configPath}`))
+
+  // Write Kraken Code config separately
+  writeFileSync(krakenConfigPath, JSON.stringify(krakenConfig, null, 2), "utf-8")
+  console.log(color.green(`✓ Kraken Code config written to ${krakenConfigPath}`))
 
   // Install skill templates
   await installSkillTemplates()
