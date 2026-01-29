@@ -218,6 +218,9 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
       for (const agentName of Object.keys(newConfig.agent)) {
         const agent = newConfig.agent[agentName];
         if (agent) {
+          console.log(`[kraken-code] Sanitizing permissions for agent: ${agentName}`);
+          console.log(`[kraken-code] Before:`, JSON.stringify(agent.permission, null, 2));
+
           // Create a clean permission object with only valid keys
           const cleanPermission: Record<string, "allow" | "ask" | "deny"> = {};
 
@@ -243,6 +246,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
 
           // Replace with sanitized permission object
           agent.permission = cleanPermission;
+          console.log(`[kraken-code] After:`, JSON.stringify(agent.permission, null, 2));
         }
       }
 

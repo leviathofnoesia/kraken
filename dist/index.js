@@ -8924,10 +8924,25 @@ function supportsNewPermissionSystem() {
 }
 
 // src/shared/permission-compat.ts
+var TOOL_TO_PERMISSION_MAP = {
+  write: "edit",
+  task: "bash",
+  read: "edit",
+  edit: "edit"
+};
 function createAgentToolRestrictions(denyTools) {
   if (supportsNewPermissionSystem()) {
+    const mappedPermissions = {};
+    for (const tool of denyTools) {
+      const validKey = TOOL_TO_PERMISSION_MAP[tool];
+      if (validKey) {
+        mappedPermissions[validKey] = "deny";
+      } else {
+        console.warn(`[kraken-code] Skipping invalid permission key: ${tool}`);
+      }
+    }
     return {
-      permission: Object.fromEntries(denyTools.map((tool) => [tool, "deny"]))
+      permission: mappedPermissions
     };
   }
   return {
@@ -22712,6 +22727,8 @@ var createOpenCodeXPlugin = async (input) => {
       for (const agentName of Object.keys(newConfig.agent)) {
         const agent = newConfig.agent[agentName];
         if (agent) {
+          console.log(`[kraken-code] Sanitizing permissions for agent: ${agentName}`);
+          console.log(`[kraken-code] Before:`, JSON.stringify(agent.permission, null, 2));
           const cleanPermission = {};
           if (agent.permission && typeof agent.permission === "object") {
             for (const key of validPermissionKeys) {
@@ -22729,6 +22746,7 @@ var createOpenCodeXPlugin = async (input) => {
             }
           }
           agent.permission = cleanPermission;
+          console.log(`[kraken-code] After:`, JSON.stringify(agent.permission, null, 2));
         }
       }
       try {

@@ -12,15 +12,36 @@ export interface NewPermissionFormat {
 
 export type VersionAwareRestrictions = LegacyToolsFormat | NewPermissionFormat
 
+// Valid OpenCode permission keys according to AgentPermissionSchema
+const VALID_PERMISSION_KEYS = ["edit", "bash", "webfetch", "doom_loop", "external_directory"] as const;
+
+// Map legacy tool names to valid permission keys
+const TOOL_TO_PERMISSION_MAP: Record<string, keyof typeof VALID_PERMISSION_KEYS> = {
+  "write": "edit",
+  "task": "bash",
+  "read": "edit",
+  "edit": "edit",
+};
+
 export function createAgentToolRestrictions(
   denyTools: string[]
 ): VersionAwareRestrictions {
   if (supportsNewPermissionSystem()) {
-    return {
-      permission: Object.fromEntries(
-        denyTools.map((tool) => [tool, "deny" as const])
-      ),
+    // Map deny tools to valid permission keys
+    const mappedPermissions: Record<string, PermissionValue> = {};
+    for (const tool of denyTools) {
+      const validKey = TOOL_TO_PERMISSION_MAP[tool];
+      if (validKey) {
+        mappedPermissions[validKey] = "deny" as const;
+      } else {
+        // If tool doesn't map to a valid key, skip it
+        // Log for debugging
+        console.warn(`[kraken-code] Skipping invalid permission key: ${tool}`);
+      }
     }
+    return {
+      permission: mappedPermissions,
+    };
   }
 
   return {
