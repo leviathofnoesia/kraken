@@ -36,14 +36,31 @@ export class PatternDetector {
 
   private loadPatterns() {
     if (fs.existsSync(this.patternsPath)) {
-      const data = fs.readFileSync(this.patternsPath, "utf-8")
-      const patternsArray = JSON.parse(data) as PatternDetection[]
+      try {
+        const data = fs.readFileSync(this.patternsPath, "utf-8")
+        const patternsArray = JSON.parse(data) as PatternDetection[]
 
-      for (const pattern of patternsArray) {
-        this.patterns.set(pattern.id, pattern)
+        for (const pattern of patternsArray) {
+          this.patterns.set(pattern.id, pattern)
+        }
+
+        console.log(`[PatternDetector] Loaded ${this.patterns.size} patterns`)
+      } catch (error: any) {
+        console.error(`[PatternDetector] Failed to load patterns from ${this.patternsPath}:`, error)
+
+        // Archive corrupted file and start fresh
+        const archivePath = `${this.patternsPath}.corrupted-${Date.now()}`
+        try {
+          fs.renameSync(this.patternsPath, archivePath)
+          console.log(`[PatternDetector] Archived corrupted file to ${archivePath}`)
+        } catch (renameError: any) {
+          console.error(`[PatternDetector] Failed to archive corrupted file:`, renameError)
+        }
+
+        // Start with empty patterns
+        this.patterns = new Map()
+        console.log(`[PatternDetector] Starting with empty patterns map`)
       }
-
-      console.log(`[PatternDetector] Loaded ${this.patterns.size} patterns`)
     }
   }
 

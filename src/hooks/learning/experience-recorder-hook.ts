@@ -9,19 +9,7 @@ import type { Hooks, PluginInput } from "@opencode-ai/plugin"
 import type { ExperienceStore } from "../../features/learning/experience-store"
 import type { PatternDetector } from "../../features/learning/pattern-detection"
 import type { StateMachineEngine } from "../../features/learning/state-machine"
-
-export interface ExperienceRecorderHookOptions {
-  enabled?: boolean
-  recordOnSuccess?: boolean
-  recordOnFailure?: boolean
-  autoPatternDetection?: boolean
-}
-
-export interface LearningSystemContext {
-  experienceStore: ExperienceStore
-  patternDetector: PatternDetector
-  stateMachine: StateMachineEngine
-}
+import type { LearningSystemContext } from "../../types/learning-context"
 
 /**
  * Create the experience recorder hook

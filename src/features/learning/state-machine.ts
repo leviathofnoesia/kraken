@@ -62,6 +62,11 @@ export class StateMachineEngine {
     initialState: string,
     states: Record<string, StateDefinition>
   ): StateMachine {
+    // Validate that initialState exists in provided states
+    if (!states[initialState]) {
+      throw new Error(`Initial state '${initialState}' not found in states. Available states: ${Object.keys(states).join(", ")}`)
+    }
+
     const machine: StateMachine = {
       id,
       name,
@@ -245,7 +250,7 @@ export class StateMachineEngine {
   /**
    * Auto-detect state transition from context
    */
-  detectStateTransition(context: any): string | null {
+  async detectStateTransition(context: any): Promise<string | null> {
     if (!this.currentMachineId) {
       return null
     }
@@ -262,8 +267,13 @@ export class StateMachineEngine {
 
     if (detectedState && detectedState !== currentState) {
       // Transition automatically
-      this.transition(`auto-detect: ${detectedState}`, context)
-      return detectedState
+      try {
+        await this.transition(`auto-detect: ${detectedState}`, context)
+        return detectedState
+      } catch (error: any) {
+        console.error(`[StateMachine] Auto-transition failed:`, error)
+        return null
+      }
     }
 
     return null
@@ -309,11 +319,23 @@ export class StateMachineEngine {
       throw new Error(`State machine not found: ${machineId}`)
     }
 
+    // Validate that fromState exists in states
+    if (!machine.states[fromState]) {
+      throw new Error(`Source state '${fromState}' not found in machine states. Available states: ${Object.keys(machine.states).join(", ")}`)
+    }
+
+    // Update machine.transitions
     if (!machine.transitions[fromState]) {
       machine.transitions[fromState] = []
     }
-
     machine.transitions[fromState].push(transition)
+
+    // Update machine.states[fromState].transitions to stay in sync
+    if (!machine.states[fromState].transitions) {
+      machine.states[fromState].transitions = []
+    }
+    machine.states[fromState].transitions.push(transition)
+
     this.saveStateMachines()
   }
 

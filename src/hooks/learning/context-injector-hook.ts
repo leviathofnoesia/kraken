@@ -11,8 +11,7 @@ import type { ExperienceStore } from "../../features/learning/experience-store"
 import type { KnowledgeGraphStore } from "../../features/learning/knowledge-graph"
 import type { PatternDetector } from "../../features/learning/pattern-detection"
 import type { StateMachineEngine } from "../../features/learning/state-machine"
-
-export interface ContextInjectorHookOptions {
+import type { LearningSystemContext } from "../../types/learning-context"
   enabled?: boolean
   maxExperiences?: number
   maxPatterns?: number
