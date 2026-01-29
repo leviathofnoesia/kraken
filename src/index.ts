@@ -230,7 +230,15 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
       try {
         const learningSystem = initializeLearningSystem(input, newConfig.learning);
         Object.assign(hooks, learningSystem.hooks);
-        hooks.push({ tool: learningSystem.tools });
+        // Convert array to object for tool registration
+        const learningTools = {
+          "learning-experience": learningSystem.tools.experienceTool,
+          "learning-knowledge": learningSystem.tools.knowledgeTool,
+          "learning-pattern": learningSystem.tools.patternTool,
+          "learning-fsm": learningSystem.tools.fsmTool,
+          "learning-stats": learningSystem.tools.statsTool
+        };
+        hooks.push({ tool: learningTools });
         console.log("[kraken-code] Learning system initialized");
       } catch (e) {
         console.error("[kraken-code] Error initializing learning system:", e);

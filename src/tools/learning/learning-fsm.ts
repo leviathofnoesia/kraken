@@ -9,9 +9,6 @@ import { tool } from "@opencode-ai/plugin"
 import { z } from "zod"
 import type { StateMachineEngine } from "../../features/learning/state-machine"
 
-/**
- * Create learning-fsm tool
- */
 export function createFsmTool(stateMachine: StateMachineEngine) {
   return tool({
     description:

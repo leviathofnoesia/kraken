@@ -9,9 +9,6 @@ import { tool } from "@opencode-ai/plugin"
 import { z } from "zod"
 import type { PatternDetector } from "../../features/learning/pattern-detection"
 
-/**
- * Create learning-pattern tool
- */
 export function createPatternTool(patternDetector: PatternDetector) {
   return tool({
     description:
@@ -19,33 +16,29 @@ export function createPatternTool(patternDetector: PatternDetector) {
       "Use this tool to identify recurring wins and losses, " +
       "find successful strategies, and avoid mistakes.",
     args: {
-      action: z.enum(["get", "list", "update", "detect"]).describe(
-        "Action to perform: 'get', 'list', 'update', 'detect'"
+      action: z.enum(["get", "list", "update"]).describe(
+        "Action to perform: 'get', 'list', 'update'"
       ),
-      patternName: z
+      patternId: z
         .string()
         .optional()
-        .describe("Pattern name (for get, update actions)"),
+        .describe("Pattern ID (for get, update actions)"),
       status: z
         .enum(["active", "resolved", "superseded"])
         .optional()
         .describe("Pattern status (for update action)"),
-      keywords: z
-        .array(z.string())
-        .optional()
-        .describe("Keywords for pattern detection (for detect action)"),
       minFrequency: z
         .number()
         .int()
         .min(1)
         .optional()
-        .describe("Minimum frequency threshold (for list, detect actions)"),
+        .describe("Minimum frequency threshold (for list action)"),
       minConfidence: z
         .number()
         .min(0)
         .max(1)
         .optional()
-        .describe("Minimum confidence threshold (for list, detect actions)"),
+        .describe("Minimum confidence threshold (for list action)"),
       limit: z
         .number()
         .int()
@@ -57,9 +50,8 @@ export function createPatternTool(patternDetector: PatternDetector) {
     async execute(args) {
       const {
         action,
-        patternName,
+        patternId,
         status,
-        keywords,
         minFrequency,
         minConfidence,
         limit
@@ -68,37 +60,37 @@ export function createPatternTool(patternDetector: PatternDetector) {
       try {
         switch (action) {
           case "get": {
-            if (!patternName) {
+            if (!patternId) {
               return JSON.stringify({
                 success: false,
-                error: "Missing required field: patternName is required for 'get' action"
+                error: "Missing required field: patternId is required for 'get' action"
               }, null, 2)
             }
 
             const allPatterns = patternDetector.getAllPatterns()
-            const pattern = allPatterns.find(p => p.name === patternName)
+            const pattern = allPatterns.find(p => p.id === patternId)
 
             if (!pattern) {
               return JSON.stringify({
                 success: false,
-                error: `Pattern not found: ${patternName}`
+                error: `Pattern not found: ${patternId}`
               }, null, 2)
             }
 
             return JSON.stringify({
               success: true,
               pattern: {
-                name: pattern.name,
+                id: pattern.id,
+                name: pattern.category,
                 type: pattern.type,
-                trigger: pattern.trigger,
-                consequence: pattern.consequence,
-                suggestedAction: pattern.suggestedAction,
+                triggers: pattern.triggers,
+                consequences: pattern.consequences,
+                suggestedActions: pattern.suggestedActions,
                 impact: pattern.impact,
                 confidence: pattern.confidence,
                 frequency: pattern.frequency,
                 status: pattern.status,
-                keywords: pattern.keywords,
-                lastDetected: pattern.lastDetected,
+                description: pattern.description,
                 exampleCount: pattern.examples?.length || 0
               }
             }, null, 2)
@@ -115,65 +107,40 @@ export function createPatternTool(patternDetector: PatternDetector) {
               success: true,
               count: patterns.length,
               patterns: patterns.map(p => ({
-                name: p.name,
+                id: p.id,
+                name: p.category,
                 type: p.type,
                 impact: p.impact,
                 confidence: p.confidence,
                 frequency: p.frequency,
                 status: p.status,
-                lastDetected: p.lastDetected
+                description: p.description
               }))
             }, null, 2)
           }
 
           case "update": {
-            if (!patternName) {
+            if (!patternId) {
               return JSON.stringify({
                 success: false,
-                error: "Missing required field: patternName is required for 'update' action"
+                error: "Missing required field: patternId is required for 'update' action"
               }, null, 2)
             }
 
-            if (status) {
-              await patternDetector.updatePatternStatus(patternName, status)
-            }
+            await patternDetector.updatePatternStatus(patternId, status || "active")
 
             return JSON.stringify({
               success: true,
               message: "Pattern status updated successfully",
-              patternName,
-              updatedFields: status ? ["status"] : []
-            }, null, 2)
-          }
-
-          case "detect": {
-            const allPatterns = patternDetector.getAllPatterns()
-            let patterns = allPatterns
-
-            if (keywords && keywords.length > 0) {
-              patterns = patterns.filter(p =>
-                p.keywords?.some(kw => keywords.includes(kw.toLowerCase()))
-              )
-            }
-
-            const results = patterns.slice(0, limit || 10)
-
-            return JSON.stringify({
-              success: true,
-              count: results.length,
-              patterns: results.map(p => ({
-                name: p.name,
-                type: p.type,
-                confidence: p.confidence,
-                suggestedAction: p.suggestedAction
-              }))
+              patternId,
+              status: status || "active"
             }, null, 2)
           }
 
           default:
             return JSON.stringify({
               success: false,
-              error: `Unknown action: ${action}. Valid actions: get, list, update, detect`
+              error: `Unknown action: ${action}. Valid actions: get, list, update`
             }, null, 2)
         }
       } catch (error) {

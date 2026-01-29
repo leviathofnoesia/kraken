@@ -11,28 +11,23 @@ import type { ExperienceStore } from "../../features/learning/experience-store"
 import type { KnowledgeGraphStore } from "../../features/learning/knowledge-graph"
 import type { PatternDetector } from "../../features/learning/pattern-detection"
 import type { StateMachineEngine } from "../../features/learning/state-machine"
-import type { FSRScheduler } from "../../features/learning/fsrs-scheduler"
 
 interface StatsConfig {
   experienceStore: ExperienceStore
   knowledgeGraph: KnowledgeGraphStore
   patternDetector: PatternDetector
   stateMachine: StateMachineEngine
-  fsrsScheduler?: FSRScheduler
 }
 
-/**
- * Create learning-stats tool
- */
 export function createStatsTool(config: StatsConfig) {
-  const { experienceStore, knowledgeGraph, patternDetector, stateMachine, fsrsScheduler } = config
+  const { experienceStore, knowledgeGraph, patternDetector, stateMachine } = config
 
   return tool({
     description:
       "Get comprehensive statistics across the learning system. " +
-      "Shows experience metrics, knowledge graph stats, patterns, state machine status, and review schedules.",
+      "Shows experience metrics, knowledge graph stats, patterns, and state machine status.",
     args: {
-      section: z.enum(["all", "experience", "knowledge", "patterns", "fsm", "fsrs"]).describe(
+      section: z.enum(["all", "experience", "knowledge", "patterns", "fsm"]).describe(
         "Which section to show: 'all' for everything, or specific section"
       )
     },
@@ -46,23 +41,23 @@ export function createStatsTool(config: StatsConfig) {
           sections: []
         }
 
-        // Experience Store Statistics
         if (section === "all" || section === "experience") {
           const allExperiences = await experienceStore.loadExperiences()
-          const expStats = await experienceStore.getStats()
+          const total = allExperiences.length
+          const rewards = allExperiences.map(e => e.reward)
+          const avgReward = rewards.length > 0 ? rewards.reduce((a, b) => a + b, 0) / rewards.length : 0
+          const successRate = total > 0 ? allExperiences.filter(e => e.outcome === "success").length / total : 0
 
           result.sections.push({
             name: "Experience Store",
             stats: {
-              totalExperiences: allExperiences.length,
-              avgReward: expStats.averageReward ? Number(expStats.averageReward.toFixed(3)) : 0,
-              successRate: expStats.successRate ? Number((expStats.successRate * 100).toFixed(1)) + "%" : "0%"
-              // bufferSize and lastCompaction not available in getStats
+              totalExperiences: total,
+              averageReward: Number(avgReward.toFixed(3)),
+              successRate: Number((successRate * 100).toFixed(1)) + "%"
             }
           })
         }
 
-        // Knowledge Graph Statistics
         if (section === "all" || section === "knowledge") {
           const nodes = await knowledgeGraph.getImportantNodes(100000)
           const byType = new Map<string, number>()
@@ -77,7 +72,7 @@ export function createStatsTool(config: StatsConfig) {
             name: "Knowledge Graph",
             stats: {
               totalNodes: nodes.length,
-              totalEdges: 0, // Not easily accessible without loading full graph
+              totalEdges: 0,
               highImportanceNodes: highImportance,
               averageImportance: nodes.length > 0 ? Number((totalImportance / nodes.length).toFixed(2)) : 0,
               topTypes: Array.from(byType.entries())
@@ -88,7 +83,6 @@ export function createStatsTool(config: StatsConfig) {
           })
         }
 
-        // Pattern Detection Statistics
         if (section === "all" || section === "patterns") {
           const patterns = patternDetector.getAllPatterns()
           const positive = patterns.filter(p => p.type === "positive").length
@@ -111,44 +105,26 @@ export function createStatsTool(config: StatsConfig) {
               mostFrequent: patterns
                 .sort((a: any, b: any) => b.frequency - a.frequency)
                 .slice(0, 3)
-                .map((p: any) => ({ name: p.name, frequency: p.frequency }))
+                .map((p: any) => ({ name: p.category, frequency: p.frequency }))
             }
           })
         }
 
-        // State Machine Statistics
         if (section === "all" || section === "fsm") {
           const machines = stateMachine.getAllMachines()
           const totalStates = machines.reduce((sum: number, m: any) => sum + Object.keys(m.states).length, 0)
-          const totalTransitions = machines.reduce((sum: number, m: any) => {
-            return sum + Object.values(m.states).reduce((s: number, state: any) => s + (state.transitions?.length || 0), 0)
-          }, 0)
 
           result.sections.push({
             name: "State Machines",
             stats: {
               totalMachines: machines.length,
               totalStates,
-              totalTransitions,
               machines: machines.map((m: any) => ({
                 id: m.id,
-                description: m.description,
+                description: m.name,
                 currentState: m.currentState,
                 stateCount: Object.keys(m.states).length
               }))
-            }
-          })
-        }
-
-        // FSRS Statistics
-        if (fsrsScheduler && (section === "all" || section === "fsrs")) {
-          // Note: FSRS doesn't have a getStatistics method, so we'll provide basic info
-          result.sections.push({
-            name: "FSRS Scheduler",
-            stats: {
-              enabled: true,
-              description: "Spaced repetition scheduling for experience review",
-              // Additional stats would need to be implemented in FSRScheduler
             }
           })
         }
