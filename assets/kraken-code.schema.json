@@ -1585,23 +1585,6 @@
         }
       }
     },
-    "kratos": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": true,
-          "type": "boolean"
-        },
-        "autoSave": {
-          "default": true,
-          "type": "boolean"
-        },
-        "storagePath": {
-          "default": "~/.kratos",
-          "type": "string"
-        }
-      }
-    },
     "lsp": {
       "type": "object",
       "properties": {
@@ -1829,7 +1812,9 @@
           "default": [
             "search",
             "find",
-            "locate"
+            "locate",
+            "찾아",
+            "검색"
           ],
           "type": "array",
           "items": {
@@ -1839,7 +1824,10 @@
         "analyzeKeywords": {
           "default": [
             "analyze",
-            "examine"
+            "investigate",
+            "분석",
+            "조사",
+            "調査"
           ],
           "type": "array",
           "items": {
@@ -1854,92 +1842,6 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
-        }
-      }
-    },
-    "modes": {
-      "type": "object",
-      "properties": {
-        "ultrawork": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            },
-            "parallelAgents": {
-              "default": 4,
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 10
-            },
-            "concurrencyLimits": {
-              "type": "object",
-              "propertyNames": {
-                "type": "string"
-              },
-              "additionalProperties": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 10
-              }
-            }
-          }
-        },
-        "search": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            },
-            "maxResults": {
-              "default": 50,
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 100
-            }
-          }
-        },
-        "analyze": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            },
-            "consultationPhases": {
-              "default": 3,
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 5
-            },
-            "expertAgents": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "ultrathink": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            },
-            "thinkingBudget": {
-              "default": 32000,
-              "type": "integer",
-              "minimum": 1000,
-              "maximum": 200000
-            },
-            "autoVariantSwitch": {
-              "default": true,
-              "type": "boolean"
-            }
           }
         }
       }

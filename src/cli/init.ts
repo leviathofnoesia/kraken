@@ -20,7 +20,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean }) {
 
   // OpenCode config - minimal, only plugin reference
   // Note: Kraken agents are injected directly here as a workaround since
-  // the config hook may not be called during initial OpenCode startup
+  // config hook may not be called during initial OpenCode startup
   const opencodeConfig = {
     plugin: ["kraken-code"],
     agent: {
@@ -155,10 +155,9 @@ export async function runInit(options: { minimal?: boolean; full?: boolean }) {
         path.join(__dirname, "../../templates/skills")
       ]
     },
-    kratos: {
+    learning: {
       enabled: true,
-      autoSave: true,
-      storagePath: path.join(os.homedir(), ".kratos")
+      storagePath: path.join(os.homedir(), ".clawd", "learning")
     }
   }
 
@@ -181,31 +180,31 @@ export async function runInit(options: { minimal?: boolean; full?: boolean }) {
 
 async function installSkillTemplates() {
   const skillDir = path.join(os.homedir(), ".config", "opencode", "skill")
-  
+
   if (!existsSync(skillDir)) {
     mkdirSync(skillDir, { recursive: true })
   }
 
   const sourceSkillsDir = path.join(__dirname, "../../templates/skills")
-  
+
   // Copy skills from templates (if they exist)
   if (existsSync(sourceSkillsDir)) {
     const { copyFile } = await import("node:fs/promises")
     const { readdir } = await import("node:fs/promises")
-    
+
     try {
       const skillCategories = await readdir(sourceSkillsDir)
-      
+
       for (const category of skillCategories) {
         const sourcePath = path.join(sourceSkillsDir, category)
         const destPath = path.join(skillDir, category)
-        
+
         if (!existsSync(destPath)) {
           mkdirSync(destPath, { recursive: true })
         }
-        
+
         const skillFiles = await readdir(sourcePath)
-        
+
         for (const skillFile of skillFiles) {
           const sourceFilePath = path.join(sourcePath, skillFile)
           const destFilePath = path.join(destPath, skillFile)

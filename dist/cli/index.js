@@ -1407,10 +1407,9 @@ async function runInit(options) {
         path4.join(__dirname, "../../templates/skills")
       ]
     },
-    kratos: {
+    learning: {
       enabled: true,
-      autoSave: true,
-      storagePath: path4.join(os4.homedir(), ".kratos")
+      storagePath: path4.join(os4.homedir(), ".clawd", "learning")
     }
   };
   writeFileSync2(configPath, JSON.stringify(opencodeConfig, null, 2), "utf-8");
@@ -1488,12 +1487,12 @@ Blitzkrieg Mode:`));
     console.log(`  Status: ${status}`);
     console.log(color5.dim("  Activate with: 'blitz' or 'blz'"));
   }
-  if (kc.kratos) {
-    const status = kc.kratos.enabled ? color5.green("\u2713 Enabled") : color5.red("\u2717 Disabled");
+  if (kc.learning) {
+    const status = kc.learning.enabled !== false ? color5.green("\u2713 Enabled") : color5.red("\u2717 Disabled");
     console.log(color5.bold(`
-Memory (Kratos):`));
+Learning System:`));
     console.log(`  Status: ${status}`);
-    console.log(`  Storage: ${kc.kratos.storagePath}`);
+    console.log(`  Storage: ${kc.learning.storagePath || "~/.clawd/learning"}`);
   }
   if (kc.skills) {
     const status = kc.skills.autoLoad ? color5.green("\u2713 Auto-load") : color5.red("\u2717 Manual");
