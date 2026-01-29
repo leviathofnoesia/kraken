@@ -101,7 +101,7 @@ async function performTransition(args: { toState: string; trigger: string; rewar
          `Previous state: ${result.previousState}\n` +
          `New state: ${result.currentState}\n` +
          `Trigger: ${args.trigger}\n` +
-         args.reward !== undefined ? `Reward: ${args.reward.toFixed(2)}\n` : "" +
+         (args.reward !== undefined ? `Reward: ${args.reward.toFixed(2)}\n` : "") +
          `Time: ${new Date(result.timestamp).toLocaleString()}`
 }
 

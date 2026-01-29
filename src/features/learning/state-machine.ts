@@ -396,4 +396,11 @@ export class StateMachineEngine {
 
     return JSON.parse(JSON.stringify(machine))
   }
+
+  /**
+   * Get all state machines
+   */
+  getAllMachines(): StateMachine[] {
+    return Array.from(this.stateMachines.values())
+  }
 }

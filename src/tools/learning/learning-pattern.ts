@@ -83,23 +83,33 @@ async function addPattern(args: any): Promise<string> {
   }
 
   const patternId = `pattern-${Date.now()}`
+  const now = new Date().toISOString()
 
-  // Create pattern (simplified - in real implementation would use patternDetector.addPattern)
-  const pattern = {
+  // Create pattern object
+  const pattern: any = {
     id: patternId,
     type,
     category,
     description,
     examples: [],
     frequency: 1,
-    firstSeen: new Date().toISOString(),
-    lastSeen: new Date().toISOString(),
+    firstSeen: now,
+    lastSeen: now,
     confidence: 0.8,
     triggers,
     consequences,
     suggestedActions,
     impact,
     status: "active"
+  }
+
+  // Actually persist the pattern using patternDetector
+  try {
+    await patternDetector!.updatePattern(pattern)
+    console.log(`[LearningPatternTool] Pattern ${patternId} persisted`)
+  } catch (error: any) {
+    console.error(`[LearningPatternTool] Failed to persist pattern:`, error)
+    throw new Error(`Failed to add pattern: ${error.message}`)
   }
 
   return `✅ Pattern added\n\nID: ${patternId}\nType: ${type}\nDescription: ${description}`
@@ -173,7 +183,21 @@ async function updatePattern(args: { patternId: string; newStatus: string }): Pr
     throw new Error("Missing required fields for 'update': patternId, newStatus")
   }
 
-  // In real implementation, would update via patternDetector
+  // Validate status
+  const validStatuses = ["active", "resolved", "superseded"]
+  if (!validStatuses.includes(args.newStatus)) {
+    throw new Error(`Invalid status. Must be one of: ${validStatuses.join(", ")}`)
+  }
+
+  // Actually update the pattern status
+  try {
+    await patternDetector!.updatePatternStatus(args.patternId, args.newStatus as any)
+    console.log(`[LearningPatternTool] Pattern ${args.patternId} updated to ${args.newStatus}`)
+  } catch (error: any) {
+    console.error(`[LearningPatternTool] Failed to update pattern:`, error)
+    throw new Error(`Failed to update pattern: ${error.message}`)
+  }
+
   return `✅ Pattern ${args.patternId} updated to status: ${args.newStatus}`
 }
 

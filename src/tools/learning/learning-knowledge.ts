@@ -209,10 +209,10 @@ async function findPath(args: {
     throw new Error("Missing required fields for 'path': fromId, toId")
   }
 
-  const path = knowledgeGraph!.findPath(args.fromId, args.toId, args.maxDepth || 3)
+  const path = knowledgeGraph!.findPath(args.fromId, args.toId)
 
   if (!path) {
-    return `No path found between ${args.fromId} and ${args.toId} (max depth: ${args.maxDepth})`
+    return `No path found between ${args.fromId} and ${args.toId}`
   }
 
   let output = `**Path found** (${path.length} hops):\n\n`
