@@ -8,7 +8,7 @@ export async function runStatus() {
   console.log(color.cyan("🐙 Kraken Code Status\n"))
 
   const configPath = path.join(os.homedir(), ".config", "opencode", "opencode.json")
-  
+
   if (!existsSync(configPath)) {
     console.log(color.red("✗ Configuration not found"))
     console.log(color.dim("  Run: kraken-code init"))
@@ -37,12 +37,12 @@ export async function runStatus() {
     console.log(color.dim("  Activate with: 'blitz' or 'blz'"))
   }
 
-  // Kratos Memory Status
-  if (kc.kratos) {
-    const status = kc.kratos.enabled ? color.green("✓ Enabled") : color.red("✗ Disabled")
-    console.log(color.bold("\nMemory (Kratos):"))
+  // Learning System Status
+  if (kc.learning) {
+    const status = kc.learning.enabled !== false ? color.green("✓ Enabled") : color.red("✗ Disabled")
+    console.log(color.bold("\nLearning System:"))
     console.log(`  Status: ${status}`)
-    console.log(`  Storage: ${kc.kratos.storagePath}`)
+    console.log(`  Storage: ${kc.learning.storagePath || "~/.clawd/learning"}`)
   }
 
   // Skills Status

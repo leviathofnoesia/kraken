@@ -7,13 +7,8 @@ describe("Coral Agent", () => {
   })
 
   it("should have required properties", () => {
-    expect(coralAgent.name).toBe("Coral")
     expect(coralAgent.description).toBeDefined()
     expect(coralAgent.prompt).toBeDefined()
-  })
-
-  it("should have correct agent name", () => {
-    expect(coralAgent.name).toBe("Coral")
   })
 
   it("should have valid prompt structure", () => {

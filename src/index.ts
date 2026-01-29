@@ -88,7 +88,6 @@ import { createBlitzkriegPlannerConstraintsHook } from "./hooks/blitzkrieg-plann
 
 // MCP & Features
 import { initializeAllMcpServers, shutdownAllMcpServers } from "./features/mcp/index"
-import { initializeKratos, shutdownKratos } from "./features/mcp/kratos"
 import { getBuiltinMcpTools } from "./features/mcp/index"
 
 // Learning System
@@ -214,9 +213,9 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     console.error("[kraken-code] Error initializing learning system:", e);
   }
 
-  // 1. Mode Hooks (Blitzkrieg/Analyze/Ultrathink detection and activation)
+  // 1. Mode Hooks (Blitzkrieg/Analyze/Think detection and activation)
   const modeHooks = createModeHooks(input, {
-    enabled: config.modes?.ultrawork?.enabled ?? true,
+    enabled: config.modes?.search?.enabled ?? true,
     autoActivate: true
   });
   hooks.push(modeHooks);
@@ -317,14 +316,6 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         console.error("[kraken-code] Error initializing skill MCP manager:", e);
       }
 
-      // Initialize Kratos
-      try {
-        await initializeKratos();
-        console.log("[kraken-code] Kratos initialized");
-      } catch (e) {
-        console.error("[kraken-code] Error initializing Kratos:", e);
-      }
-
       // Initialize all MCP servers
       const mcpConfig = newConfig.mcp || {};
       try {
@@ -393,11 +384,10 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     },
   });
 
-  // 8. MCP Shutdown on plugin exit
+  // 8. Shutdown on plugin exit
   process.on("exit", async () => {
     try {
       await shutdownAllMcpServers();
-      await shutdownKratos();
       await shutdownLearningSystem();
     } catch (e) {
       console.error("Kraken Code: Error shutting down services", e);

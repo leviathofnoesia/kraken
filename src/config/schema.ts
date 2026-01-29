@@ -139,7 +139,7 @@ export const EnhancedModeConfigSchema = z.object({
   keywords: z.array(z.string()).default(["enhanced", "max", "full"]),
   searchKeywords: z.array(z.string()).default(["search", "find", "locate", "찾아", "검색"]),
   analyzeKeywords: z.array(z.string()).default(["analyze", "investigate", "분석", "조사", "調査"]),
-  thinkKeywords: z.array(z.string()).default(["think", "reason", "think deeply", "ultrathink"]),
+  thinkKeywords: z.array(z.string()).default(["think", "reason"]),
 })
 
 // MCP (Model Context Protocol) Configuration
@@ -178,12 +178,6 @@ export const MCPConfigSchema = z.object({
   grep_app: GrepAppMCPConfigSchema.optional(),
 })
 
-export const KratosConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  autoSave: z.boolean().default(true),
-  storagePath: z.string().default("~/.kratos")
-})
-
 export const LSPConfigSchema = z.object({
   enabled: z.boolean().default(true),
   workspacePath: z.string().optional(),
@@ -205,11 +199,6 @@ export const NotificationsConfigSchema = z.object({
 })
 
 export const ModesConfigSchema = z.object({
-  ultrawork: z.object({
-    enabled: z.boolean().default(true),
-    parallelAgents: z.number().int().min(1).max(10).default(4),
-    concurrencyLimits: z.record(z.string(), z.number().int().min(1).max(10)).optional(),
-  }).optional(),
   search: z.object({
     enabled: z.boolean().default(true),
     maxResults: z.number().int().min(1).max(100).default(50),
@@ -218,11 +207,6 @@ export const ModesConfigSchema = z.object({
     enabled: z.boolean().default(true),
     consultationPhases: z.number().int().min(1).max(5).default(3),
     expertAgents: z.array(z.string()).optional(),
-  }).optional(),
-  ultrathink: z.object({
-    enabled: z.boolean().default(true),
-    thinkingBudget: z.number().int().min(1000).max(200000).default(32000),
-    autoVariantSwitch: z.boolean().default(true),
   }).optional(),
 })
 
@@ -290,6 +274,7 @@ export const LearningSystemConfigSchema = z.object({
 
 export const OpenCodeXConfigSchema = z.object({
   $schema: z.string().optional(),
+  kraken_code: z.record(z.string(), z.any()).optional(),
   disabled_hooks: z.array(OpenCodeXHookNameSchema).optional(),
   disabled_commands: z.array(OpenCodeXBuiltinCommandNameSchema).optional(),
   agents: AgentOverridesSchema.optional(),
@@ -299,18 +284,10 @@ export const OpenCodeXConfigSchema = z.object({
   compression: CompressionConfigSchema.optional(),
   blitzkrieg: BlitzkriegConfigSchema.optional(),
   mcp: MCPConfigSchema.optional(),
-  kratos: KratosConfigSchema.optional(),
   lsp: LSPConfigSchema.optional(),
   notifications: NotificationsConfigSchema.optional(),
   learning: LearningSystemConfigSchema.optional(),
-  enhanced: z.object({
-    enabled: z.boolean().default(true),
-    keywords: z.array(z.string()).default(["enhanced", "max", "full"]),
-    searchKeywords: z.array(z.string()).default(["search", "find", "locate"]),
-    analyzeKeywords: z.array(z.string()).default(["analyze", "examine"]),
-    thinkKeywords: z.array(z.string()).default(["think", "reason"]),
-  }).optional(),
-  modes: ModesConfigSchema.optional(),
+  enhanced: EnhancedModeConfigSchema.optional(),
   skillMcp: SkillMcpConfigSchema.optional(),
   commandLoader: CommandLoaderConfigSchema.optional(),
   claudeCodeCompatibility: ClaudeCodeCompatibilityConfigSchema.optional(),
@@ -331,7 +308,6 @@ export type WebsearchMCPConfig = z.infer<typeof WebsearchMCPConfigSchema>
 export type Context7MCPConfig = z.infer<typeof Context7MCPConfigSchema>
 export type GrepAppMCPConfig = z.infer<typeof GrepAppMCPConfigSchema>
 export type MCPConfig = z.infer<typeof MCPConfigSchema>
-export type KratosConfig = z.infer<typeof KratosConfigSchema>
 export type LSPConfig = z.infer<typeof LSPConfigSchema>
 export type ModesConfig = z.infer<typeof ModesConfigSchema>
 export type SkillMcpConfig = z.infer<typeof SkillMcpConfigSchema>

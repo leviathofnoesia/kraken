@@ -20,7 +20,7 @@ export interface ModeActivation {
 
 export const DEFAULT_MODES: Record<string, ModeConfig> = {
   blitzkrieg: {
-    name: "Ultrawork",
+    name: "Blitzkrieg",
     enabled: true,
     parallelAgents: 4,
     concurrencyLimits: {
@@ -43,7 +43,7 @@ export const DEFAULT_MODES: Record<string, ModeConfig> = {
     expertAgents: ["oracle", "Abyssal", "Siren"],
   },
   ultrathink: {
-    name: "Ultrathink",
+    name: "UltraThink",
     enabled: true,
     thinkingBudget: 32000,
     autoVariantSwitch: true,

@@ -10,7 +10,6 @@ import type { MCPServerDefinition } from './types';
 import { websearchMCP } from './websearch';
 import { context7MCP } from './context7';
 import { grepAppMCP } from './grep-app';
-import { memorySaveTool, memorySearchTool, memoryGetRecentTool, memoryAskTool, initializeKratos, shutdownKratos } from './kratos';
 
 /**
  * Built-in MCP Servers
@@ -21,18 +20,6 @@ export const builtinMCPs: MCPServerDefinition[] = [
   websearchMCP,
   context7MCP,
   grepAppMCP,
-  {
-    name: 'kratos',
-    description: 'Ultra-lean memory system for AI coding tools',
-    version: '4.0.0',
-    tools: [memorySaveTool, memorySearchTool, memoryGetRecentTool, memoryAskTool],
-    configSchema: {
-      enabled: { type: 'boolean', default: true },
-      storagePath: { type: 'string', default: '~/.kratos' }
-    },
-    initialize: async (config: any) => await initializeKratos(),
-    shutdown: async () => await shutdownKratos()
-  }
 ];
 
 /**

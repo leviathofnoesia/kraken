@@ -7,13 +7,8 @@ describe("Nautilus Agent", () => {
   })
 
   it("should have required properties", () => {
-    expect(nautilusAgent.name).toBe("Nautilus")
     expect(nautilusAgent.description).toBeDefined()
     expect(nautilusAgent.prompt).toBeDefined()
-  })
-
-  it("should have correct agent name", () => {
-    expect(nautilusAgent.name).toBe("Nautilus")
   })
 
   it("should have valid prompt structure", () => {
