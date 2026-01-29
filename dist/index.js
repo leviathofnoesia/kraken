@@ -22727,8 +22727,6 @@ var createOpenCodeXPlugin = async (input) => {
       for (const agentName of Object.keys(newConfig.agent)) {
         const agent = newConfig.agent[agentName];
         if (agent) {
-          console.log(`[kraken-code] Sanitizing permissions for agent: ${agentName}`);
-          console.log(`[kraken-code] Before:`, JSON.stringify(agent.permission, null, 2));
           const cleanPermission = {};
           if (agent.permission && typeof agent.permission === "object") {
             for (const key of validPermissionKeys) {
@@ -22746,7 +22744,6 @@ var createOpenCodeXPlugin = async (input) => {
             }
           }
           agent.permission = cleanPermission;
-          console.log(`[kraken-code] After:`, JSON.stringify(agent.permission, null, 2));
         }
       }
       try {
