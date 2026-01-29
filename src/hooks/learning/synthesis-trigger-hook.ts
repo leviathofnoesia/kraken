@@ -1,360 +1,205 @@
 /**
  * Synthesis Trigger Hook
  *
- * Triggers synthesis and review generation when session compacts (approximates session end).
- * Updates FSRS schedule based on recall performance.
- *
- * Triggers on `experimental.session.compacting`.
+ * Triggers synthesis and FSRS updates at session end.
+ * Consolidates learnings and schedules reviews.
  */
 
-import type { Hooks, PluginInput } from "@opencode-ai/plugin"
-import type { ExperienceStore } from "../../features/learning/experience-store"
-import type { KnowledgeGraphStore } from "../../features/learning/knowledge-graph"
-import type { PatternDetector } from "../../features/learning/pattern-detection"
-import type { StateMachineEngine } from "../../features/learning/state-machine"
-import type { FSRScheduler } from "../../features/learning/fsrs-scheduler"
+import type { PluginInput } from "@opencode-ai/plugin"
+import type { Hooks } from "@opencode-ai/plugin"
 import type { LearningSystemContext } from "../../types/learning-context"
-
-export interface SynthesisTriggerHookOptions {
-  enabled?: boolean
-  autoSynthesis?: boolean
-  minSessionLength?: number // Minimum number of messages to trigger synthesis
-  updateFSRS?: boolean
-}
 
 /**
  * Create the synthesis trigger hook
  */
 export function createSynthesisTriggerHook(
   input: PluginInput,
-  context: LearningSystemContext,
-  options?: SynthesisTriggerHookOptions
+  learningContext: LearningSystemContext
 ): Hooks {
-  const config = (input as any).config || {}
-  const learningConfig = config.learning || {}
-
-  if (learningConfig.enabled === false || options?.enabled === false) {
-    return {}
-  }
-
-  const {
-    experienceStore,
-    knowledgeGraph,
-    patternDetector,
-    stateMachine,
-    fsrsScheduler
-  } = context
-
-  const minSessionLength = options?.minSessionLength || 5
+  const { experienceStore, knowledgeGraph, patternDetector, stateMachine, fsrsScheduler } = learningContext
 
   return {
-    "experimental.session.compacting": async (hookInput: any) => {
+    /**
+     * Trigger synthesis at session end
+     */
+    "session.end": async (hookInput: any, hookOutput: any) => {
       try {
-        const sessionID = hookInput.sessionID
-        const messageCount = hookInput.messageCount || 0
+        const { sessionID, messages, duration } = hookInput
 
-        console.log(`[SynthesisTrigger] Session compacting: ${sessionID} (${messageCount} messages)`)
+        console.log(`[SynthesisTrigger] Starting synthesis for session ${sessionID}`)
 
-        // Skip if session was too short
-        if (messageCount < minSessionLength) {
-          console.log(`[SynthesisTrigger] Session too short (${messageCount} < ${minSessionLength}), skipping synthesis`)
-          return
+        // 1. Analyze session to extract entities and relationships
+        const entities = extractEntities(messages)
+        const relationships = extractRelationships(messages)
+
+        // 2. Update knowledge graph with new entities and relationships
+        for (const entity of entities) {
+          await knowledgeGraph.addNode(entity.id, {
+            name: entity.name,
+            type: entity.type,
+            description: entity.description,
+            importance: entity.importance || 5,
+            data: entity.data || {}
+          })
         }
 
-        // Run synthesis if enabled
-        if (options?.autoSynthesis !== false && learningConfig.fsrs?.enabled !== false) {
-          const synthesisResult = await runSynthesis(
-            sessionID,
-            { experienceStore, knowledgeGraph, patternDetector, stateMachine }
+        for (const rel of relationships) {
+          await knowledgeGraph.addEdge(
+            rel.from,
+            rel.to,
+            rel.type,
+            rel.weight || 1
           )
-
-          console.log(
-            `[SynthesisTrigger] Synthesis complete: ` +
-            `${synthesisResult.newInsights} insights, ` +
-            `${synthesisResult.patternsUpdated} patterns updated`
-          )
-
-          // Update FSRS schedule if enabled
-          if (options?.updateFSRS !== false && fsrsScheduler) {
-            await updateFsrSchedule(fsrsScheduler, synthesisResult)
-
-            console.log(`[SynthesisTrigger] FSRS schedule updated`)
-          }
         }
 
-        // Flush any buffered experiences
-        await experienceStore.flushBuffer()
-
-        console.log(`[SynthesisTrigger] Cleanup complete for session ${sessionID}`)
-
-      } catch (error: any) {
-        console.error(`[SynthesisTrigger] Error during synthesis:`, error)
-        // Don't throw - hooks shouldn't break the system
-      }
-    },
-  }
-}
-
-/**
- * Run synthesis on session data
- */
-async function runSynthesis(
-  sessionID: string,
-  systems: {
-    experienceStore: ExperienceStore
-    knowledgeGraph: KnowledgeGraphStore
-    patternDetector: PatternDetector
-    stateMachine: StateMachineEngine
-  }
-): Promise<{
-  newInsights: number
-  patternsUpdated: number
-  knowledgeNodesCreated: number
-  stateTransitions: number
-  reviewedItems: Array<{ id: string; recalled: boolean }>
-}> {
-  const {
-    experienceStore,
-    knowledgeGraph,
-    patternDetector,
-    stateMachine
-  } = systems
-
-  let newInsights = 0
-  let patternsUpdated = 0
-  let knowledgeNodesCreated = 0
-  let stateTransitions = 0
-  const reviewedItems: Array<{ id: string; recalled: boolean }> = []
-
-  // 1. Analyze recent experiences for patterns
-  console.log(`[Synthesis] Analyzing experiences for patterns...`)
-  const experiences = await experienceStore.loadExperiences()
-
-  if (experiences.length > 0) {
-    const patternResult = await patternDetector.analyzeExperiences(
-      experiences.slice(-100) // Analyze last 100 experiences
-    )
-
-    patternsUpdated = patternResult.patterns.length
-
-    if (patternResult.patterns.length > 0) {
-      console.log(`[Synthesis] Detected ${patternsUpdated} patterns`)
-
-      // Create knowledge nodes for new patterns
-      for (const pattern of patternResult.patterns) {
-        const existingNode = knowledgeGraph.getNode(`pattern:${pattern.id}`)
-
-        if (!existingNode) {
-          await knowledgeGraph.addNode(
-            `pattern:${pattern.id}`,
-            "pattern",
-            {
-              description: pattern.description,
-              type: pattern.type,
-              category: pattern.category,
-              confidence: pattern.confidence,
-              impact: pattern.impact,
-              suggestedActions: pattern.suggestedActions
-            },
-            "inference"
-          )
-
-          knowledgeNodesCreated++
-          newInsights++
-        }
-      }
-    }
-  }
-
-  // 2. Extract entities from experiences and create knowledge nodes
-  console.log(`[Synthesis] Extracting entities from experiences...`)
-
-  for (const exp of experiences.slice(-50)) { // Last 50 experiences
-    const entities = extractEntitiesFromExperience(exp)
-
-    for (const entity of entities) {
-      const existingNode = knowledgeGraph.getNode(entity.id)
-
-      if (!existingNode) {
-        await knowledgeGraph.addNode(
-          entity.id,
-          entity.type,
-          entity.data,
-          "experience"
+        console.log(
+          `[SynthesisTrigger] Updated knowledge graph: ` +
+          `${entities.length} entities, ${relationships.length} relationships`
         )
 
-        knowledgeNodesCreated++
+        // 3. Analyze patterns from recent experiences
+        const recentExperiences = await experienceStore.getRecentExperiences(20)
 
-        // Add relationships
-        if (entity.relations) {
-          for (const relation of entity.relations) {
-            await knowledgeGraph.addEdge(
-              entity.id,
-              relation.to,
-              relation.type,
-              relation.weight
-            )
+        // Detect patterns
+        for (const exp of recentExperiences) {
+          if (exp.keywords && exp.keywords.length > 0) {
+            const similarExps = await experienceStore.queryExperiences({
+              keywords: exp.keywords.slice(0, 3),
+              limit: 10
+            })
+
+            // If similar experiences exist, analyze for patterns
+            if (similarExps.length >= 3) {
+              const avgReward =
+                similarExps.reduce((sum, e) => sum + e.reward, 0) / similarExps.length
+
+              if (avgReward > 0.3 || avgReward < -0.3) {
+                // Significant positive or negative pattern
+                const patternName = `${exp.action} pattern (${avgReward > 0 ? 'positive' : 'negative'})`
+                const existingPattern = await patternDetector.getPattern(patternName)
+
+                if (existingPattern) {
+                  // Update existing pattern
+                  await patternDetector.updatePattern(patternName, {
+                    frequency: existingPattern.frequency + 1,
+                    examples: [...existingPattern.examples, exp.id].slice(0, 20)
+                  })
+                } else {
+                  // Create new pattern
+                  await patternDetector.addPattern({
+                    name: patternName,
+                    type: avgReward > 0 ? "positive" : "negative",
+                    trigger: { tool: exp.action },
+                    consequence: avgReward > 0 ? "Success" : "Failure",
+                    suggestedAction: avgReward > 0 ? "Use this approach" : "Avoid this approach",
+                    impact: Math.abs(avgReward) > 0.6 ? "high" : "medium",
+                    confidence: 0.7,
+                    frequency: 1,
+                    status: "active",
+                    examples: [exp.id]
+                  })
+                }
+              }
+            }
           }
         }
-      }
-    }
-  }
 
-  // 3. Check for state machine transitions
-  console.log(`[Synthesis] Checking state transitions...`)
+        console.log("[SynthesisTrigger] Pattern detection complete")
 
-  const machine = stateMachine.getMachine("default")
-  if (machine) {
-    const history = machine.history.slice(-10) // Last 10 transitions
+        // 4. Update FSRS scheduler for experiences
+        if (fsrsScheduler) {
+          const sessionExperiences = recentExperiences.filter(
+            exp => exp.metadata?.sessionId === sessionID
+          )
 
-    // Analyze transitions for insights
-    for (const transition of history) {
-      if (transition.reward !== undefined && transition.reward > 0.5) {
-        // Successful transition - could be a pattern
-        const transitionKey = `${transition.fromState}->${transition.toState}`
+          for (const exp of sessionExperiences) {
+            const recallScore = exp.reward > 0 ? 4 : 2 // High reward = easy recall
 
-        // Mark as reviewed (assuming successful transitions are "recalled")
-        reviewedItems.push({
-          id: `transition:${transitionKey}`,
-          recalled: true
-        })
+            await fsrsScheduler.updateReviewSchedule(
+              exp.id,
+              recallScore,
+              { lastReviewedAt: Date.now() }
+            )
+          }
 
-        stateTransitions++
-        newInsights++
-      }
-    }
-  }
-
-  // 4. Review knowledge nodes for potential FSRS updates
-  console.log(`[Synthesis] Reviewing knowledge nodes...`)
-
-  const recentlyAccessedNodes = await getRecentlyAccessedNodes(knowledgeGraph, 20)
-
-  for (const node of recentlyAccessedNodes) {
-    // Check if node was referenced in recent experiences
-    const wasReferenced = experiences.some(exp =>
-      exp.context.prompt?.toLowerCase().includes(node.id.toLowerCase()) ||
-      exp.metadata?.tags?.includes(node.id)
-    )
-
-    reviewedItems.push({
-      id: `node:${node.id}`,
-      recalled: wasReferenced
-    })
-
-    if (wasReferenced) {
-      newInsights++
-    }
-  }
-
-  console.log(`[Synthesis] Complete: ${newInsights} insights generated`)
-
-  return {
-    newInsights,
-    patternsUpdated,
-    knowledgeNodesCreated,
-    stateTransitions,
-    reviewedItems
-  }
-}
-
-/**
- * Update FSRS schedule based on recall performance
- */
-async function updateFsrSchedule(
-  fsrsScheduler: FSRScheduler,
-  synthesisResult: {
-    reviewedItems: Array<{ id: string; recalled: boolean }>
-  }
-): Promise<void> {
-  if (!fsrsScheduler) {
-    return
-  }
-
-  console.log(`[FSRS] Updating schedule for ${synthesisResult.reviewedItems.length} items...`)
-
-  for (const item of synthesisResult.reviewedItems) {
-    try {
-      // Update ease factor based on recall performance
-      await fsrsScheduler.updateEase(item.id, item.recalled)
-    } catch (error) {
-      console.error(`[FSRS] Failed to update item ${item.id}:`, error)
-    }
-  }
-}
-
-/**
- * Extract entities from an experience
- */
-function extractEntitiesFromExperience(exp: any): Array<{
-  id: string
-  type: any
-  data: any
-  relations?: Array<{ to: string; type: string; weight: number }>
-}> {
-  const entities: Array<{
-    id: string
-    type: any
-    data: any
-    relations?: Array<{ to: string; type: string; weight: number }>
-  }> = []
-
-  // Extract tool usage as skill entity
-  if (exp.context.tool) {
-    entities.push({
-      id: `tool:${exp.context.tool}`,
-      type: "skill",
-      data: {
-        name: exp.context.tool,
-        lastUsed: exp.timestamp,
-        successRate: exp.outcome === "success" ? 1 : 0
-      },
-      relations: [
-        { to: `state:${exp.state}`, type: "relates_to", weight: 1 }
-      ]
-    })
-  }
-
-  // Extract state as concept entity
-  entities.push({
-    id: `state:${exp.state}`,
-    type: "concept",
-    data: {
-      name: exp.state,
-      lastEncountered: exp.timestamp
-    }
-  })
-
-  // Extract mistakes
-  if (exp.outcome === "failure") {
-    const mistakeId = `mistake:${exp.action}-${exp.state}-${Date.now()}`
-
-    entities.push({
-      id: mistakeId,
-      type: "mistake",
-      data: {
-        action: exp.action,
-        state: exp.state,
-        timestamp: exp.timestamp,
-        lesson: "Avoid using " + exp.action + " in " + exp.state + " context"
-      },
-      relations: [
-        { to: `tool:${exp.context.tool}`, type: "causes", weight: 1 }
-      ]
-    })
-  }
-
-  // Extract patterns from tags
-  if (exp.metadata?.tags) {
-    for (const tag of exp.metadata.tags) {
-      entities.push({
-        id: `tag:${tag}`,
-        type: "concept",
-        data: {
-          name: tag,
-          count: 1
+          console.log(
+            `[SynthesisTrigger] Updated FSRS for ${sessionExperiences.length} experiences`
+          )
         }
-      })
+
+        // 5. Flush experience store buffer
+        await experienceStore.flushBuffer()
+
+        console.log(`[SynthesisTrigger] Synthesis complete for session ${sessionID}`)
+      } catch (error) {
+        // Don't fail the hook if synthesis fails
+        console.error("[SynthesisTrigger] Error during synthesis:", error)
+      }
+    }
+  }
+}
+
+/**
+ * Extract entities from session messages
+ */
+function extractEntities(messages: any[]): Array<{
+  id: string
+  name: string
+  type: string
+  description?: string
+  importance?: number
+  data?: any
+}> {
+  const entities: any[] = []
+
+  for (const msg of messages) {
+    const content = msg.content || ""
+
+    // Extract file paths
+    const filePaths = content.match(/[\w-]+\.(ts|js|tsx|jsx|py|go|rs|java|json|md)/g) || []
+    for (const path of filePaths) {
+      const id = `file:${path}`
+      if (!entities.find(e => e.id === id)) {
+        entities.push({
+          id,
+          name: path,
+          type: "file",
+          description: `File: ${path}`,
+          importance: 5
+        })
+      }
+    }
+
+    // Extract function/method names
+    const functions = content.match(/\b(\w+)\s*\(/g) || []
+    for (const fn of functions) {
+      const name = fn.replace(/\s*\(/, "")
+      if (name.length > 2 && name.length < 30) {
+        const id = `func:${name}`
+        if (!entities.find(e => e.id === id)) {
+          entities.push({
+            id,
+            name,
+            type: "function",
+            description: `Function: ${name}`,
+            importance: 4
+          })
+        }
+      }
+    }
+
+    // Extract tool names
+    if (msg.toolName) {
+      const id = `tool:${msg.toolName}`
+      if (!entities.find(e => e.id === id)) {
+        entities.push({
+          id,
+          name: msg.toolName,
+          type: "tool",
+          description: `Tool: ${msg.toolName}`,
+          importance: 6
+        })
+      }
     }
   }
 
@@ -362,23 +207,60 @@ function extractEntitiesFromExperience(exp: any): Array<{
 }
 
 /**
- * Get recently accessed knowledge nodes
+ * Extract relationships from session messages
  */
-async function getRecentlyAccessedNodes(
-  knowledgeGraph: KnowledgeGraphStore,
-  limit: number
-): Promise<any[]> {
-  // For now, just return nodes sorted by accessCount
-  // In a real implementation, we'd have a "recently accessed" index
+function extractRelationships(messages: any[]): Array<{
+  from: string
+  to: string
+  type: string
+  weight?: number
+}> {
+  const relationships: any[] = []
 
-  const allNodes = knowledgeGraph.getAllNodes()
+  // Simple heuristic: entities mentioned together are related
+  const mentions = new Map<string, Set<string>>()
 
-  // Sort by access count and importance
-  const sorted = allNodes.sort((a, b) => {
-    const scoreA = a.accessCount * 10 + a.importance
-    const scoreB = b.accessCount * 10 + b.importance
-    return scoreB - scoreA
-  })
+  for (const msg of messages) {
+    const content = msg.content || ""
+    const entitiesInMessage = new Set<string>()
 
-  return sorted.slice(0, limit)
+    // Extract file paths
+    const filePaths = content.match(/[\w-]+\.(ts|js|tsx|jsx|py|go|rs|java|json|md)/g) || []
+    filePaths.forEach(p => entitiesInMessage.add(`file:${p}`))
+
+    // Extract function names
+    const functions = content.match(/\b(\w+)\s*\(/g) || []
+    functions.forEach(f => {
+      const name = f.replace(/\s*\(/, "")
+      if (name.length > 2 && name.length < 30) {
+        entitiesInMessage.add(`func:${name}`)
+      }
+    })
+
+    // Record co-mentions
+    for (const e1 of entitiesInMessage) {
+      for (const e2 of entitiesInMessage) {
+        if (e1 !== e2) {
+          if (!mentions.has(e1)) {
+            mentions.set(e1, new Set())
+          }
+          mentions.get(e1)!.add(e2)
+        }
+      }
+    }
+  }
+
+  // Convert mentions to relationships
+  for (const [from, toSet] of mentions.entries()) {
+    for (const to of toSet) {
+      relationships.push({
+        from,
+        to,
+        type: "relatedTo",
+        weight: 1
+      })
+    }
+  }
+
+  return relationships
 }

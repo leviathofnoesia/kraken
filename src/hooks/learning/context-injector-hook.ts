@@ -1,335 +1,186 @@
 /**
  * Context Injector Hook
  *
- * Injects relevant context from knowledge graph, patterns, and experiences
- * when processing messages. Note: Currently logs context to console for debugging.
- * In future versions, may use experimental.session.compacting to inject.
+ * Injects relevant context from the learning system at session start.
+ * Provides the AI with past experiences, knowledge, and patterns.
  */
 
-import type { Hooks, PluginInput } from "@opencode-ai/plugin"
-import type { ExperienceStore } from "../../features/learning/experience-store"
-import type { KnowledgeGraphStore } from "../../features/learning/knowledge-graph"
-import type { PatternDetector } from "../../features/learning/pattern-detection"
-import type { StateMachineEngine } from "../../features/learning/state-machine"
+import type { PluginInput } from "@opencode-ai/plugin"
+import type { Hooks } from "@opencode-ai/plugin"
 import type { LearningSystemContext } from "../../types/learning-context"
 
-export interface ContextInjectorHookOptions {
-  enabled?: boolean
-  maxExperiences?: number
-  maxPatterns?: number
-  maxKnowledgeNodes?: number
-  injectState?: boolean
+/**
+ * Format context injection message
+ *
+ * Creates a human-readable message containing relevant learning data.
+ */
+function formatContextInjection(
+  experiences: any[],
+  knowledgeNodes: any[],
+  patterns: any[],
+  currentState?: string
+): string {
+  const parts: string[] = []
+
+  parts.push("# Learning System Context")
+  parts.push("")
+
+  // Add current state if available
+  if (currentState) {
+    parts.push(`## Current State: ${currentState}`)
+    parts.push("")
+  }
+
+  // Add relevant experiences
+  if (experiences.length > 0) {
+    parts.push("## Relevant Past Experiences")
+    parts.push("")
+    experiences.slice(0, 3).forEach((exp, i) => {
+      const tool = exp.action
+      const reward = exp.reward > 0 ? "✓" : exp.reward < 0 ? "✗" : "○"
+      parts.push(`${i + 1}. ${reward} ${tool} (confidence: ${exp.confidence.toFixed(2)})`)
+      if (exp.context?.errorMessage) {
+        parts.push(`   Error: ${exp.context.errorMessage}`)
+      }
+    })
+    parts.push("")
+  }
+
+  // Add relevant knowledge
+  if (knowledgeNodes.length > 0) {
+    parts.push("## Relevant Knowledge")
+    parts.push("")
+    knowledgeNodes.slice(0, 3).forEach((node, i) => {
+      parts.push(`${i + 1}. ${node.name || node.id}`)
+      if (node.description) {
+        parts.push(`   ${node.description}`)
+      }
+      if (node.importance > 7) {
+        parts.push(`   [High Importance: ${node.importance}/10]`)
+      }
+    })
+    parts.push("")
+  }
+
+  // Add relevant patterns
+  if (patterns.length > 0) {
+    parts.push("## Relevant Patterns")
+    parts.push("")
+    patterns.slice(0, 3).forEach((pattern, i) => {
+      const type = pattern.type === "positive" ? "✓ Win" : "✗ Loss"
+      parts.push(`${i + 1}. ${type}: ${pattern.name}`)
+      parts.push(`   Frequency: ${pattern.frequency}, Confidence: ${pattern.confidence.toFixed(2)}`)
+      if (pattern.suggestedAction) {
+        parts.push(`   Suggested: ${pattern.suggestedAction}`)
+      }
+    })
+    parts.push("")
+  }
+
+  return parts.join("\n")
 }
 
 /**
- * Create context injector hook
+ * Extract keywords from session prompt
+ *
+ * Gets keywords from the initial user prompt for context search.
+ */
+function extractKeywordsFromPrompt(prompt: string): string[] {
+  const words = prompt
+    .toLowerCase()
+    .split(/\s+/)
+    .filter(w => w.length > 3 && w.length < 30)
+
+  // Remove common words
+  const stopWords = [
+    "the", "and", "for", "are", "but", "not", "you", "all", "can", "had", "her",
+    "was", "one", "our", "out", "has", "have", "been", "will", "with", "this",
+    "that", "from", "they", "would", "there", "their", "what", "which", "when",
+    "make", "like", "into", "year", "your", "just", "over", "also", "such",
+    "because", "these", "first", "being", "most", "some", "those", "through"
+  ]
+
+  return words.filter(w => !stopWords.includes(w)).slice(0, 10)
+}
+
+/**
+ * Create the context injector hook
  */
 export function createContextInjectorHook(
   input: PluginInput,
-  context: LearningSystemContext,
-  options?: ContextInjectorHookOptions
+  learningContext: LearningSystemContext
 ): Hooks {
-  const config = (input as any).config || {}
-  const learningConfig = config.learning || {}
-
-  if (learningConfig.enabled === false || options?.enabled === false) {
-    return {}
-  }
-
-  const {
-    experienceStore,
-    knowledgeGraph,
-    patternDetector,
-    stateMachine
-  } = context
-
-  const maxExperiences = options?.maxExperiences || 5
-  const maxPatterns = options?.maxPatterns || 3
-  const maxKnowledgeNodes = options?.maxKnowledgeNodes || 3
+  const { experienceStore, knowledgeGraph, patternDetector, stateMachine } = learningContext
 
   return {
-    "chat.message": async (input: any, output: any) => {
+    /**
+     * Inject relevant context at session start
+     */
+    "session.start": async (hookInput: any, hookOutput: any) => {
       try {
-        const sessionID = input.sessionID
-        const message = input.message || ""
+        const { prompt, sessionID } = hookInput
 
-        // Only inject on first message of a session (simplified check)
-        if (!message || message.length < 10) {
-          return
-        }
+        console.log(`[ContextInjector] Injecting context for session ${sessionID}`)
 
-        console.log(`[ContextInjector] Analyzing context for session ${sessionID}`)
+        // Extract keywords from prompt
+        const keywords = extractKeywordsFromPrompt(prompt || "")
 
-        // Gather relevant context from all four layers
-        const contextData = await gatherRelevantContext(
-          message,
-          { experienceStore, knowledgeGraph, patternDetector, stateMachine },
-          { maxExperiences, maxPatterns, maxKnowledgeNodes }
-        )
+        // Query relevant experiences
+        const experiences = await experienceStore.queryExperiences({
+          keywords,
+          state: { tool: undefined }, // Match all tools
+          limit: 5
+        })
 
-        // Log relevant context for debugging
-        if (contextData.experiences.length > 0) {
-          console.log(
-            `[ContextInjector] Found ${contextData.experiences.length} relevant experiences`
+        // Query relevant knowledge
+        const knowledgeNodes = await knowledgeGraph.searchNodes({
+          keywords,
+          limit: 5
+        })
+
+        // Query relevant patterns
+        const patterns = await patternDetector.getPatterns({
+          keywords,
+          limit: 5
+        })
+
+        // Get current state (if available)
+        const defaultMachine = stateMachine.getMachine("default")
+        const currentState = defaultMachine?.currentState
+
+        // Format and inject context
+        if (
+          experiences.length > 0 ||
+          knowledgeNodes.length > 0 ||
+          patterns.length > 0 ||
+          currentState
+        ) {
+          const contextMessage = formatContextInjection(
+            experiences,
+            knowledgeNodes,
+            patterns,
+            currentState
           )
-        }
-        if (contextData.patterns.length > 0) {
-          console.log(
-            `[ContextInjector] Found ${contextData.patterns.length} relevant patterns`
-          )
-        }
-        if (contextData.knowledgeNodes.length > 0) {
-          console.log(
-            `[ContextInjector] Found ${contextData.knowledgeNodes.length} relevant knowledge nodes`
-          )
-        }
 
-      } catch (error: any) {
-        console.error(`[ContextInjector] Error:`, error)
+          // Inject context as a system message
+          hookOutput.messages = hookOutput.messages || []
+          hookOutput.messages.unshift({
+            role: "system",
+            content: contextMessage
+          })
+
+          console.log(
+            `[ContextInjector] Injected ${experiences.length} experiences, ` +
+            `${knowledgeNodes.length} knowledge nodes, ` +
+            `${patterns.length} patterns`
+          )
+        } else {
+          console.log("[ContextInjector] No relevant context to inject")
+        }
+      } catch (error) {
+        // Don't fail the hook if context injection fails
+        console.error("[ContextInjector] Error injecting context:", error)
       }
-    },
-  }
-}
-
-/**
- * Gather relevant context from all learning system layers
- */
-async function gatherRelevantContext(
-  message: string,
-  systems: {
-    experienceStore: ExperienceStore
-    knowledgeGraph: KnowledgeGraphStore
-    patternDetector: PatternDetector
-    stateMachine: StateMachineEngine
-  },
-  limits: {
-    maxExperiences: number
-    maxPatterns: number
-    maxKnowledgeNodes: number
-  }
-): Promise<{
-  experiences: any[]
-  patterns: any[]
-  knowledgeNodes: any[]
-  currentState: string | null
-}> {
-  // Determine current state from message
-  const currentState = determineStateFromMessage(message)
-
-  // Parallel queries for performance
-  const [experiences, knowledgeNodes, currentStateInfo] = await Promise.all([
-    // Get relevant experiences
-    getRelevantExperiences(
-      systems.experienceStore,
-      currentState,
-      message,
-      limits.maxExperiences
-    ),
-    // Get relevant knowledge nodes
-    getRelevantKnowledgeNodes(
-      systems.knowledgeGraph,
-      message,
-      limits.maxKnowledgeNodes
-    ),
-    // Get current state from state machine
-    getCurrentState(systems.stateMachine)
-  ])
-
-  // Get patterns (depends on experiences)
-  const patterns = await getRelevantPatterns(
-    systems.patternDetector,
-    message,
-    limits.maxPatterns
-  )
-
-  return {
-    experiences,
-    patterns,
-    knowledgeNodes,
-    currentState: currentStateInfo
-  }
-}
-
-/**
- * Get relevant experiences based on state and context
- */
-async function getRelevantExperiences(
-  experienceStore: ExperienceStore,
-  state: string,
-  context: string,
-  limit: number
-): Promise<any[]> {
-  // Find similar experiences
-  const experiences = await experienceStore.findRelevant(
-    state,
-    context,
-    limit * 2 // Get more, then filter
-  )
-
-  // Sort by score (highest first)
-  experiences.sort((a, b) => {
-    const scoreA = experienceScore(a)
-    const scoreB = experienceScore(b)
-    return scoreB - scoreA
-  })
-
-  // Return top N
-  return experiences.slice(0, limit)
-}
-
-/**
- * Get relevant knowledge nodes based on context
- */
-async function getRelevantKnowledgeNodes(
-  knowledgeGraph: KnowledgeGraphStore,
-  context: string,
-  limit: number
-): Promise<any[]> {
-  // Extract keywords from context
-  const keywords = extractKeywords(context)
-
-  // Search for nodes matching keywords
-  const nodes: any[] = []
-
-  for (const keyword of keywords) {
-    const searchResults = knowledgeGraph.search(keyword)
-    nodes.push(...searchResults)
-  }
-
-  // Deduplicate by ID
-  const uniqueNodes = Array.from(
-    new Map(nodes.map(n => [n.id, n])).values()
-  )
-
-  // Sort by importance and access count
-  uniqueNodes.sort((a, b) => {
-    const scoreA = a.importance * 10 + a.accessCount
-    const scoreB = b.importance * 10 + b.accessCount
-    return scoreB - scoreA
-  })
-
-  // Return top N
-  return uniqueNodes.slice(0, limit)
-}
-
-/**
- * Get relevant patterns based on context
- */
-async function getRelevantPatterns(
-  patternDetector: PatternDetector,
-  context: string,
-  limit: number
-): Promise<any[]> {
-  // For now, return all active patterns (will be filtered by relevance)
-  const allPatterns = patternDetector.getAllPatterns()
-
-  // Filter by relevance to context
-  const relevantPatterns = allPatterns.filter(pattern => {
-    // Check if pattern triggers match context
-    const contextLower = context.toLowerCase()
-    return pattern.triggers.some(trigger =>
-      contextLower.includes(trigger.toLowerCase())
-    )
-  })
-
-  // Sort by confidence and impact
-  relevantPatterns.sort((a, b) => {
-    const scoreA = a.confidence * 10 + impactScore(a.impact)
-    const scoreB = b.confidence * 10 + impactScore(b.impact)
-    return scoreB - scoreA
-  })
-
-  // Return top N
-  return relevantPatterns.slice(0, limit)
-}
-
-/**
- * Get current state from state machine
- */
-async function getCurrentState(
-  stateMachine: StateMachineEngine
-): Promise<string | null> {
-  // Get the default machine's current state
-  const machine = stateMachine.getMachine("default")
-  if (!machine) {
-    return null
-  }
-
-  return machine.currentState
-}
-
-/**
- * Determine state from message content
- */
-function determineStateFromMessage(message: string): string {
-  const messageLower = message.toLowerCase()
-
-  const stateKeywords: Record<string, string[]> = {
-    "analyzing": ["analyze", "understand", "explore", "investigate", "review", "read"],
-    "implementing": ["implement", "write", "create", "build", "add", "code"],
-    "debugging": ["debug", "fix", "error", "bug", "issue", "problem", "broken"],
-    "testing": ["test", "verify", "check", "validate", "assert", "assertion"],
-    "refactoring": ["refactor", "clean", "optimize", "improve", "restructure"],
-    "documenting": ["document", "explain", "describe", "write doc", "comment"],
-    "planning": ["plan", "design", "architect", "break down", "outline", "structure"]
-  }
-
-  for (const [state, keywords] of Object.entries(stateKeywords)) {
-    if (keywords.some(k => messageLower.includes(k))) {
-      return state
     }
-  }
-
-  return "unknown"
-}
-
-/**
- * Calculate experience score for ranking
- */
-function experienceScore(exp: any): number {
-  let score = 0
-
-  // Reward is most important
-  score += exp.reward * 2
-
-  // Confidence matters
-  score += exp.confidence * 0.5
-
-  // Recency (more recent is better)
-  const ageDays = (Date.now() - new Date(exp.timestamp).getTime()) / (24 * 60 * 60 * 1000)
-  const recencyScore = Math.exp(-ageDays / 30) // 30-day half-life
-  score += recencyScore * 0.5
-
-  return score
-}
-
-/**
- * Extract keywords from text
- */
-function extractKeywords(text: string): string[] {
-  const words = text.toLowerCase().split(/\s+/)
-  const stopWords = new Set([
-    "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
-    "have", "has", "had", "do", "does", "did", "will", "would", "should",
-    "can", "could", "may", "might", "must", "to", "of", "in", "for",
-    "on", "at", "by", "with", "from", "as", "into", "through", "during",
-    "before", "after", "above", "below", "between", "under", "again"
-  ])
-
-  return words
-    .filter(w => w.length > 3 && !stopWords.has(w))
-    .filter((w, i, arr) => arr.indexOf(w) === i) // Unique
-}
-
-/**
- * Convert impact level to numeric score
- */
-function impactScore(impact: string): number {
-  switch (impact) {
-    case "critical": return 4
-    case "high": return 3
-    case "medium": return 2
-    case "low": return 1
-    default: return 1
   }
 }

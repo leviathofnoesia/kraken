@@ -1,208 +1,269 @@
 /**
  * Learning Pattern Tool
  *
- * Detect, add, and manage patterns.
- * Part of the unified AI memory system (Layer 3).
+ * Tool for detecting and managing behavioral patterns.
+ * Supports pattern detection, query, and management.
  */
 
 import { tool } from "@opencode-ai/plugin"
 import { z } from "zod"
-import type { MCPTool } from "../../features/mcp/types"
 import type { PatternDetector } from "../../features/learning/pattern-detection"
+import type { Pattern } from "../../features/learning/types-unified"
 
-// Global pattern detector instance
-let patternDetector: PatternDetector | null = null
+/**
+ * Create learning-pattern tool
+ */
+export function createPatternTool(patternDetector: PatternDetector) {
+  return tool({
+    description:
+      "Detect and manage behavioral patterns. " +
+      "Use this tool to identify recurring wins and losses, " +
+      "find successful strategies, and avoid mistakes.",
+    args: {
+      action: z.enum(["add", "get", "list", "update", "detect", "remove"]).describe(
+        "Action to perform: 'add', 'get', 'list', 'update', 'detect', 'remove'"
+      ),
+      patternName: z
+        .string()
+        .optional()
+        .describe("Pattern name (for add, get, update, remove actions)"),
+      type: z
+        .enum(["positive", "negative", "neutral"])
+        .optional()
+        .describe("Pattern type: 'positive' (win), 'negative' (loss), 'neutral' (for add action)"),
+      trigger: z
+        .record(z.any())
+        .optional()
+        .describe("Trigger conditions (for add action)"),
+      consequence: z
+        .string()
+        .optional()
+        .describe("What happens when pattern triggers (for add action)"),
+      suggestedAction: z
+        .string()
+        .optional()
+        .describe("Recommended action (for add action)"),
+      impact: z
+        .enum(["low", "medium", "high", "critical"])
+        .optional()
+        .describe("Impact level (for add action)"),
+      confidence: z
+        .number()
+        .min(0)
+        .max(1)
+        .optional()
+        .describe("Confidence level: 0-1 (for add action)"),
+      keywords: z
+        .array(z.string())
+        .optional()
+        .describe("Keywords for pattern detection (for add, detect actions)"),
+      status: z
+        .enum(["active", "resolved", "superseded"])
+        .optional()
+        .describe("Pattern status (for add, update actions)"),
+      minFrequency: z
+        .number()
+        .int()
+        .min(1)
+        .optional()
+        .describe("Minimum frequency threshold (for list, detect actions)"),
+      minConfidence: z
+        .number()
+        .min(0)
+        .max(1)
+        .optional()
+        .describe("Minimum confidence threshold (for list, detect actions)"),
+      limit: z
+        .number()
+        .int()
+        .min(1)
+        .max(100)
+        .optional()
+        .describe("Maximum results (for list action, default: 20)")
+    },
+    async execute(args) {
+      const {
+        action,
+        patternName,
+        type,
+        trigger,
+        consequence,
+        suggestedAction,
+        impact,
+        confidence,
+        keywords,
+        status,
+        minFrequency,
+        minConfidence,
+        limit
+      } = args
 
-export function setPatternDetector(detector: PatternDetector) {
-  patternDetector = detector
-  console.log("[LearningPatternTool] Pattern detector set")
-}
+      try {
+        switch (action) {
+          case "add": {
+            if (!patternName || !type || !trigger) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required fields: patternName, type, and trigger are required for 'add' action"
+              }, null, 2)
+            }
 
-export function getPatternDetector(): PatternDetector | null {
-  return patternDetector
-}
+            const pattern: Pattern = {
+              name: patternName,
+              type,
+              trigger,
+              consequence: consequence || "",
+              suggestedAction: suggestedAction || "",
+              impact: impact || "medium",
+              confidence: confidence ?? 0.5,
+              frequency: 1,
+              status: status || "active",
+              examples: [],
+              keywords: keywords || [],
+              lastDetected: Date.now()
+            }
 
-const learningPatternToolImpl = tool({
-  description: "Detect, add, and manage patterns in your behavior. Patterns are recurring behaviors (positive/negative) that the learning system identifies automatically. Use this to manually add patterns or query existing ones.",
-  args: {
-    action: z.enum(["detect", "add", "list", "get", "update"]).describe("Action to perform"),
-    // Detect args
-    experienceIds: z.array(z.string()).optional().describe("Experience IDs to analyze. Optional, uses recent if not provided."),
-    // Add args
-    type: z.enum(["positive", "negative", "neutral"]).optional().describe("Pattern type. Required for 'add'."),
-    category: z.string().optional().describe("Pattern category (e.g., 'coding', 'debugging'). Required for 'add'."),
-    description: z.string().optional().describe("Pattern description. Required for 'add'."),
-    triggers: z.array(z.string()).optional().describe("Keywords/situations that trigger this pattern. Required for 'add'."),
-    consequences: z.array(z.string()).optional().describe("What happens when pattern occurs. Required for 'add'."),
-    suggestedActions: z.array(z.string()).optional().describe("What to do (or avoid). Required for 'add'."),
-    impact: z.enum(["low", "medium", "high", "critical"]).optional().describe("Impact level. Required for 'add'."),
-    // Get/List args
-    patternId: z.string().optional().describe("Pattern ID. Required for 'get' and 'update'."),
-    typeFilter: z.string().optional().describe("Filter by type. Optional for 'list'."),
-    statusFilter: z.string().optional().describe("Filter by status. Optional for 'list'."),
-    // Update args
-    newStatus: z.enum(["active", "resolved", "superseded"]).optional().describe("New status. Required for 'update'."),
-  },
-  async execute(args, context) {
-    if (!patternDetector) {
-      throw new Error("Pattern detector not initialized. Call setPatternDetector() first.")
-    }
+            await patternDetector.addPattern(pattern)
 
-    try {
-      switch (args.action) {
-        case "detect":
-          return await detectPatterns(args as any)
-        case "add":
-          return await addPattern(args as any)
-        case "list":
-          return await listPatterns(args as any)
-        case "get":
-          return await getPattern(args as any)
-        case "update":
-          return await updatePattern(args as any)
-        default:
-          throw new Error(`Unknown action: ${args.action}`)
+            return JSON.stringify({
+              success: true,
+              message: "Pattern added successfully",
+              patternName,
+              type,
+              impact
+            }, null, 2)
+          }
+
+          case "get": {
+            if (!patternName) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: patternName is required for 'get' action"
+              }, null, 2)
+            }
+
+            const pattern = await patternDetector.getPattern(patternName)
+
+            if (!pattern) {
+              return JSON.stringify({
+                success: false,
+                error: `Pattern not found: ${patternName}`
+              }, null, 2)
+            }
+
+            return JSON.stringify({
+              success: true,
+              pattern: {
+                name: pattern.name,
+                type: pattern.type,
+                trigger: pattern.trigger,
+                consequence: pattern.consequence,
+                suggestedAction: pattern.suggestedAction,
+                impact: pattern.impact,
+                confidence: pattern.confidence,
+                frequency: pattern.frequency,
+                status: pattern.status,
+                keywords: pattern.keywords,
+                lastDetected: pattern.lastDetected,
+                exampleCount: pattern.examples.length
+              }
+            }, null, 2)
+          }
+
+          case "list": {
+            const patterns = await patternDetector.getPatterns({
+              minFrequency: minFrequency,
+              minConfidence: minConfidence,
+              limit: limit || 20
+            })
+
+            return JSON.stringify({
+              success: true,
+              count: patterns.length,
+              patterns: patterns.map(p => ({
+                name: p.name,
+                type: p.type,
+                impact: p.impact,
+                confidence: p.confidence,
+                frequency: p.frequency,
+                status: p.status,
+                lastDetected: p.lastDetected
+              }))
+            }, null, 2)
+          }
+
+          case "update": {
+            if (!patternName) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: patternName is required for 'update' action"
+              }, null, 2)
+            }
+
+            const updateData: Partial<Pattern> = {}
+            if (type !== undefined) updateData.type = type
+            if (status !== undefined) updateData.status = status
+            if (confidence !== undefined) updateData.confidence = confidence
+            if (impact !== undefined) updateData.impact = impact
+            if (suggestedAction !== undefined) updateData.suggestedAction = suggestedAction
+            if (consequence !== undefined) updateData.consequence = consequence
+
+            await patternDetector.updatePattern(patternName, updateData)
+
+            return JSON.stringify({
+              success: true,
+              message: "Pattern updated successfully",
+              patternName
+            }, null, 2)
+          }
+
+          case "detect": {
+            const patterns = await patternDetector.detectPatterns({
+              keywords: keywords || [],
+              limit: limit || 10
+            })
+
+            return JSON.stringify({
+              success: true,
+              count: patterns.length,
+              patterns: patterns.map(p => ({
+                name: p.name,
+                type: p.type,
+                confidence: p.confidence,
+                suggestedAction: p.suggestedAction
+              }))
+            }, null, 2)
+          }
+
+          case "remove": {
+            if (!patternName) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: patternName is required for 'remove' action"
+              }, null, 2)
+            }
+
+            await patternDetector.removePattern(patternName)
+
+            return JSON.stringify({
+              success: true,
+              message: "Pattern removed successfully",
+              patternName
+            }, null, 2)
+          }
+
+          default:
+            return JSON.stringify({
+              success: false,
+              error: `Unknown action: ${action}. Valid actions: add, get, list, update, detect, remove`
+            }, null, 2)
+        }
+      } catch (error) {
+        return JSON.stringify({
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error"
+        }, null, 2)
       }
-    } catch (error: any) {
-      console.error("[LearningPatternTool] Error:", error)
-      throw new Error(`Failed to ${args.action}: ${error.message}`)
     }
-  }
-})
-
-async function detectPatterns(args: { experienceIds?: string[] }): Promise<string> {
-  // For now, just return message - pattern detection is automatic
-  return "Pattern detection runs automatically via hooks. Use 'learning_pattern' with action='list' to see detected patterns."
-}
-
-async function addPattern(args: any): Promise<string> {
-  const { type, category, description, triggers, consequences, suggestedActions, impact } = args
-
-  if (!type || !category || !description || !triggers || !consequences || !suggestedActions || !impact) {
-    throw new Error("Missing required fields for 'add'")
-  }
-
-  const patternId = `pattern-${Date.now()}`
-  const now = new Date().toISOString()
-
-  // Create pattern object
-  const pattern: any = {
-    id: patternId,
-    type,
-    category,
-    description,
-    examples: [],
-    frequency: 1,
-    firstSeen: now,
-    lastSeen: now,
-    confidence: 0.8,
-    triggers,
-    consequences,
-    suggestedActions,
-    impact,
-    status: "active"
-  }
-
-  // Actually persist the pattern using patternDetector
-  try {
-    await patternDetector!.updatePattern(pattern)
-    console.log(`[LearningPatternTool] Pattern ${patternId} persisted`)
-  } catch (error: any) {
-    console.error(`[LearningPatternTool] Failed to persist pattern:`, error)
-    throw new Error(`Failed to add pattern: ${error.message}`)
-  }
-
-  return `✅ Pattern added\n\nID: ${patternId}\nType: ${type}\nDescription: ${description}`
-}
-
-async function listPatterns(args: { typeFilter?: string; statusFilter?: string }): Promise<string> {
-  const patterns = patternDetector!.getAllPatterns()
-
-  let filtered = patterns
-  if (args.typeFilter) {
-    filtered = filtered.filter(p => p.type === args.typeFilter)
-  }
-  if (args.statusFilter) {
-    filtered = filtered.filter(p => p.status === args.statusFilter)
-  }
-
-  if (filtered.length === 0) {
-    return "No patterns found"
-  }
-
-  let output = `Found ${filtered.length} patterns:\n\n`
-
-  for (let i = 0; i < filtered.length; i++) {
-    const p = filtered[i]
-    const emoji = p.type === "positive" ? "✅" : p.type === "negative" ? "❌" : "⚪"
-    const impactEmoji = p.impact === "critical" ? "🚨" : p.impact === "high" ? "🔴" : p.impact === "medium" ? "⚠️" : "💚"
-
-    output += `${i + 1}. ${emoji} ${impactEmoji} **${p.description}**\n`
-    output += `   ID: ${p.id} | ${p.type} | ${p.category}\n`
-    output += `   Confidence: ${(p.confidence * 100).toFixed(0)}% | Frequency: ${p.frequency} | Status: ${p.status}\n\n`
-  }
-
-  return output
-}
-
-async function getPattern(args: { patternId: string }): Promise<string> {
-  const patterns = patternDetector!.getAllPatterns()
-  const pattern = patterns.find(p => p.id === args.patternId)
-
-  if (!pattern) {
-    return `Pattern not found: ${args.patternId}`
-  }
-
-  const emoji = pattern.type === "positive" ? "✅" : pattern.type === "negative" ? "❌" : "⚪"
-
-  let output = `${emoji} **${pattern.description}**\n\n`
-  output += `**Metadata:**\n`
-  output += `- ID: ${pattern.id}\n`
-  output += `- Type: ${pattern.type}\n`
-  output += `- Category: ${pattern.category}\n`
-  output += `- Impact: ${pattern.impact}\n`
-  output += `- Status: ${pattern.status}\n`
-  output += `- Confidence: ${(pattern.confidence * 100).toFixed(0)}%\n`
-  output += `- Frequency: ${pattern.frequency}\n\n`
-
-  output += `**Triggers:**\n${pattern.triggers.map(t => `- ${t}`).join("\n")}\n\n`
-
-  output += `**Consequences:**\n${pattern.consequences.map(c => `- ${c}`).join("\n")}\n\n`
-
-  output += `**Suggested Actions:**\n${pattern.suggestedActions.map(a => `- ${a}`).join("\n")}\n\n`
-
-  if (pattern.examples.length > 0) {
-    output += `**Examples:**\n${pattern.examples.map((e, i) => `${i + 1}. ${e}`).join("\n")}\n\n`
-  }
-
-  return output
-}
-
-async function updatePattern(args: { patternId: string; newStatus: string }): Promise<string> {
-  if (!args.patternId || !args.newStatus) {
-    throw new Error("Missing required fields for 'update': patternId, newStatus")
-  }
-
-  // Validate status
-  const validStatuses = ["active", "resolved", "superseded"]
-  if (!validStatuses.includes(args.newStatus)) {
-    throw new Error(`Invalid status. Must be one of: ${validStatuses.join(", ")}`)
-  }
-
-  // Actually update the pattern status
-  try {
-    await patternDetector!.updatePatternStatus(args.patternId, args.newStatus as any)
-    console.log(`[LearningPatternTool] Pattern ${args.patternId} updated to ${args.newStatus}`)
-  } catch (error: any) {
-    console.error(`[LearningPatternTool] Failed to update pattern:`, error)
-    throw new Error(`Failed to update pattern: ${error.message}`)
-  }
-
-  return `✅ Pattern ${args.patternId} updated to status: ${args.newStatus}`
-}
-
-export const learningPatternTool: MCPTool = {
-  ...learningPatternToolImpl,
-  serverName: 'learning',
-  category: 'learning'
+  })
 }

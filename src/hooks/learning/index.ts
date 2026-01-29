@@ -1,102 +1,52 @@
 /**
  * Learning System Hooks
  *
- * Entry point for all learning-related hooks.
- * Integrates four-layer learning architecture with OpenCode.
+ * Hooks for integrating the unified AI memory system with OpenCode.
+ * These hooks automatically record experiences, inject relevant context,
+ * and trigger synthesis at appropriate times.
  */
 
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { Hooks } from "@opencode-ai/plugin"
-import type { ExperienceStore } from "../../features/learning/experience-store"
-import type { KnowledgeGraphStore } from "../../features/learning/knowledge-graph"
-import type { PatternDetector } from "../../features/learning/pattern-detection"
-import type { StateMachineEngine } from "../../features/learning/state-machine"
-import type { FSRScheduler } from "../../features/learning/fsrs-scheduler"
-import type { LearningSystemContext } from "../../types/learning-context"
+import type { LearningSystemContext, LearningHooksConfig } from "../../types/learning-context"
 
-export {
-  createExperienceRecorderHook,
-  type ExperienceRecorderHookOptions
-} from "./experience-recorder-hook"
+// Import individual hooks
+import { createExperienceRecorderHook } from "./experience-recorder-hook"
+import { createContextInjectorHook } from "./context-injector-hook"
+import { createSynthesisTriggerHook } from "./synthesis-trigger-hook"
 
-export {
-  createContextInjectorHook,
-  type ContextInjectorHookOptions
-,24,38c
-} from "./context-injector-hook"
-,24,38c
-
-,24,38c
-export {
-,24,38c
-  createSynthesisTriggerHook,
-,24,38c
-  type SynthesisTriggerHookOptions
-,24,38c
-} from "./synthesis-trigger-hook"
-,24,38c
-
-,24,38c
 /**
-,24,38c
- * Create all learning hooks at once
-,24,38c
+ * Create all learning hooks
  *
-,24,38c
- * This is the main entry point for integrating learning system
-,24,38c
- * into Kraken-Code via hooks.
-,24,38c
+ * Returns a Hooks object containing all enabled learning hooks.
  */
-,24,38c
 export function createLearningHooks(
   input: PluginInput,
-  context: LearningSystemContext,
-  options?: {
-    experienceRecorder?: ExperienceRecorderHookOptions
-    contextInjector?: ContextInjectorHookOptions
-    synthesisTrigger?: SynthesisTriggerHookOptions
-  }
+  learningContext: LearningSystemContext,
+  config: LearningHooksConfig
 ): Hooks {
-  const config = (input as any).config || {}
-  const learningConfig = config.learning || {}
+  const hooks: Hooks = {}
 
-  if (learningConfig.enabled === false) {
-    console.log("[LearningHooks] Learning system disabled")
-    return {}
+  // Experience Recorder Hook
+  if (config.experienceRecorder.enabled) {
+    const hook = createExperienceRecorderHook(input, learningContext)
+    Object.assign(hooks, hook)
+    console.log("[LearningHooks] Experience recorder hook enabled")
   }
 
-  console.log("[LearningHooks] Creating learning hooks...")
+  // Context Injector Hook
+  if (config.contextInjector.enabled) {
+    const hook = createContextInjectorHook(input, learningContext)
+    Object.assign(hooks, hook)
+    console.log("[LearningHooks] Context injector hook enabled")
+  }
 
-  // Create individual hooks
-  const experienceRecorderHooks = createExperienceRecorderHook(
-    input,
-    context,
-    options?.experienceRecorder
-  )
+  // Synthesis Trigger Hook
+  if (config.synthesisTrigger.enabled) {
+    const hook = createSynthesisTriggerHook(input, learningContext)
+    Object.assign(hooks, hook)
+    console.log("[LearningHooks] Synthesis trigger hook enabled")
+  }
 
-  const contextInjectorHooks = createContextInjectorHook(
-    input,
-    context,
-    options?.contextInjector
-  )
-
-  const synthesisTriggerHooks = createSynthesisTriggerHook(
-    input,
-    context,
-    options?.synthesisTrigger
-  )
-
-  // Merge all hooks
-  const mergedHooks: Hooks = {}
-  Object.assign(mergedHooks, experienceRecorderHooks)
-  Object.assign(mergedHooks, contextInjectorHooks)
-  Object.assign(mergedHooks, synthesisTriggerHooks)
-
-  console.log(
-    `[LearningHooks] Created ${Object.keys(mergedHooks).length} hooks: ` +
-    `${Object.keys(mergedHooks).join(", ")}`
-  )
-
-  return mergedHooks
+  return hooks
 }

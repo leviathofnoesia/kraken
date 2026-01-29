@@ -226,15 +226,16 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         console.error("[kraken-code] Error initializing MCP servers:", e);
       }
 
-      // Initialize Learning System (Unified AI Memory)
-      try {
-        const learningSystem = initializeLearningSystem(input, newConfig.learning);
-        Object.assign(hooks, learningSystem.hooks);
-        hooks.push({ tool: learningSystem.tools });
-        console.log("[kraken-code] Learning system initialized");
-      } catch (e) {
-        console.error("[kraken-code] Error initializing learning system:", e);
-      }
+      // Initialize Learning System (Unified AI Memory) - TEMPORARILY DISABLED FOR WIP PR
+      // TODO: Fix TypeScript errors in learning integration (method signature mismatches)
+      // try {
+      //   const learningSystem = initializeLearningSystem(input, newConfig.learning);
+      //   Object.assign(hooks, learningSystem.hooks);
+      //   hooks.push({ tool: learningSystem.tools });
+      //   console.log("[kraken-code] Learning system initialized");
+      // } catch (e) {
+      //   console.error("[kraken-code] Error initializing learning system:", e);
+      // }
     },
   });
 
@@ -245,7 +246,6 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     hooks.push({ tool: createBackgroundAgentFeature(input).tools });
     hooks.push(createContextWindowMonitorHook(input));
     hooks.push(createRalphLoopHook(input));
-    hooks.push(createContextInjector(input));
     hooks.push(createKeywordDetector(input));
     hooks.push(createAutoSlashCommand(input));
     hooks.push(createRulesInjector(input));
@@ -301,7 +301,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     try {
       await shutdownAllMcpServers();
       await shutdownKratos();
-      await shutdownLearningSystem();
+      // await shutdownLearningSystem(); // TEMPORARILY DISABLED
     } catch (e) {
       console.error("Kraken Code: Error shutting down services", e);
     }

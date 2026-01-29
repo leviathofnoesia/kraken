@@ -1,204 +1,157 @@
 /**
  * Experience Recorder Hook
  *
- * Records tool executions as experiences with rewards for reinforcement learning.
- * Triggers on `tool.execute.after` to capture outcomes.
+ * Automatically records experiences after tool execution.
+ * Captures tool usage, outcomes, and rewards for learning.
  */
 
-import type { Hooks, PluginInput } from "@opencode-ai/plugin"
-import type { ExperienceStore } from "../../features/learning/experience-store"
-import type { PatternDetector } from "../../features/learning/pattern-detection"
-import type { StateMachineEngine } from "../../features/learning/state-machine"
+import type { PluginInput } from "@opencode-ai/plugin"
+import type { Hooks } from "@opencode-ai/plugin"
 import type { LearningSystemContext } from "../../types/learning-context"
+import type { Experience } from "../../features/learning/types-unified"
 
-export interface ExperienceRecorderHookOptions {
-  enabled?: boolean
-  recordOnSuccess?: boolean
-  recordOnFailure?: boolean
-  autoPatternDetection?: boolean
+/**
+ * Extract reward from tool execution
+ *
+ * Infers reward based on tool output.
+ * - Success: positive reward
+ * - Error: negative reward
+ * - Neutral: zero reward
+ */
+function extractReward(toolOutput: any): number {
+  // Check for errors
+  if (toolOutput.error || toolOutput.errorMessage) {
+    return -0.5 // Negative reward for errors
+  }
+
+  // Check for success indicators
+  if (
+    toolOutput.success === true ||
+    toolOutput.status === "success" ||
+    toolOutput.result?.success === true
+  ) {
+    return 0.5 // Positive reward for success
+  }
+
+  // Default to neutral
+  return 0
 }
 
 /**
- * Create experience recorder hook
+ * Extract confidence from tool execution
+ *
+ * Infers confidence based on output structure.
+ */
+function extractConfidence(toolOutput: any): number {
+  // If there's an explicit confidence score, use it
+  if (typeof toolOutput.confidence === "number") {
+    return Math.max(0, Math.min(1, toolOutput.confidence))
+  }
+
+  // Infer from output quality
+  if (toolOutput.success === true && toolOutput.result) {
+    return 0.8
+  }
+
+  if (toolOutput.error) {
+    return 0.3
+  }
+
+  return 0.5 // Default medium confidence
+}
+
+/**
+ * Create the experience recorder hook
  */
 export function createExperienceRecorderHook(
   input: PluginInput,
-  context: LearningSystemContext,
-  options?: ExperienceRecorderHookOptions
+  learningContext: LearningSystemContext
 ): Hooks {
-  const config = (input as any).config || {}
-  const learningConfig = config.learning || {}
+  const { experienceStore } = learningContext
 
-  if (learningConfig.enabled === false || options?.enabled === false) {
-    return {}
-  }
-
-  const {
-    experienceStore,
-    patternDetector,
-    stateMachine
-  } = context
-
-  const hook = {
-    "tool.execute.after": async (toolInput: any, toolOutput: any) => {
+  return {
+    /**
+     * Record experience after tool execution
+     */
+    "tool.execute.after": async (hookInput: any, hookOutput: any) => {
       try {
-        const { tool, result, error } = toolInput
+        const { tool, toolArgs } = hookInput
+        const output = hookOutput.output || {}
 
-        // Skip if no tool was called
-        if (!tool) return
+        // Skip certain tools that shouldn't be recorded
+        const skipTools = [
+          "session_list",
+          "session_read",
+          "session_search",
+          "session_info",
+          "learning-experience", // Don't record learning tool usage
+          "learning-knowledge",
+          "learning-pattern",
+          "learning-fsm",
+          "learning-stats",
+          "model-switcher"
+        ]
 
-        // Determine outcome and reward
-        let outcome: "success" | "failure" | "partial"
-        let reward: number
-
-        if (error) {
-          // Tool execution failed
-          outcome = "failure"
-          reward = -0.8 // Significant penalty for tool failure
-
-          console.log(`[ExperienceRecorder] Tool failed: ${tool.name} - ${error.message}`)
-        } else if (result?.error) {
-          // Tool returned an error (partial success)
-          outcome = "partial"
-          reward = -0.3 // Mild penalty for partial failure
-
-          console.log(`[ExperienceRecorder] Tool partial: ${tool.name} - ${result.error}`)
-        } else {
-          // Tool succeeded
-          outcome = "success"
-          reward = 0.5 // Base reward for success
-
-          // Adjust reward based on result complexity/value
-          if (result?.tokensSaved) {
-            reward += 0.2 // Bonus for saving tokens
-          }
-          if (result?.performanceImproved) {
-            reward += 0.3 // Bonus for performance improvements
-          }
-          if (result?.bugFixed) {
-            reward += 0.4 // Bonus for fixing bugs
-          }
-
-          // Cap reward at +1
-          reward = Math.min(1, reward)
-
-          console.log(`[ExperienceRecorder] Tool success: ${tool.name} (reward: ${reward.toFixed(2)})`)
+        if (skipTools.includes(tool)) {
+          return
         }
 
-        // Determine current state from context
-        const state = determineCurrentState(toolInput, {currentState, outcome})
+        // Extract state and context
+        const state = {
+          tool,
+          toolArgs: typeof toolArgs === "string" ? { args: toolArgs } : toolArgs,
+          timestamp: Date.now()
+        }
 
-        // Create and record experience
-        const experience = await experienceStore.addExperience({
+        const context = {
+          sessionId: hookInput.sessionID,
+          output: JSON.stringify(output).slice(0, 500), // Limit context size
+          errorMessage: output.error || output.errorMessage || undefined
+        }
+
+        // Extract keywords from context
+        const keywords: string[] = []
+        if (typeof toolArgs === "string") {
+          keywords.push(...toolArgs.split(/\s+/).filter((w: string) => w.length > 3))
+        } else if (typeof toolArgs === "object") {
+          Object.values(toolArgs).forEach((v: any) => {
+            if (typeof v === "string" && v.length > 3 && v.length < 50) {
+              keywords.push(v)
+            }
+          })
+        }
+
+        // Extract reward and confidence
+        const reward = extractReward(output)
+        const confidence = extractConfidence(output)
+
+        // Create experience
+        const experience: Experience = {
+          id: `${tool}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          timestamp: Date.now(),
           state,
-          action: tool.name,
-          outcome,
+          action: tool,
           reward,
-          confidence: 0.8, // Default confidence for hook-recorded experiences
-          context: {
-            sessionId: toolInput.sessionID,
-            tool: tool.name,
-            prompt: toolInput.message?.substring(0, 200)
-          },
+          confidence,
+          context,
+          keywords: keywords.slice(0, 10), // Limit to 10 keywords
           metadata: {
-            hookSource: "experience-recorder-hook",
-            error: error?.message,
-            resultSummary: summarizeResult(result)
-          }
-        })
-
-        console.log(`[ExperienceRecorder] Recorded experience: ${experience.id}`)
-
-        // Trigger pattern detection if enabled
-        if (options?.autoPatternDetection !== false) {
-          // Load recent experiences for pattern analysis
-          const recentExperiences = await experienceStore.loadExperiences()
-
-          // Analyze for patterns
-          const detectionResult = await patternDetector.analyzeExperiences(
-            recentExperiences.slice(-50) // Analyze last 50 experiences
-          )
-
-          if (detectionResult.patterns.length > 0) {
-            console.log(
-              `[ExperienceRecorder] Detected ${detectionResult.patterns.length} patterns ` +
-              `(confidence: ${(detectionResult.confidence * 100).toFixed(0)}%)`
-            )
-          }
-
-          // Check if state machine should transition
-          const newState = detectStateTransition(state, outcome, toolInput)
-          if (newState) {
-            console.log(`[ExperienceRecorder] Potential state transition: ${state} → ${newState}`)
-            // Note: Actual state machine transition should be handled by state machine hook
+            toolName: tool,
+            sessionId: hookInput.sessionID,
+            hasError: !!output.error
           }
         }
 
-      } catch (error: any) {
-        console.error(`[ExperienceRecorder] Error recording experience:`, error)
-        // Don't throw - hooks shouldn't break the system
+        // Record the experience
+        await experienceStore.recordExperience(experience)
+
+        console.log(
+          `[ExperienceRecorder] Recorded experience: ${tool} (reward: ${reward}, confidence: ${confidence})`
+        )
+      } catch (error) {
+        // Don't fail the hook if recording fails
+        console.error("[ExperienceRecorder] Error recording experience:", error)
       }
-    },
+    }
   }
-
-  return hook
-}
-
-/**
- * Detect if a state machine transition should occur
- */
-function detectStateTransition(
-  currentState: string,
-  outcome: "success" | "failure" | "partial",
-  hookInput: any
-): string | null {
-  const message = hookInput.message?.toLowerCase() || ""
-
-  // Common state transitions
-  const transitions: Record<string, { success?: string; failure?: string }> = {
-    "analyzing": { success: "implementing" },
-    "implementing": { success: "testing", failure: "debugging" },
-    "testing": { success: "documenting", failure: "debugging" },
-    "debugging": { success: "testing", failure: "analyzing" },
-    "refactoring": { success: "testing" }
-  }
-
-  const stateTransitions = transitions[currentState]
-  if (!stateTransitions) {
-    return null
-  }
-
-  if (outcome === "success" && stateTransitions.success) {
-    return stateTransitions.success
-  } else if (outcome === "failure" && stateTransitions.failure) {
-    return stateTransitions.failure
-  }
-
-  return null
-}
-
-/**
- * Summarize a tool result for metadata
- */
-function summarizeResult(result: any): string {
-  if (!result) {
-    return "no result"
-  }
-
-  const parts: string[] = []
-
-  if (result.error) {
-    parts.push(`error: ${result.error}`)
-  }
-  if (result.tokensSaved) {
-    parts.push(`saved ${result.tokensSaved} tokens`)
-  }
-  if (result.performanceImproved) {
-    parts.push("performance improved")
-  }
-  if (result.bugFixed) {
-    parts.push("bug fixed")
-  }
-
-  return parts.join(", ") || "success"
 }

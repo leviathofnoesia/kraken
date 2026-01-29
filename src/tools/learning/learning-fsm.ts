@@ -1,200 +1,314 @@
 /**
  * Learning FSM Tool
  *
- * Manage state machines and state transitions.
- * Part of the unified AI memory system (Layer 4).
+ * Tool for managing state machines for behavioral control.
+ * Supports creating machines, managing states, and tracking transitions.
  */
 
 import { tool } from "@opencode-ai/plugin"
 import { z } from "zod"
-import type { MCPTool } from "../../features/mcp/types"
 import type { StateMachineEngine } from "../../features/learning/state-machine"
 
-let stateMachine: StateMachineEngine | null = null
+/**
+ * Create learning-fsm tool
+ */
+export function createFsmTool(stateMachine: StateMachineEngine) {
+  return tool({
+    description:
+      "Manage state machines for behavioral control. " +
+      "Use this tool to create state machines for workflows, track state transitions, " +
+      "and manage behavioral patterns.",
+    args: {
+      action: z.enum(["createMachine", "getMachine", "listMachines", "deleteMachine", "transition", "getCurrentState", "addState", "removeState", "addTransition"]).describe(
+        "Action to perform: 'createMachine', 'getMachine', 'listMachines', 'deleteMachine', 'transition', 'getCurrentState', 'addState', 'removeState', 'addTransition'"
+      ),
+      machineId: z
+        .string()
+        .optional()
+        .describe("Machine ID (for most actions)"),
+      description: z
+        .string()
+        .optional()
+        .describe("Machine description (for createMachine)"),
+      initialState: z
+        .string()
+        .optional()
+        .describe("Initial state name (for createMachine)"),
+      stateName: z
+        .string()
+        .optional()
+        .describe("State name (for addState, removeState)"),
+      stateDescription: z
+        .string()
+        .optional()
+        .describe("State description (for addState)"),
+      fromState: z
+        .string()
+        .optional()
+        .describe("Source state (for addTransition, transition)"),
+      toState: z
+        .string()
+        .optional()
+        .describe("Target state (for addTransition, transition)"),
+      condition: z
+        .string()
+        .optional()
+        .describe("Transition condition expression (for addTransition)"),
+      metadata: z
+        .record(z.any())
+        .optional()
+        .describe("Additional metadata (for addState)")
+    },
+    async execute(args) {
+      const {
+        action,
+        machineId,
+        description,
+        initialState,
+        stateName,
+        stateDescription,
+        fromState,
+        toState,
+        condition,
+        metadata
+      } = args
 
-export function setStateMachine(sm: StateMachineEngine) {
-  stateMachine = sm
-  console.log("[LearningFsmTool] State machine set")
-}
+      try {
+        switch (action) {
+          case "createMachine": {
+            if (!machineId || !initialState) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required fields: machineId and initialState are required for 'createMachine' action"
+              }, null, 2)
+            }
 
-export function getStateMachine(): StateMachineEngine | null {
-  return stateMachine
-}
+            stateMachine.createMachine(
+              machineId,
+              description || "",
+              initialState,
+              {
+                [initialState]: {
+                  name: initialState,
+                  description: stateDescription || "Initial state",
+                  transitions: [],
+                  metadata: metadata || {}
+                }
+              }
+            )
 
-const learningFsmToolImpl = tool({
-  description: "Manage state machines for behavioral control. State machines define clear state transitions for workflows like code review, debugging, TDD, etc. Use this to create custom state machines or query current state.",
-  args: {
-    action: z.enum(["create", "transition", "get", "list", "history"]).describe("Action to perform"),
-    // Create args
-    machineId: z.string().optional().describe("Unique ID for the machine. Required for 'create'."),
-    machineName: z.string().optional().describe("Human-readable name. Required for 'create'."),
-    initialState: z.string().optional().describe("Starting state. Required for 'create'."),
-    states: z.record(z.any()).optional().describe("State definitions (JSON). Required for 'create'."),
-    // Transition args
-    trigger: z.string().optional().describe("What caused the transition. Required for 'transition'."),
-    reward: z.number().min(-1).max(1).optional().describe("Reward for this transition. Optional."),
-    // Get/List args
-    targetMachineId: z.string().optional().describe("Machine ID. Required for 'get'."),
-    historyLimit: z.number().min(1).max(100).default(10).optional().describe("History limit. Default: 10."),
-  },
-  async execute(args, context) {
-    if (!stateMachine) {
-      throw new Error("State machine not initialized. Call setStateMachine() first.")
-    }
+            return JSON.stringify({
+              success: true,
+              message: "State machine created successfully",
+              machineId,
+              initialState
+            }, null, 2)
+          }
 
-    try {
-      switch (args.action) {
-        case "create":
-          return await createMachine(args as any)
-        case "transition":
-          return await performTransition(args as any)
-        case "get":
-          return await getMachine(args as any)
-        case "list":
-          return await listMachines()
-        case "history":
-          return await getHistory(args as any)
-        default:
-          throw new Error(`Unknown action: ${args.action}`)
+          case "getMachine": {
+            if (!machineId) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: machineId is required for 'getMachine' action"
+              }, null, 2)
+            }
+
+            const machine = stateMachine.getMachine(machineId)
+
+            if (!machine) {
+              return JSON.stringify({
+                success: false,
+                error: `State machine not found: ${machineId}`
+              }, null, 2)
+            }
+
+            return JSON.stringify({
+              success: true,
+              machine: {
+                id: machine.id,
+                description: machine.description,
+                currentState: machine.currentState,
+                stateCount: Object.keys(machine.states).length,
+                states: Object.entries(machine.states).map(([name, state]) => ({
+                  name,
+                  description: state.description,
+                  transitionCount: state.transitions.length
+                }))
+              }
+            }, null, 2)
+          }
+
+          case "listMachines": {
+            const machines = stateMachine.listMachines()
+
+            return JSON.stringify({
+              success: true,
+              count: machines.length,
+              machines: machines.map(m => ({
+                id: m.id,
+                description: m.description,
+                currentState: m.currentState,
+                stateCount: Object.keys(m.states).length
+              }))
+            }, null, 2)
+          }
+
+          case "deleteMachine": {
+            if (!machineId) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: machineId is required for 'deleteMachine' action"
+              }, null, 2)
+            }
+
+            stateMachine.deleteMachine(machineId)
+
+            return JSON.stringify({
+              success: true,
+              message: "State machine deleted successfully",
+              machineId
+            }, null, 2)
+          }
+
+          case "transition": {
+            if (!machineId || !toState) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required fields: machineId and toState are required for 'transition' action"
+              }, null, 2)
+            }
+
+            const success = stateMachine.transition(machineId, toState)
+
+            if (!success) {
+              return JSON.stringify({
+                success: false,
+                error: "Transition failed - no valid transition path found"
+              }, null, 2)
+            }
+
+            return JSON.stringify({
+              success: true,
+              message: "State transition successful",
+              machineId,
+              toState
+            }, null, 2)
+          }
+
+          case "getCurrentState": {
+            if (!machineId) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: machineId is required for 'getCurrentState' action"
+              }, null, 2)
+            }
+
+            const machine = stateMachine.getMachine(machineId)
+
+            if (!machine) {
+              return JSON.stringify({
+                success: false,
+                error: `State machine not found: ${machineId}`
+              }, null, 2)
+            }
+
+            return JSON.stringify({
+              success: true,
+              currentState: machine.currentState
+            }, null, 2)
+          }
+
+          case "addState": {
+            if (!machineId || !stateName) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required fields: machineId and stateName are required for 'addState' action"
+              }, null, 2)
+            }
+
+            const machine = stateMachine.getMachine(machineId)
+
+            if (!machine) {
+              return JSON.stringify({
+                success: false,
+                error: `State machine not found: ${machineId}`
+              }, null, 2)
+            }
+
+            stateMachine.addState(machineId, stateName, {
+              name: stateName,
+              description: stateDescription || "",
+              transitions: [],
+              metadata: metadata || {}
+            })
+
+            return JSON.stringify({
+              success: true,
+              message: "State added successfully",
+              machineId,
+              stateName
+            }, null, 2)
+          }
+
+          case "removeState": {
+            if (!machineId || !stateName) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required fields: machineId and stateName are required for 'removeState' action"
+              }, null, 2)
+            }
+
+            stateMachine.removeState(machineId, stateName)
+
+            return JSON.stringify({
+              success: true,
+              message: "State removed successfully",
+              machineId,
+              stateName
+            }, null, 2)
+          }
+
+          case "addTransition": {
+            if (!machineId || !fromState || !toState) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required fields: machineId, fromState, and toState are required for 'addTransition' action"
+              }, null, 2)
+            }
+
+            const machine = stateMachine.getMachine(machineId)
+
+            if (!machine) {
+              return JSON.stringify({
+                success: false,
+                error: `State machine not found: ${machineId}`
+              }, null, 2)
+            }
+
+            stateMachine.addTransition(machineId, fromState, toState, condition)
+
+            return JSON.stringify({
+              success: true,
+              message: "Transition added successfully",
+              machineId,
+              fromState,
+              toState,
+              hasCondition: !!condition
+            }, null, 2)
+          }
+
+          default:
+            return JSON.stringify({
+              success: false,
+              error: `Unknown action: ${action}. Valid actions: createMachine, getMachine, listMachines, deleteMachine, transition, getCurrentState, addState, removeState, addTransition`
+            }, null, 2)
+        }
+      } catch (error) {
+        return JSON.stringify({
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error"
+        }, null, 2)
       }
-    } catch (error: any) {
-      console.error("[LearningFsmTool] Error:", error)
-      throw new Error(`Failed to ${args.action}: ${error.message}`)
     }
-  }
-})
-
-async function createMachine(args: any): Promise<string> {
-  if (!args.machineId || !args.machineName || !args.initialState || !args.states) {
-    throw new Error("Missing required fields for 'create': machineId, machineName, initialState, states")
-  }
-
-  const machine = stateMachine!.createMachine(
-    args.machineId,
-    args.machineName,
-    args.initialState,
-    args.states
-  )
-
-  return `✅ State machine created\n\n` +
-         `ID: ${machine.id}\n` +
-         `Name: ${machine.name}\n` +
-         `Initial state: ${machine.initialState}\n` +
-         `States: ${Object.keys(machine.states).join(", ")}\n\n` +
-         `*Use 'learning_fsm' with action='get' to view full details.*`
-}
-
-async function performTransition(args: { toState: string; trigger: string; reward?: number }): Promise<string> {
-  if (!args.toState || !args.trigger) {
-    throw new Error("Missing required fields for 'transition': toState, trigger")
-  }
-
-  // Use async transition API
-  const success = await stateMachine!.transition(args.trigger)
-
-  if (!success) {
-    return `❌ State transition failed\n\n` +
-           `Trigger: ${args.trigger}\n` +
-           `No matching transition found from current state`
-  }
-
-  const machine = stateMachine!.getMachine("default")
-  if (!machine) {
-    return "State machine not found"
-  }
-
-  const lastTransition = machine.history.length > 0
-    ? machine.history[machine.history.length - 1]
-    : null
-
-  return `✅ State transition\n\n` +
-         `Previous state: ${lastTransition?.fromState || "N/A"}\n` +
-         `New state: ${machine.currentState}\n` +
-         `Trigger: ${args.trigger}\n` +
-         (args.reward !== undefined ? `Reward: ${args.reward.toFixed(2)}\n` : "") +
-         `Time: ${lastTransition?.timestamp ? new Date(lastTransition.timestamp).toLocaleString() : new Date().toLocaleString()}`
-}
-
-async function getMachine(args: { targetMachineId: string }): Promise<string> {
-  if (!args.targetMachineId) {
-    throw new Error("Missing required field for 'get': targetMachineId")
-  }
-
-  const machine = stateMachine!.getMachine(args.targetMachineId)
-
-  if (!machine) {
-    return `State machine not found: ${args.targetMachineId}`
-  }
-
-  let output = `**${machine.name}** (${machine.id})\n\n`
-  output += `Current state: ${machine.currentState}\n`
-  output += `Initial state: ${machine.initialState}\n\n`
-
-  output += `**States:**\n`
-  for (const [name, state] of Object.entries(machine.states)) {
-    const isCurrent = name === machine.currentState ? " ← [CURRENT]" : ""
-    output += `- ${name}${isCurrent}\n`
-    output += `  Description: ${state.description}\n`
-    if (state.transitions && state.transitions.length > 0) {
-      output += `  Transitions: ${state.transitions.map(t => t.toState).join(", ")}\n`
-    }
-  }
-
-  return output
-}
-
-async function listMachines(): Promise<string> {
-  const machines = stateMachine!.getAllMachines()
-
-  if (machines.length === 0) {
-    return "No state machines found"
-  }
-
-  let output = `Found ${machines.length} state machines:\n\n`
-
-  for (let i = 0; i < machines.length; i++) {
-    const m = machines[i]
-    output += `${i + 1}. **${m.name}** (${m.id})\n`
-    output += `   Current state: ${m.currentState}\n`
-    output += `   States: ${Object.keys(m.states).join(", ")}\n`
-    output += `   Created: ${new Date(m.metadata.created).toLocaleString()}\n\n`
-  }
-
-  return output
-}
-
-async function getHistory(args: { historyLimit?: number }): Promise<string> {
-  const limit = args.historyLimit || 10
-  const machine = stateMachine!.getMachine("default")
-
-  if (!machine) {
-    return "No default state machine found"
-  }
-
-  const history = machine.history.slice(-limit)
-
-  if (history.length === 0) {
-    return "No transition history"
-  }
-
-  let output = `**Transition History** (last ${history.length}):\n\n`
-
-  for (let i = history.length - 1; i >= 0; i--) {
-    const t = history[i]
-    const emoji = t.reward && t.reward > 0 ? "✅" : t.reward && t.reward < 0 ? "❌" : "→"
-    output += `${emoji} ${t.fromState} → ${t.toState}\n`
-    output += `   Trigger: ${t.trigger}\n`
-    if (t.reward !== undefined) {
-      output += `   Reward: ${t.reward.toFixed(2)}\n`
-    }
-    output += `   Time: ${new Date(t.timestamp).toLocaleString()}\n\n`
-  }
-
-  return output
-}
-
-export const learningFsmTool: MCPTool = {
-  ...learningFsmToolImpl,
-  serverName: 'learning',
-  category: 'learning'
+  })
 }

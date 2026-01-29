@@ -1,70 +1,47 @@
 /**
- * Learning Tools Index
+ * Learning System Tools
  *
- * Exports all learning system tools for integration.
+ * OpenCode tools for interacting with the unified AI memory system.
+ * Provides direct access to experience store, knowledge graph, pattern detection,
+ * state machines, and learning statistics.
  */
 
-export {
-  setExperienceStore,
-  getExperienceStore,
-  learningExperienceTool
-} from './learning-experience'
+import { tool } from "@opencode-ai/plugin"
+import { z } from "zod"
+import type { LearningToolsConfig } from "../../types/learning-context"
 
-export {
-  setKnowledgeGraph,
-  getKnowledgeGraph,
-  learningKnowledgeTool
-} from './learning-knowledge'
-
-export {
-  setPatternDetector,
-  getPatternDetector,
-  learningPatternTool
-} from './learning-pattern'
-
-export {
-  setStateMachine,
-  getStateMachine,
-  learningFsmTool
-} from './learning-fsm'
-
-export {
-  setLearningStatsSystems,
-  learningStatsTool
-} from './learning-stats'
+// Import individual tools
+import { createExperienceTool } from "./learning-experience"
+import { createKnowledgeTool } from "./learning-knowledge"
+import { createPatternTool } from "./learning-pattern"
+import { createFsmTool } from "./learning-fsm"
+import { createStatsTool } from "./learning-stats"
 
 /**
- * Initialize all learning tools with their respective systems
+ * Initialize all learning tools
+ *
+ * Returns an object containing all learning tool implementations.
  */
-export function initializeLearningTools(systems: {
-  experienceStore: any
-  knowledgeGraph: any
-  patternDetector: any
-  stateMachine: any
-  fsrsScheduler?: any
-}) {
-  const { experienceStore, knowledgeGraph, patternDetector, stateMachine, fsrsScheduler } = systems
-
-  // Set system instances in each tool module
-  const { setExperienceStore } = await import('./learning-experience')
-  const { setKnowledgeGraph } = await import('./learning-knowledge')
-  const { setPatternDetector } = await import('./learning-pattern')
-  const { setStateMachine } = await import('./learning-fsm')
-  const { setLearningStatsSystems } = await import('./learning-stats')
-
-  setExperienceStore(experienceStore)
-  setKnowledgeGraph(knowledgeGraph)
-  setPatternDetector(patternDetector)
-  setStateMachine(stateMachine)
-  setLearningStatsSystems({ experienceStore, knowledgeGraph, patternDetector, stateMachine, fsrsScheduler })
-
-  console.log("[LearningTools] All learning tools initialized")
+export function initializeLearningTools(config: LearningToolsConfig) {
+  const {
+    experienceStore,
+    knowledgeGraph,
+    patternDetector,
+    stateMachine,
+    fsrsScheduler
+  } = config
 
   return {
-    experienceTool: (await import('./learning-experience')).learningExperienceTool,
-    knowledgeTool: (await import('./learning-knowledge')).learningKnowledgeTool,
-    patternTool: (await import('./learning-pattern')).learningPatternTool,
-    fsmTool: (await import('./learning-fsm')).learningFsmTool,
-    statsTool: (await import('./learning-stats')).learningStatsTool
+    experienceTool: createExperienceTool(experienceStore),
+    knowledgeTool: createKnowledgeTool(knowledgeGraph),
+    patternTool: createPatternTool(patternDetector),
+    fsmTool: createFsmTool(stateMachine),
+    statsTool: createStatsTool({
+      experienceStore,
+      knowledgeGraph,
+      patternDetector,
+      stateMachine,
+      fsrsScheduler
+    })
   }
 }
