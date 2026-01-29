@@ -23,8 +23,3 @@ export type { LearningSystemConfig, LearningSystem } from './integration'
 
 // Types
 export * from './types-unified'
-
-// Note: Old framework.ts is deprecated but kept for backward compatibility
-// Use the new unified system instead
-// export { LearningFramework } from './framework'
-
