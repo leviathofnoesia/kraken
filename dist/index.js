@@ -22708,19 +22708,35 @@ var createOpenCodeXPlugin = async (input) => {
   const config2 = inputConfig;
   const hooks = [];
   console.log("[kraken-code] Initializing plugin...");
+  let learningTools = {};
+  try {
+    const learningSystem = initializeLearningSystem(input, config2.learning);
+    hooks.push(learningSystem.hooks);
+    learningTools = {
+      "learning-experience": learningSystem.tools.experienceTool,
+      "learning-knowledge": learningSystem.tools.knowledgeTool,
+      "learning-pattern": learningSystem.tools.patternTool,
+      "learning-fsm": learningSystem.tools.fsmTool,
+      "learning-stats": learningSystem.tools.statsTool
+    };
+    hooks.push({ tool: learningTools });
+    console.log("[kraken-code] Learning system initialized");
+  } catch (e) {
+    console.error("[kraken-code] Error initializing learning system:", e);
+  }
   const modeHooks = createModeHooks(input, {
     enabled: config2.modes?.ultrawork?.enabled ?? true,
     autoActivate: true
   });
-  Object.assign(hooks, modeHooks);
+  hooks.push(modeHooks);
   const sessionStorageHooks = createSessionStorageHook(input, {
     enabled: config2.claudeCodeCompatibility?.dataStorage ?? true
   });
-  Object.assign(hooks, sessionStorageHooks);
+  hooks.push(sessionStorageHooks);
   const claudeCodeHooks = createClaudeCodeHooks(input, {
     config: config2.claudeCodeCompatibility
   });
-  Object.assign(hooks, claudeCodeHooks);
+  hooks.push(claudeCodeHooks);
   hooks.push({ tool: builtinTools });
   hooks.push({
     config: async (newConfig) => {
@@ -22794,21 +22810,6 @@ var createOpenCodeXPlugin = async (input) => {
         console.log("[kraken-code] MCP servers initialized");
       } catch (e) {
         console.error("[kraken-code] Error initializing MCP servers:", e);
-      }
-      try {
-        const learningSystem = initializeLearningSystem(input, newConfig.learning);
-        Object.assign(hooks, learningSystem.hooks);
-        const learningTools = {
-          "learning-experience": learningSystem.tools.experienceTool,
-          "learning-knowledge": learningSystem.tools.knowledgeTool,
-          "learning-pattern": learningSystem.tools.patternTool,
-          "learning-fsm": learningSystem.tools.fsmTool,
-          "learning-stats": learningSystem.tools.statsTool
-        };
-        hooks.push({ tool: learningTools });
-        console.log("[kraken-code] Learning system initialized");
-      } catch (e) {
-        console.error("[kraken-code] Error initializing learning system:", e);
       }
     }
   });
