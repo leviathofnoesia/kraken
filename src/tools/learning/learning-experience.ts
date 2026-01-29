@@ -64,7 +64,7 @@ export function createExperienceTool(experienceStore: ExperienceStore) {
             const outcome = reward > 0.3 ? "success" as const : reward < -0.3 ? "failure" as const : "partial" as const
 
             const experience = await experienceStore.addExperience({
-              state: "manual",
+              state: JSON.stringify({ source: "manual" }),
               action: actionName,
               outcome,
               reward,
@@ -73,8 +73,7 @@ export function createExperienceTool(experienceStore: ExperienceStore) {
                 sessionId: "manual"
               },
               metadata: {
-                keywords: keywords || [],
-                source: "manual"
+                keywords: keywords || []
               }
             })
 

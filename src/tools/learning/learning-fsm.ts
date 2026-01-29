@@ -22,10 +22,10 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
         .string()
         .optional()
         .describe("Machine ID (for most actions)"),
-      description: z
+      name: z
         .string()
         .optional()
-        .describe("Machine description (for createMachine)"),
+        .describe("Machine name/description (for createMachine)"),
       initialState: z
         .string()
         .optional()
@@ -43,7 +43,7 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
       const {
         action,
         machineId,
-        description,
+        name,
         initialState,
         toState,
         trigger
@@ -61,7 +61,7 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
 
             stateMachine.createMachine(
               machineId,
-              description || "",
+              name || "",
               initialState,
               {
                 [initialState]: {
@@ -102,6 +102,7 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
               success: true,
               machine: {
                 id: machine.id,
+                name: machine.name,
                 description: machine.description,
                 currentState: machine.currentState,
                 stateCount: Object.keys(machine.states).length,
@@ -122,6 +123,7 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
               count: machines.length,
               machines: machines.map((m: any) => ({
                 id: m.id,
+                name: m.name,
                 description: m.description,
                 currentState: m.currentState,
                 stateCount: Object.keys(m.states).length

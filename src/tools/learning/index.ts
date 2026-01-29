@@ -6,16 +6,23 @@
  * state machines, and learning statistics.
  */
 
-import { tool } from "@opencode-ai/plugin"
-import { z } from "zod"
-import type { LearningToolsConfig } from "../../types/learning-context"
+import type { ExperienceStore } from "../../features/learning/experience-store"
+import type { KnowledgeGraphStore } from "../../features/learning/knowledge-graph"
+import type { PatternDetector } from "../../features/learning/pattern-detection"
+import type { StateMachineEngine } from "../../features/learning/state-machine"
 
-// Import individual tools
 import { createExperienceTool } from "./learning-experience"
 import { createKnowledgeTool } from "./learning-knowledge"
 import { createPatternTool } from "./learning-pattern"
 import { createFsmTool } from "./learning-fsm"
 import { createStatsTool } from "./learning-stats"
+
+interface LearningToolsConfig {
+  experienceStore: ExperienceStore
+  knowledgeGraph: KnowledgeGraphStore
+  patternDetector: PatternDetector
+  stateMachine: StateMachineEngine
+}
 
 /**
  * Initialize all learning tools
@@ -27,8 +34,7 @@ export function initializeLearningTools(config: LearningToolsConfig) {
     experienceStore,
     knowledgeGraph,
     patternDetector,
-    stateMachine,
-    fsrsScheduler
+    stateMachine
   } = config
 
   return {
@@ -40,8 +46,7 @@ export function initializeLearningTools(config: LearningToolsConfig) {
       experienceStore,
       knowledgeGraph,
       patternDetector,
-      stateMachine,
-      fsrsScheduler
+      stateMachine
     })
   }
 }

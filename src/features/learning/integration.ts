@@ -10,14 +10,14 @@ import * as path from "path"
 import * as os from "os"
 
 // Import learning system components
-import { ExperienceStore } from "./experience-store"
-import { KnowledgeGraphStore } from "./knowledge-graph"
-import { PatternDetector } from "./pattern-detection"
-import { StateMachineEngine } from "./state-machine"
-import { FSRScheduler } from "./fsrs-scheduler"
+import { ExperienceStore } from "../experience-store"
+import { KnowledgeGraphStore } from "../knowledge-graph"
+import { PatternDetector } from "../pattern-detection"
+import { StateMachineEngine } from "../state-machine"
+import { FSRScheduler } from "../fsrs-scheduler"
 
 // Import unified context type
-import type { LearningSystemContext } from "../../types/learning-context"
+import type { LearningSystemContext, LearningHooksConfig } from "../../types/learning-context"
 
 // Import hooks
 import { createLearningHooks } from "../../hooks/learning"
@@ -60,7 +60,7 @@ export interface LearningSystemConfig {
 
 export interface LearningSystem {
   hooks: Hooks
-  tools: any[]
+  tools: Record<string, any>
   shutdown: () => Promise<void>
 }
 
@@ -75,7 +75,7 @@ export function initializeLearningSystem(
 ): LearningSystem {
   const mergedConfig: LearningSystemConfig = {
     enabled: config?.enabled ?? true,
-    storagePath: (config?.storagePath ?? path.join(os.homedir(), ".clawd", "learning"))!,
+    storagePath: config?.storagePath ?? path.join(os.homedir(), ".clawd", "learning"),
     experienceStore: {
       enabled: config?.experienceStore?.enabled ?? true,
       bufferSize: config?.experienceStore?.bufferSize ?? 1000,
@@ -109,7 +109,7 @@ export function initializeLearningSystem(
     console.log("[LearningSystem] Learning system disabled")
     return {
       hooks: {},
-      tools: [],
+      tools: {},
       shutdown: async () => {}
     }
   }
@@ -257,13 +257,13 @@ export function initializeLearningSystem(
   // Store instance for shutdown
   learningSystemInstance = {
     hooks,
-    tools: [
-      tools.experienceTool,
-      tools.knowledgeTool,
-      tools.patternTool,
-      tools.fsmTool,
-      tools.statsTool
-    ],
+    tools: {
+      "learning-experience": tools.experienceTool,
+      "learning-knowledge": tools.knowledgeTool,
+      "learning-pattern": tools.patternTool,
+      "learning-fsm": tools.fsmTool,
+      "learning-stats": tools.statsTool
+    },
     shutdown: async () => {
       console.log("[LearningSystem] Shutting down...")
 
@@ -287,7 +287,7 @@ export function getLearningSystem(): LearningSystem | null {
 }
 
 /**
- * Shutdown the learning system
+ * Shutdown learning system
  */
 export async function shutdownLearningSystem(): Promise<void> {
   if (learningSystemInstance) {
