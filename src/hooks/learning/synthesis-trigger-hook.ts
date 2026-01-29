@@ -13,20 +13,13 @@ import type { KnowledgeGraphStore } from "../../features/learning/knowledge-grap
 import type { PatternDetector } from "../../features/learning/pattern-detection"
 import type { StateMachineEngine } from "../../features/learning/state-machine"
 import type { FSRScheduler } from "../../features/learning/fsrs-scheduler"
+import type { LearningSystemContext } from "../../types/learning-context"
 
 export interface SynthesisTriggerHookOptions {
   enabled?: boolean
   autoSynthesis?: boolean
   minSessionLength?: number // Minimum number of messages to trigger synthesis
   updateFSRS?: boolean
-}
-
-export interface LearningSystemContext {
-  experienceStore: ExperienceStore
-  knowledgeGraph: KnowledgeGraphStore
-  patternDetector: PatternDetector
-  stateMachine: StateMachineEngine
-  fsrsScheduler?: FSRScheduler
 }
 
 /**

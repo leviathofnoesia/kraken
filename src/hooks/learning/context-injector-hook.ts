@@ -12,6 +12,8 @@ import type { KnowledgeGraphStore } from "../../features/learning/knowledge-grap
 import type { PatternDetector } from "../../features/learning/pattern-detection"
 import type { StateMachineEngine } from "../../features/learning/state-machine"
 import type { LearningSystemContext } from "../../types/learning-context"
+
+export interface ContextInjectorHookOptions {
   enabled?: boolean
   maxExperiences?: number
   maxPatterns?: number
@@ -19,15 +21,8 @@ import type { LearningSystemContext } from "../../types/learning-context"
   injectState?: boolean
 }
 
-export interface LearningSystemContext {
-  experienceStore: ExperienceStore
-  knowledgeGraph: KnowledgeGraphStore
-  patternDetector: PatternDetector
-  stateMachine: StateMachineEngine
-}
-
 /**
- * Create the context injector hook
+ * Create context injector hook
  */
 export function createContextInjectorHook(
   input: PluginInput,
@@ -261,76 +256,6 @@ async function getCurrentState(
   }
 
   return machine.currentState
-}
-
-/**
- * Format the contextual message for injection
- */
-function formatContextualMessage(contextData: {
-  experiences: any[]
-  patterns: any[]
-  knowledgeNodes: any[]
-  currentState: string | null
-}): string {
-  const parts: string[] = []
-
-  // Add current state if available
-  if (contextData.currentState) {
-    parts.push(`**Current State:** ${contextData.currentState}`)
-    parts.push("")
-  }
-
-  // Add relevant experiences
-  if (contextData.experiences.length > 0) {
-    parts.push("**Relevant Past Experiences:**")
-    parts.push("")
-    for (const exp of contextData.experiences) {
-      const statusEmoji = exp.outcome === "success" ? "✅" : exp.outcome === "failure" ? "❌" : "⚠️"
-      parts.push(
-        `- ${statusEmoji} Used \`${exp.action}\` (reward: ${exp.reward.toFixed(2)}) ` +
-        `- ${exp.context.prompt?.substring(0, 80) || "no prompt"}...`
-      )
-    }
-    parts.push("")
-  }
-
-  // Add detected patterns
-  if (contextData.patterns.length > 0) {
-    parts.push("**Detected Patterns:**")
-    parts.push("")
-    for (const pattern of contextData.patterns) {
-      const impactEmoji = pattern.impact === "critical" ? "🚨" :
-                         pattern.impact === "high" ? "🔴" :
-                         pattern.impact === "medium" ? "⚠️" : "💚"
-      parts.push(
-        `- ${impactEmoji} **${pattern.description}** ` +
-        `(${pattern.type}, confidence: ${(pattern.confidence * 100).toFixed(0)}%)`
-      )
-      if (pattern.suggestedActions.length > 0) {
-        parts.push(`  Suggested: ${pattern.suggestedActions[0]}`)
-      }
-    }
-    parts.push("")
-  }
-
-  // Add relevant knowledge
-  if (contextData.knowledgeNodes.length > 0) {
-    parts.push("**Relevant Knowledge:**")
-    parts.push("")
-    for (const node of contextData.knowledgeNodes) {
-      parts.push(
-        `- **${node.id}** (${node.type}): ` +
-        `${Object.values(node.data).join(", ").substring(0, 60)}...`
-      )
-    }
-    parts.push("")
-  }
-
-  // Add closing note
-  parts.push("---")
-  parts.push("*This context was auto-injected by the learning system. Use `learning_stats` for more details.*")
-
-  return parts.join("\n")
 }
 
 /**

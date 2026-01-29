@@ -2,7 +2,7 @@
  * Learning System Hooks
  *
  * Entry point for all learning-related hooks.
- * Integrates the four-layer learning architecture with OpenCode.
+ * Integrates four-layer learning architecture with OpenCode.
  */
 
 import type { PluginInput } from "@opencode-ai/plugin"
@@ -12,6 +12,7 @@ import type { KnowledgeGraphStore } from "../../features/learning/knowledge-grap
 import type { PatternDetector } from "../../features/learning/pattern-detection"
 import type { StateMachineEngine } from "../../features/learning/state-machine"
 import type { FSRScheduler } from "../../features/learning/fsrs-scheduler"
+import type { LearningSystemContext } from "../../types/learning-context"
 
 export {
   createExperienceRecorderHook,
@@ -28,18 +29,10 @@ export {
   type SynthesisTriggerHookOptions
 } from "./synthesis-trigger-hook"
 
-export interface LearningSystemContext {
-  experienceStore: ExperienceStore
-  knowledgeGraph: KnowledgeGraphStore
-  patternDetector: PatternDetector
-  stateMachine: StateMachineEngine
-  fsrsScheduler?: FSRScheduler
-}
-
 /**
  * Create all learning hooks at once
  *
- * This is the main entry point for integrating the learning system
+ * This is the main entry point for integrating learning system
  * into Kraken-Code via hooks.
  */
 export function createLearningHooks(
@@ -55,7 +48,7 @@ export function createLearningHooks(
   const learningConfig = config.learning || {}
 
   if (learningConfig.enabled === false) {
-    console.log("[LearningHooks] Learning system disabled in config")
+    console.log("[LearningHooks] Learning system disabled")
     return {}
   }
 
@@ -81,11 +74,10 @@ export function createLearningHooks(
   )
 
   // Merge all hooks
-  const mergedHooks: Hooks = {
-    ...experienceRecorderHooks,
-    ...contextInjectorHooks,
-    ...synthesisTriggerHooks
-  }
+  const mergedHooks: Hooks = {}
+  Object.assign(mergedHooks, experienceRecorderHooks)
+  Object.assign(mergedHooks, contextInjectorHooks)
+  Object.assign(mergedHooks, synthesisTriggerHooks)
 
   console.log(
     `[LearningHooks] Created ${Object.keys(mergedHooks).length} hooks: ` +
