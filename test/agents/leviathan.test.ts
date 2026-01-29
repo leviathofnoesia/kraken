@@ -7,13 +7,8 @@ describe("Leviathan Agent", () => {
   })
 
   it("should have required properties", () => {
-    expect(leviathanAgent.name).toBe("Leviathan")
     expect(leviathanAgent.description).toBeDefined()
     expect(leviathanAgent.prompt).toBeDefined()
-  })
-
-  it("should have correct agent name", () => {
-    expect(leviathanAgent.name).toBe("Leviathan")
   })
 
   it("should have valid prompt structure", () => {

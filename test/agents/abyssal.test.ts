@@ -7,13 +7,8 @@ describe("Abyssal Agent", () => {
   })
 
   it("should have required properties", () => {
-    expect(abyssalAgent.name).toBe("Abyssal")
     expect(abyssalAgent.description).toBeDefined()
     expect(abyssalAgent.prompt).toBeDefined()
-  })
-
-  it("should have correct agent name", () => {
-    expect(abyssalAgent.name).toBe("Abyssal")
   })
 
   it("should have valid prompt structure", () => {

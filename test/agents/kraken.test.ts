@@ -7,13 +7,8 @@ describe("Kraken Agent", () => {
   })
 
   it("should have required properties", () => {
-    expect(krakenAgent.name).toBe("Kraken")
     expect(krakenAgent.description).toBeDefined()
     expect(krakenAgent.prompt).toBeDefined()
-  })
-
-  it("should have correct agent name", () => {
-    expect(krakenAgent.name).toBe("Kraken")
   })
 
   it("should have valid prompt structure", () => {

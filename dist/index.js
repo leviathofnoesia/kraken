@@ -4878,8 +4878,8 @@ var require_utils = __commonJS((exports, module) => {
     }
     return ind;
   }
-  function removeDotSegments(path19) {
-    let input = path19;
+  function removeDotSegments(path18) {
+    let input = path18;
     const output = [];
     let nextSlash = -1;
     let len = 0;
@@ -5069,8 +5069,8 @@ var require_schemes = __commonJS((exports, module) => {
       wsComponent.secure = undefined;
     }
     if (wsComponent.resourceName) {
-      const [path19, query] = wsComponent.resourceName.split("?");
-      wsComponent.path = path19 && path19 !== "/" ? path19 : undefined;
+      const [path18, query] = wsComponent.resourceName.split("?");
+      wsComponent.path = path18 && path18 !== "/" ? path18 : undefined;
       wsComponent.query = query;
       wsComponent.resourceName = undefined;
     }
@@ -8205,12 +8205,12 @@ var require_dist = __commonJS((exports, module) => {
       throw new Error(`Unknown format "${name}"`);
     return f;
   };
-  function addFormats(ajv, list, fs17, exportName) {
+  function addFormats(ajv, list, fs16, exportName) {
     var _a;
     var _b;
     (_a = (_b = ajv.opts.code).formats) !== null && _a !== undefined || (_b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`);
     for (const f of list)
-      ajv.addFormat(f, fs17[f]);
+      ajv.addFormat(f, fs16[f]);
   }
   module.exports = exports = formatsPlugin;
   Object.defineProperty(exports, "__esModule", { value: true });
@@ -8221,8 +8221,8 @@ var require_dist = __commonJS((exports, module) => {
 var require_windows = __commonJS((exports, module) => {
   module.exports = isexe;
   isexe.sync = sync;
-  var fs17 = __require("fs");
-  function checkPathExt(path19, options) {
+  var fs16 = __require("fs");
+  function checkPathExt(path18, options) {
     var pathext = options.pathExt !== undefined ? options.pathExt : process.env.PATHEXT;
     if (!pathext) {
       return true;
@@ -8233,25 +8233,25 @@ var require_windows = __commonJS((exports, module) => {
     }
     for (var i = 0;i < pathext.length; i++) {
       var p = pathext[i].toLowerCase();
-      if (p && path19.substr(-p.length).toLowerCase() === p) {
+      if (p && path18.substr(-p.length).toLowerCase() === p) {
         return true;
       }
     }
     return false;
   }
-  function checkStat(stat, path19, options) {
+  function checkStat(stat, path18, options) {
     if (!stat.isSymbolicLink() && !stat.isFile()) {
       return false;
     }
-    return checkPathExt(path19, options);
+    return checkPathExt(path18, options);
   }
-  function isexe(path19, options, cb) {
-    fs17.stat(path19, function(er, stat) {
-      cb(er, er ? false : checkStat(stat, path19, options));
+  function isexe(path18, options, cb) {
+    fs16.stat(path18, function(er, stat) {
+      cb(er, er ? false : checkStat(stat, path18, options));
     });
   }
-  function sync(path19, options) {
-    return checkStat(fs17.statSync(path19), path19, options);
+  function sync(path18, options) {
+    return checkStat(fs16.statSync(path18), path18, options);
   }
 });
 
@@ -8259,14 +8259,14 @@ var require_windows = __commonJS((exports, module) => {
 var require_mode = __commonJS((exports, module) => {
   module.exports = isexe;
   isexe.sync = sync;
-  var fs17 = __require("fs");
-  function isexe(path19, options, cb) {
-    fs17.stat(path19, function(er, stat) {
+  var fs16 = __require("fs");
+  function isexe(path18, options, cb) {
+    fs16.stat(path18, function(er, stat) {
       cb(er, er ? false : checkStat(stat, options));
     });
   }
-  function sync(path19, options) {
-    return checkStat(fs17.statSync(path19), options);
+  function sync(path18, options) {
+    return checkStat(fs16.statSync(path18), options);
   }
   function checkStat(stat, options) {
     return stat.isFile() && checkMode(stat, options);
@@ -8288,7 +8288,7 @@ var require_mode = __commonJS((exports, module) => {
 
 // node_modules/isexe/index.js
 var require_isexe = __commonJS((exports, module) => {
-  var fs17 = __require("fs");
+  var fs16 = __require("fs");
   var core;
   if (process.platform === "win32" || global.TESTING_WINDOWS) {
     core = require_windows();
@@ -8297,7 +8297,7 @@ var require_isexe = __commonJS((exports, module) => {
   }
   module.exports = isexe;
   isexe.sync = sync;
-  function isexe(path19, options, cb) {
+  function isexe(path18, options, cb) {
     if (typeof options === "function") {
       cb = options;
       options = {};
@@ -8307,7 +8307,7 @@ var require_isexe = __commonJS((exports, module) => {
         throw new TypeError("callback not provided");
       }
       return new Promise(function(resolve2, reject) {
-        isexe(path19, options || {}, function(er, is) {
+        isexe(path18, options || {}, function(er, is) {
           if (er) {
             reject(er);
           } else {
@@ -8316,7 +8316,7 @@ var require_isexe = __commonJS((exports, module) => {
         });
       });
     }
-    core(path19, options || {}, function(er, is) {
+    core(path18, options || {}, function(er, is) {
       if (er) {
         if (er.code === "EACCES" || options && options.ignoreErrors) {
           er = null;
@@ -8326,9 +8326,9 @@ var require_isexe = __commonJS((exports, module) => {
       cb(er, is);
     });
   }
-  function sync(path19, options) {
+  function sync(path18, options) {
     try {
-      return core.sync(path19, options || {});
+      return core.sync(path18, options || {});
     } catch (er) {
       if (options && options.ignoreErrors || er.code === "EACCES") {
         return false;
@@ -8342,7 +8342,7 @@ var require_isexe = __commonJS((exports, module) => {
 // node_modules/which/which.js
 var require_which = __commonJS((exports, module) => {
   var isWindows = process.platform === "win32" || process.env.OSTYPE === "cygwin" || process.env.OSTYPE === "msys";
-  var path19 = __require("path");
+  var path18 = __require("path");
   var COLON = isWindows ? ";" : ":";
   var isexe = require_isexe();
   var getNotFoundError = (cmd) => Object.assign(new Error(`not found: ${cmd}`), { code: "ENOENT" });
@@ -8378,7 +8378,7 @@ var require_which = __commonJS((exports, module) => {
         return opt.all && found.length ? resolve2(found) : reject(getNotFoundError(cmd));
       const ppRaw = pathEnv[i];
       const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
-      const pCmd = path19.join(pathPart, cmd);
+      const pCmd = path18.join(pathPart, cmd);
       const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd : pCmd;
       resolve2(subStep(p, i, 0));
     });
@@ -8405,7 +8405,7 @@ var require_which = __commonJS((exports, module) => {
     for (let i = 0;i < pathEnv.length; i++) {
       const ppRaw = pathEnv[i];
       const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
-      const pCmd = path19.join(pathPart, cmd);
+      const pCmd = path18.join(pathPart, cmd);
       const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd : pCmd;
       for (let j = 0;j < pathExt.length; j++) {
         const cur = p + pathExt[j];
@@ -8446,7 +8446,7 @@ var require_path_key = __commonJS((exports, module) => {
 
 // node_modules/cross-spawn/lib/util/resolveCommand.js
 var require_resolveCommand = __commonJS((exports, module) => {
-  var path19 = __require("path");
+  var path18 = __require("path");
   var which = require_which();
   var getPathKey = require_path_key();
   function resolveCommandAttempt(parsed, withoutPathExt) {
@@ -8463,7 +8463,7 @@ var require_resolveCommand = __commonJS((exports, module) => {
     try {
       resolved = which.sync(parsed.command, {
         path: env[getPathKey({ env })],
-        pathExt: withoutPathExt ? path19.delimiter : undefined
+        pathExt: withoutPathExt ? path18.delimiter : undefined
       });
     } catch (e) {} finally {
       if (shouldSwitchCwd) {
@@ -8471,7 +8471,7 @@ var require_resolveCommand = __commonJS((exports, module) => {
       }
     }
     if (resolved) {
-      resolved = path19.resolve(hasCustomCwd ? parsed.options.cwd : "", resolved);
+      resolved = path18.resolve(hasCustomCwd ? parsed.options.cwd : "", resolved);
     }
     return resolved;
   }
@@ -8516,8 +8516,8 @@ var require_shebang_command = __commonJS((exports, module) => {
     if (!match) {
       return null;
     }
-    const [path19, argument] = match[0].replace(/#! ?/, "").split(" ");
-    const binary = path19.split("/").pop();
+    const [path18, argument] = match[0].replace(/#! ?/, "").split(" ");
+    const binary = path18.split("/").pop();
     if (binary === "env") {
       return argument;
     }
@@ -8527,16 +8527,16 @@ var require_shebang_command = __commonJS((exports, module) => {
 
 // node_modules/cross-spawn/lib/util/readShebang.js
 var require_readShebang = __commonJS((exports, module) => {
-  var fs17 = __require("fs");
+  var fs16 = __require("fs");
   var shebangCommand = require_shebang_command();
   function readShebang(command) {
     const size = 150;
     const buffer = Buffer.alloc(size);
     let fd;
     try {
-      fd = fs17.openSync(command, "r");
-      fs17.readSync(fd, buffer, 0, size, 0);
-      fs17.closeSync(fd);
+      fd = fs16.openSync(command, "r");
+      fs16.readSync(fd, buffer, 0, size, 0);
+      fs16.closeSync(fd);
     } catch (e) {}
     return shebangCommand(buffer.toString());
   }
@@ -8545,7 +8545,7 @@ var require_readShebang = __commonJS((exports, module) => {
 
 // node_modules/cross-spawn/lib/parse.js
 var require_parse = __commonJS((exports, module) => {
-  var path19 = __require("path");
+  var path18 = __require("path");
   var resolveCommand = require_resolveCommand();
   var escape2 = require_escape();
   var readShebang = require_readShebang();
@@ -8570,7 +8570,7 @@ var require_parse = __commonJS((exports, module) => {
     const needsShell = !isExecutableRegExp.test(commandFile);
     if (parsed.options.forceShell || needsShell) {
       const needsDoubleEscapeMetaChars = isCmdShimRegExp.test(commandFile);
-      parsed.command = path19.normalize(parsed.command);
+      parsed.command = path18.normalize(parsed.command);
       parsed.command = escape2.command(parsed.command);
       parsed.args = parsed.args.map((arg) => escape2.argument(arg, needsDoubleEscapeMetaChars));
       const shellCommand = [parsed.command].concat(parsed.args).join(" ");
@@ -8654,7 +8654,7 @@ var require_cross_spawn = __commonJS((exports, module) => {
   var cp = __require("child_process");
   var parse = require_parse();
   var enoent = require_enoent();
-  function spawn3(command, args, options) {
+  function spawn2(command, args, options) {
     const parsed = parse(command, args, options);
     const spawned = cp.spawn(parsed.command, parsed.args, parsed.options);
     enoent.hookChildProcess(spawned, parsed);
@@ -8666,8 +8666,8 @@ var require_cross_spawn = __commonJS((exports, module) => {
     result.error = result.error || enoent.verifyENOENTSync(result.status, parsed);
     return result;
   }
-  module.exports = spawn3;
-  module.exports.spawn = spawn3;
+  module.exports = spawn2;
+  module.exports.spawn = spawn2;
   module.exports.sync = spawnSync;
   module.exports._parse = parse;
   module.exports._enoent = enoent;
@@ -12100,11 +12100,10 @@ var lsp_servers = tool({
 });
 // src/hooks/think-mode/mode-detector.ts
 var KEYWORD_DATABASE = [
-  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "English", aliases: ["ulw", "max", "full"] },
-  { keyword: "ultra work", mode: "blitzkrieg", language: "English" },
-  { keyword: "max performance", mode: "blitzkrieg", language: "English" },
-  { keyword: "go all out", mode: "blitzkrieg", language: "English" },
-  { keyword: "full power", mode: "blitzkrieg", language: "English" },
+  { keyword: "blitz", mode: "blitzkrieg" },
+  { keyword: "blz", mode: "blitzkrieg" },
+  { keyword: "blitzkrieg", mode: "blitzkrieg" },
+  { keyword: "blitz mode", mode: "blitzkrieg" },
   { keyword: "search", mode: "search", language: "English", aliases: ["find", "locate", "look for"] },
   { keyword: "find", mode: "search", language: "English" },
   { keyword: "locate", mode: "search", language: "English" },
@@ -12114,189 +12113,42 @@ var KEYWORD_DATABASE = [
   { keyword: "investigate", mode: "analyze", language: "English" },
   { keyword: "examine", mode: "analyze", language: "English" },
   { keyword: "deep analysis", mode: "analyze", language: "English" },
-  { keyword: "detailed analysis", mode: "analyze", language: "English" },
   { keyword: "ultrathink", mode: "ultrathink", language: "English", aliases: ["think deeply", "deep think"] },
   { keyword: "think deeply", mode: "ultrathink", language: "English" },
   { keyword: "deep think", mode: "ultrathink", language: "English" },
-  { keyword: "extended thinking", mode: "ultrathink", language: "English" },
-  { keyword: "careful reasoning", mode: "ultrathink", language: "English" },
-  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "Spanish", aliases: ["ulw", "trabajo ultra"] },
-  { keyword: "trabajo ultra", mode: "blitzkrieg", language: "Spanish" },
-  { keyword: "máximo rendimiento", mode: "blitzkrieg", language: "Spanish" },
-  { keyword: "buscar", mode: "search", language: "Spanish", aliases: ["encontrar", "localizar"] },
-  { keyword: "encontrar", mode: "search", language: "Spanish" },
-  { keyword: "localizar", mode: "search", language: "Spanish" },
-  { keyword: "analizar", mode: "analyze", language: "Spanish", aliases: ["investigar", "examinar"] },
-  { keyword: "investigar", mode: "analyze", language: "Spanish" },
+  { keyword: "analizar", mode: "analyze", language: "Spanish" },
   { keyword: "examinar", mode: "analyze", language: "Spanish" },
-  { keyword: "pensar profundamente", mode: "ultrathink", language: "Spanish", aliases: ["piensa", "razonamiento profundo"] },
-  { keyword: "piensa", mode: "ultrathink", language: "Spanish" },
-  { keyword: "razonamiento profundo", mode: "ultrathink", language: "Spanish" },
-  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "French", aliases: ["ulw", "travail ultra"] },
-  { keyword: "travail ultra", mode: "blitzkrieg", language: "French" },
-  { keyword: "chercher", mode: "search", language: "French", aliases: ["rechercher", "trouver"] },
-  { keyword: "rechercher", mode: "search", language: "French" },
-  { keyword: "trouver", mode: "search", language: "French" },
-  { keyword: "analyser", mode: "analyze", language: "French", aliases: ["investiguer", "examiner"] },
-  { keyword: "investiguer", mode: "analyze", language: "French" },
+  { keyword: "analyser", mode: "analyze", language: "French" },
   { keyword: "examiner", mode: "analyze", language: "French" },
-  { keyword: "réfléchir profondément", mode: "ultrathink", language: "French", aliases: ["réfléchis", "pensée profonde"] },
-  { keyword: "réfléchis", mode: "ultrathink", language: "French" },
-  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "German", aliases: ["ulw", "maximal"] },
-  { keyword: "maximale leistung", mode: "blitzkrieg", language: "German" },
-  { keyword: "suchen", mode: "search", language: "German", aliases: ["finden", "lokalisieren"] },
-  { keyword: "finden", mode: "search", language: "German" },
-  { keyword: "analysieren", mode: "analyze", language: "German", aliases: ["untersuchen", "prüfen"] },
-  { keyword: "untersuchen", mode: "analyze", language: "German" },
-  { keyword: "nachdenken", mode: "ultrathink", language: "German", aliases: ["denk nach", "sorgfältig denken"] },
-  { keyword: "denk nach", mode: "ultrathink", language: "German" },
-  { keyword: "sorgfältig denken", mode: "ultrathink", language: "German" },
-  { keyword: "강력한", mode: "blitzkrieg", language: "Korean", aliases: ["울트라워크", "최대"] },
-  { keyword: "울트라워크", mode: "blitzkrieg", language: "Korean" },
-  { keyword: "최대", mode: "blitzkrieg", language: "Korean" },
-  { keyword: "최고 성능", mode: "blitzkrieg", language: "Korean" },
-  { keyword: "검색", mode: "search", language: "Korean", aliases: ["찾아", "찾기"] },
-  { keyword: "찾아", mode: "search", language: "Korean" },
-  { keyword: "찾기", mode: "search", language: "Korean" },
-  { keyword: "분석", mode: "analyze", language: "Korean", aliases: ["조사", "검토"] },
-  { keyword: "조사", mode: "analyze", language: "Korean" },
-  { keyword: "검토", mode: "analyze", language: "Korean" },
-  { keyword: "생각해", mode: "ultrathink", language: "Korean", aliases: ["깊게 생각", "신중한 사고"] },
-  { keyword: "깊게 생각", mode: "ultrathink", language: "Korean" },
-  { keyword: "신중한 사고", mode: "ultrathink", language: "Korean" },
-  { keyword: "强力", mode: "blitzkrieg", language: "Chinese (Simplified)", aliases: ["超神", "最大"] },
-  { keyword: "超神", mode: "blitzkrieg", language: "Chinese (Simplified)" },
-  { keyword: "最大", mode: "blitzkrieg", language: "Chinese (Simplified)" },
-  { keyword: "搜索", mode: "search", language: "Chinese (Simplified)", aliases: ["查找", "定位"] },
-  { keyword: "查找", mode: "search", language: "Chinese (Simplified)" },
-  { keyword: "定位", mode: "search", language: "Chinese (Simplified)" },
-  { keyword: "分析", mode: "analyze", language: "Chinese (Simplified)", aliases: ["调查", "检查"] },
-  { keyword: "调查", mode: "analyze", language: "Chinese (Simplified)" },
-  { keyword: "检查", mode: "analyze", language: "Chinese (Simplified)" },
-  { keyword: "深度思考", mode: "ultrathink", language: "Chinese (Simplified)", aliases: ["仔细思考", "让我想想"] },
-  { keyword: "仔细思考", mode: "ultrathink", language: "Chinese (Simplified)" },
-  { keyword: "让我想想", mode: "ultrathink", language: "Chinese (Simplified)" },
-  { keyword: "强力", mode: "blitzkrieg", language: "Chinese (Traditional)", aliases: ["超神", "最大"] },
-  { keyword: "超神", mode: "blitzkrieg", language: "Chinese (Traditional)" },
-  { keyword: "最大", mode: "blitzkrieg", language: "Chinese (Traditional)" },
-  { keyword: "搜索", mode: "search", language: "Chinese (Traditional)", aliases: ["查找", "定位"] },
-  { keyword: "查找", mode: "search", language: "Chinese (Traditional)" },
-  { keyword: "定位", mode: "search", language: "Chinese (Traditional)" },
-  { keyword: "分析", mode: "analyze", language: "Chinese (Traditional)", aliases: ["調查", "檢查"] },
-  { keyword: "調查", mode: "analyze", language: "Chinese (Traditional)" },
-  { keyword: "檢查", mode: "analyze", language: "Chinese (Traditional)" },
-  { keyword: "深度思考", mode: "ultrathink", language: "Chinese (Traditional)", aliases: ["仔細思考", "讓我思考"] },
-  { keyword: "仔細思考", mode: "ultrathink", language: "Chinese (Traditional)" },
-  { keyword: "讓我思考", mode: "ultrathink", language: "Chinese (Traditional)" },
-  { keyword: "強力", mode: "blitzkrieg", language: "Japanese", aliases: ["最大", "フルパワー"] },
-  { keyword: "最大", mode: "blitzkrieg", language: "Japanese" },
-  { keyword: "フルパワー", mode: "blitzkrieg", language: "Japanese" },
-  { keyword: "検索", mode: "search", language: "Japanese", aliases: ["探す", "見つける"] },
-  { keyword: "探す", mode: "search", language: "Japanese" },
-  { keyword: "見つける", mode: "search", language: "Japanese" },
-  { keyword: "分析", mode: "analyze", language: "Japanese", aliases: ["調査", "検討"] },
-  { keyword: "調査", mode: "analyze", language: "Japanese" },
-  { keyword: "検討", mode: "analyze", language: "Japanese" },
-  { keyword: "深く考える", mode: "ultrathink", language: "Japanese", aliases: ["思考", "注意深く考える"] },
-  { keyword: "思考", mode: "ultrathink", language: "Japanese" },
-  { keyword: "注意深く考える", mode: "ultrathink", language: "Japanese" },
-  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "Portuguese", aliases: ["ulw", "trabalho ultra"] },
-  { keyword: "trabalho ultra", mode: "blitzkrieg", language: "Portuguese" },
-  { keyword: "pesquisar", mode: "search", language: "Portuguese", aliases: ["procurar", "encontrar"] },
-  { keyword: "procurar", mode: "search", language: "Portuguese" },
-  { keyword: "encontrar", mode: "search", language: "Portuguese" },
-  { keyword: "analisar", mode: "analyze", language: "Portuguese", aliases: ["investigar", "examinar"] },
-  { keyword: "investigar", mode: "analyze", language: "Portuguese" },
-  { keyword: "examinar", mode: "analyze", language: "Portuguese" },
-  { keyword: "pensar profundamente", mode: "ultrathink", language: "Portuguese", aliases: ["pense", "raciocínio profundo"] },
-  { keyword: "pense", mode: "ultrathink", language: "Portuguese" },
-  { keyword: "raciocínio profundo", mode: "ultrathink", language: "Portuguese" },
-  { keyword: "blitzkrieg", mode: "blitzkrieg", language: "Italian", aliases: ["ulw", "lavoro ultra"] },
-  { keyword: "lavoro ultra", mode: "blitzkrieg", language: "Italian" },
-  { keyword: "cercare", mode: "search", language: "Italian", aliases: ["trovare", "ricercare"] },
-  { keyword: "trovare", mode: "search", language: "Italian" },
-  { keyword: "ricercare", mode: "search", language: "Italian" },
-  { keyword: "analizzare", mode: "analyze", language: "Italian", aliases: ["indagare", "esaminare"] },
-  { keyword: "indagare", mode: "analyze", language: "Italian" },
-  { keyword: "esaminare", mode: "analyze", language: "Italian" },
-  { keyword: "pensare attentamente", mode: "ultrathink", language: "Italian", aliases: ["pensa", "pensiero profondo"] },
-  { keyword: "pensa", mode: "ultrathink", language: "Italian" },
-  { keyword: "pensiero profondo", mode: "ultrathink", language: "Italian" },
-  { keyword: "ультраворк", mode: "blitzkrieg", language: "Russian", aliases: ["ulw", "максимально"] },
-  { keyword: "максимально", mode: "blitzkrieg", language: "Russian" },
-  { keyword: "поиск", mode: "search", language: "Russian", aliases: ["найти", "искать"] },
-  { keyword: "найти", mode: "search", language: "Russian" },
-  { keyword: "искать", mode: "search", language: "Russian" },
-  { keyword: "анализировать", mode: "analyze", language: "Russian", aliases: ["исследовать", "изучить"] },
-  { keyword: "исследовать", mode: "analyze", language: "Russian" },
-  { keyword: "изучить", mode: "analyze", language: "Russian" },
-  { keyword: "подумать", mode: "ultrathink", language: "Russian", aliases: ["подумай", "тщательно подумать"] },
-  { keyword: "подумай", mode: "ultrathink", language: "Russian" },
-  { keyword: "тщательно подумать", mode: "ultrathink", language: "Russian" },
-  { keyword: "ألترا وورك", mode: "blitzkrieg", language: "Arabic", aliases: ["العمل القوي", "الأقصى"] },
-  { keyword: "بحث", mode: "search", language: "Arabic", aliases: ["إيجاد", "تحديد موقع"] },
-  { keyword: "تحليل", mode: "analyze", language: "Arabic", aliases: ["تحقيق", "فحص"] },
-  { keyword: "تفكير عميق", mode: "ultrathink", language: "Arabic", aliases: ["فكر", "تفكر بعناية"] },
-  { keyword: "فكر", mode: "ultrathink", language: "Arabic" },
-  { keyword: "अल्ट्रावर्क", mode: "blitzkrieg", language: "Hindi", aliases: ["अधिकतम", "अधिक कार्य"] },
-  { keyword: "अधिकतम", mode: "blitzkrieg", language: "Hindi" },
-  { keyword: "अधिक कार्य", mode: "blitzkrieg", language: "Hindi" },
-  { keyword: "खोज", mode: "search", language: "Hindi", aliases: ["ढूंढना", "ढूंढो"] },
-  { keyword: "विश्लेषण", mode: "analyze", language: "Hindi", aliases: ["जांच", "जांचना"] },
-  { keyword: "जांच", mode: "analyze", language: "Hindi" },
-  { keyword: "जांचना", mode: "analyze", language: "Hindi" },
-  { keyword: "गहरी सोच", mode: "ultrathink", language: "Hindi", aliases: ["सोचो", "ध्यानपूर्वक सोच"] },
-  { keyword: "सोचो", mode: "ultrathink", language: "Hindi" },
-  { keyword: "ध्यानपूर्वक सोच", mode: "ultrathink", language: "Hindi" }
+  { keyword: "analysieren", mode: "analyze", language: "German" }
 ];
-function detectMode(text) {
-  const lowercaseText = text.toLowerCase();
-  const modeMatches = new Map;
-  for (const keywordDef of KEYWORD_DATABASE) {
-    const keywordLower = keywordDef.keyword.toLowerCase();
-    if (lowercaseText.includes(keywordLower)) {
-      if (!modeMatches.has(keywordDef.mode)) {
-        modeMatches.set(keywordDef.mode, new Set);
-      }
-      modeMatches.get(keywordDef.mode).add(keywordDef.keyword);
-    }
-    if (keywordDef.aliases) {
-      for (const alias of keywordDef.aliases) {
-        const aliasLower = alias.toLowerCase();
-        if (lowercaseText.includes(aliasLower)) {
-          if (!modeMatches.has(keywordDef.mode)) {
-            modeMatches.set(keywordDef.mode, new Set);
-          }
-          modeMatches.get(keywordDef.mode).add(keywordDef.keyword);
-        }
-      }
+function detectMode(keyword) {
+  const keywordLower = keyword.toLowerCase();
+  for (const entry of KEYWORD_DATABASE) {
+    if (entry.keyword.toLowerCase() === keywordLower) {
+      return {
+        mode: entry.mode,
+        keyword: entry.keyword,
+        language: entry.language
+      };
     }
   }
-  if (modeMatches.size === 0) {
-    return null;
-  }
-  let bestMode = "";
-  let bestKeywordCount = 0;
-  for (const [mode, keywords2] of modeMatches.entries()) {
-    if (keywords2.size > bestKeywordCount) {
-      bestMode = mode;
-      bestKeywordCount = keywords2.size;
+  for (const entry of KEYWORD_DATABASE) {
+    if (entry.aliases && entry.aliases.some((alias) => alias.toLowerCase() === keywordLower)) {
+      return {
+        mode: entry.mode,
+        keyword: entry.keyword,
+        language: entry.language
+      };
     }
   }
-  const keywords = Array.from(modeMatches.get(bestMode));
-  const confidence = bestKeywordCount > 2 ? 0.9 : bestKeywordCount > 1 ? 0.7 : 0.5;
-  console.log(`[mode-detector] Detected mode "${bestMode}" with ${bestKeywordCount} keyword matches (confidence: ${confidence})`);
-  return {
-    mode: bestMode,
-    keywords,
-    confidence
-  };
+  return null;
 }
 
 // src/hooks/think-mode/modes.ts
 var DEFAULT_MODES = {
   blitzkrieg: {
-    name: "Ultrawork",
+    name: "Blitzkrieg",
     enabled: true,
     parallelAgents: 4,
     concurrencyLimits: {
@@ -12319,7 +12171,7 @@ var DEFAULT_MODES = {
     expertAgents: ["oracle", "Abyssal", "Siren"]
   },
   ultrathink: {
-    name: "Ultrathink",
+    name: "UltraThink",
     enabled: true,
     thinkingBudget: 32000,
     autoVariantSwitch: true
@@ -12977,9 +12829,8 @@ function createKeywordDetector(_input, options) {
       "[DOCS]": "docs",
       "[REVIEW]": "review",
       think: "think",
+      "think deeply": "think",
       ultrathink: "think",
-      ulw: "ultrawork",
-      ultrawork: "ultrawork",
       search: "search",
       analyze: "analyze",
       investigate: "analyze",
@@ -13120,24 +12971,6 @@ function createKeywordDetector(_input, options) {
       ...dutchKeywords,
       ...thaiKeywords
     ];
-    const ultraworkModeKeywords = [
-      "ultrawork",
-      "ulw",
-      "ultra work",
-      "ultra work mode",
-      "초신속",
-      "슈퍼모드",
-      "스피드",
-      "super rapid",
-      "ultra rapid",
-      "أسرع",
-      "על הכי מהיר",
-      "kerja super cepat",
-      "ультра-быстро",
-      "υπερταχύτητα",
-      "super rychle",
-      "super viteză"
-    ];
     const searchModeKeywords = [
       "search",
       "find",
@@ -13193,9 +13026,6 @@ function createKeywordDetector(_input, options) {
       "onderzoek",
       "วิเคราะห์"
     ];
-    if (ultraworkModeKeywords.includes(keyword.toLowerCase())) {
-      return { mode: "ultrawork", language: detectLanguage(keyword) };
-    }
     if (searchModeKeywords.includes(keyword.toLowerCase())) {
       return { mode: "search", language: detectLanguage(keyword) };
     }
@@ -13209,7 +13039,7 @@ function createKeywordDetector(_input, options) {
   }
   function detectLanguage(keyword) {
     const keywordLower = keyword.toLowerCase();
-    const arabicMatch = /[ا-ي-ع]/;
+    const arabicMatch = /[\u0600-\u06FF]/;
     const hebrewMatch = /[\u0590-\u05FF]/;
     const cyrillicMatch = /[\u0400-\u04FF]/;
     const chineseMatch = /[\u4E00-\u9FFF]/;
@@ -13289,11 +13119,7 @@ function createKeywordDetector(_input, options) {
           const detected = detectLanguageAndMode(word);
           console.log(`[keyword-detector] Detected "${word}" (${detected.language}), activating: ${detected.mode} mode`);
           const pluginConfig = input.config;
-          if (detected.mode === "ultrawork") {
-            if (pluginConfig?.enhanced?.enabled === false) {
-              pluginConfig.enhanced = { ...pluginConfig.enhanced, enabled: true };
-            }
-          } else if (detected.mode === "search") {
+          if (detected.mode === "search") {
             console.log(`[keyword-detector] Activating search mode for ${detected.language}`);
           } else if (detected.mode === "analyze") {
             console.log(`[keyword-detector] Activating analyze mode for ${detected.language}`);
@@ -17324,226 +17150,11 @@ var grepAppMCP = {
   }
 };
 
-// src/features/mcp/kratos.ts
-import { spawn as spawn2 } from "child_process";
-import * as path12 from "path";
-import * as os10 from "os";
-import * as fs11 from "fs";
-var z16 = tool.schema;
-var kratosProcess = null;
-var requestId = 0;
-var pendingRequests = new Map;
-var KRATOS_STORAGE_PATH = path12.join(os10.homedir(), ".kratos");
-async function initializeKratos() {
-  if (kratosProcess) {
-    console.log("[Kratos MCP] Already initialized");
-    return;
-  }
-  if (!fs11.existsSync(KRATOS_STORAGE_PATH)) {
-    fs11.mkdirSync(KRATOS_STORAGE_PATH, { recursive: true });
-  }
-  kratosProcess = spawn2("npx", ["--yes", "kratos-mcp@latest"], {
-    stdio: ["pipe", "pipe", "pipe"],
-    env: {
-      ...process.env,
-      KRATOS_STORAGE_PATH
-    }
-  });
-  if (!kratosProcess.stdin || !kratosProcess.stdout) {
-    console.error("[Kratos MCP] Failed to create stdio pipes");
-    return;
-  }
-  kratosProcess.on("error", (err) => {
-    console.error("[Kratos MCP] Failed to start:", err);
-    kratosProcess = null;
-  });
-  kratosProcess.on("exit", (code) => {
-    console.log(`[Kratos MCP] Process exited with code ${code}`);
-    kratosProcess = null;
-    for (const [id, { reject }] of pendingRequests.entries()) {
-      reject(new Error(`Kratos process exited: code ${code}`));
-      pendingRequests.delete(id);
-    }
-  });
-  kratosProcess.stderr?.on("data", (data) => {
-    console.error(`[Kratos MCP] ${data}`);
-  });
-  kratosProcess.stdout.on("data", (data) => {
-    const lines = data.toString().split(`
-`).filter((line) => line.trim());
-    for (const line of lines) {
-      try {
-        const response = JSON.parse(line);
-        if (response.id !== undefined) {
-          const pending = pendingRequests.get(response.id);
-          if (pending) {
-            if (response.error) {
-              pending.reject(new Error(response.error.message || "Kratos MCP error"));
-            } else {
-              pending.resolve(response.result);
-            }
-            pendingRequests.delete(response.id);
-          }
-        }
-      } catch (e) {}
-    }
-  });
-  console.log("[Kratos MCP] Initialized");
-}
-async function shutdownKratos() {
-  if (kratosProcess) {
-    kratosProcess.kill();
-    kratosProcess = null;
-    console.log("[Kratos MCP] Shutdown");
-  }
-}
-async function sendKratosRequest(method, params = {}) {
-  if (!kratosProcess || !kratosProcess.stdin) {
-    throw new Error("Kratos MCP not initialized. Call initializeKratos() first.");
-  }
-  const id = ++requestId;
-  return new Promise((resolve2, reject) => {
-    pendingRequests.set(id, { resolve: resolve2, reject });
-    const request = {
-      jsonrpc: "2.0",
-      id,
-      method,
-      params
-    };
-    if (kratosProcess?.stdin) {
-      kratosProcess.stdin.write(JSON.stringify(request) + `
-`);
-    }
-    const timeout = setTimeout(() => {
-      pendingRequests.delete(id);
-      reject(new Error("Kratos MCP request timeout"));
-    }, 30000);
-    const originalResolve = resolve2;
-    const wrappedResolve = (value) => {
-      clearTimeout(timeout);
-      originalResolve(value);
-    };
-    pendingRequests.set(id, { resolve: wrappedResolve, reject });
-  });
-}
-var memorySaveToolImpl = tool({
-  description: "Save a memory to Kratos project database",
-  args: {
-    summary: z16.string().describe("Short 1-2 line summary of memory"),
-    text: z16.string().describe("Full memory content"),
-    tags: z16.array(z16.string()).describe("Tags for categorization"),
-    paths: z16.array(z16.string()).describe("Related file paths"),
-    importance: z16.number().min(1).max(5).default(3).describe("Importance 1-5")
-  },
-  async execute(args, context) {
-    try {
-      const result = await sendKratosRequest("call_tool", {
-        name: "memory_save",
-        arguments: args
-      });
-      return result?.content?.[0]?.text || "Memory saved successfully";
-    } catch (error) {
-      console.error(`[Kratos] Error saving memory:`, error);
-      throw new Error(`Failed to save memory: ${error.message}`);
-    }
-  }
-});
-var memorySaveTool = {
-  ...memorySaveToolImpl,
-  serverName: "kratos",
-  category: "utility"
-};
-var memorySearchToolImpl = tool({
-  description: "Search Kratos memories by query or tags",
-  args: {
-    q: z16.string().describe("Search query or keywords"),
-    k: z16.number().default(10).describe("Maximum results"),
-    tags: z16.array(z16.string()).describe("Filter by tags")
-  },
-  async execute(args, context) {
-    try {
-      const result = await sendKratosRequest("call_tool", {
-        name: "memory_search",
-        arguments: args
-      });
-      return result?.content?.[0]?.text || JSON.stringify(result);
-    } catch (error) {
-      console.error(`[Kratos] Error searching memory:`, error);
-      throw new Error(`Failed to search memory: ${error.message}`);
-    }
-  }
-});
-var memorySearchTool = {
-  ...memorySearchToolImpl,
-  serverName: "kratos",
-  category: "utility"
-};
-var memoryGetRecentToolImpl = tool({
-  description: "Get recent memories from Kratos",
-  args: {
-    k: z16.number().default(10).describe("Maximum results"),
-    path_prefix: z16.string().describe("Filter by path prefix")
-  },
-  async execute(args, context) {
-    try {
-      const result = await sendKratosRequest("call_tool", {
-        name: "memory_get_recent",
-        arguments: args
-      });
-      return result?.content?.[0]?.text || JSON.stringify(result);
-    } catch (error) {
-      console.error(`[Kratos] Error getting recent memories:`, error);
-      throw new Error(`Failed to get recent memories: ${error.message}`);
-    }
-  }
-});
-var memoryGetRecentTool = {
-  ...memoryGetRecentToolImpl,
-  serverName: "kratos",
-  category: "utility"
-};
-var memoryAskToolImpl = tool({
-  description: "Ask Kratos natural language questions",
-  args: {
-    question: z16.string().describe("Natural language question"),
-    limit: z16.number().default(5).describe("Maximum results")
-  },
-  async execute(args, context) {
-    try {
-      const result = await sendKratosRequest("call_tool", {
-        name: "memory_ask",
-        arguments: args
-      });
-      return result?.content?.[0]?.text || JSON.stringify(result);
-    } catch (error) {
-      console.error(`[Kratos] Error asking question:`, error);
-      throw new Error(`Failed to ask question: ${error.message}`);
-    }
-  }
-});
-var memoryAskTool = {
-  ...memoryAskToolImpl,
-  serverName: "kratos",
-  category: "utility"
-};
-
 // src/features/mcp/index.ts
 var builtinMCPs = [
   websearchMCP,
   context7MCP,
-  grepAppMCP,
-  {
-    name: "kratos",
-    description: "Ultra-lean memory system for AI coding tools",
-    version: "4.0.0",
-    tools: [memorySaveTool, memorySearchTool, memoryGetRecentTool, memoryAskTool],
-    configSchema: {
-      enabled: { type: "boolean", default: true },
-      storagePath: { type: "string", default: "~/.kratos" }
-    },
-    initialize: async (config2) => await initializeKratos(),
-    shutdown: async () => await shutdownKratos()
-  }
+  grepAppMCP
 ];
 async function initializeAllMcpServers(configs = {}) {
   for (const mcp of builtinMCPs) {
@@ -17571,12 +17182,12 @@ async function shutdownAllMcpServers() {
 }
 
 // src/features/learning/integration.ts
-import * as path18 from "path";
-import * as os11 from "os";
+import * as path17 from "path";
+import * as os10 from "os";
 
 // src/features/learning/experience-store.ts
-import * as fs12 from "fs";
-import * as path13 from "path";
+import * as fs11 from "fs";
+import * as path12 from "path";
 import * as readline from "readline";
 
 class ExperienceStore {
@@ -17585,19 +17196,19 @@ class ExperienceStore {
   maxBufferSize;
   maxAgeDays;
   constructor(storagePath, config2) {
-    this.experiencePath = path13.join(storagePath, "experiences.jsonl");
+    this.experiencePath = path12.join(storagePath, "experiences.jsonl");
     this.maxBufferSize = config2?.maxBufferSize || 1000;
     this.maxAgeDays = config2?.maxAgeDays || 90;
     this.buffer = [];
     this.ensureStorage();
   }
   ensureStorage() {
-    const dir = path13.dirname(this.experiencePath);
-    if (!fs12.existsSync(dir)) {
-      fs12.mkdirSync(dir, { recursive: true });
+    const dir = path12.dirname(this.experiencePath);
+    if (!fs11.existsSync(dir)) {
+      fs11.mkdirSync(dir, { recursive: true });
     }
-    if (!fs12.existsSync(this.experiencePath)) {
-      fs12.writeFileSync(this.experiencePath, "", "utf-8");
+    if (!fs11.existsSync(this.experiencePath)) {
+      fs11.writeFileSync(this.experiencePath, "", "utf-8");
     }
   }
   async addExperience(experience) {
@@ -17620,13 +17231,13 @@ class ExperienceStore {
     const lines = this.buffer.map((exp) => JSON.stringify(exp)).join(`
 `) + `
 `;
-    fs12.appendFileSync(this.experiencePath, lines, "utf-8");
+    fs11.appendFileSync(this.experiencePath, lines, "utf-8");
     console.log(`[ExperienceStore] Flushed ${this.buffer.length} experiences`);
     this.buffer = [];
   }
   async loadExperiences() {
     const experiences = [];
-    const fileStream = fs12.createReadStream(this.experiencePath);
+    const fileStream = fs11.createReadStream(this.experiencePath);
     const rl = readline.createInterface({
       input: fileStream,
       crlfDelay: Infinity
@@ -17786,15 +17397,15 @@ class ExperienceStore {
     const experiences = await this.loadExperiences();
     const lines = experiences.map((exp) => JSON.stringify(exp)).join(`
 `);
-    fs12.writeFileSync(this.experiencePath, lines + `
+    fs11.writeFileSync(this.experiencePath, lines + `
 `, "utf-8");
     console.log(`[ExperienceStore] Compacted: kept ${experiences.length} experiences`);
   }
 }
 
 // src/features/learning/knowledge-graph.ts
-import * as fs13 from "fs";
-import * as path14 from "path";
+import * as fs12 from "fs";
+import * as path13 from "path";
 
 class KnowledgeGraphStore {
   nodesPath;
@@ -17803,10 +17414,10 @@ class KnowledgeGraphStore {
   graph;
   maxNodes;
   constructor(storagePath, config2) {
-    const kgDir = path14.join(storagePath, "knowledge_graph");
-    this.nodesPath = path14.join(kgDir, "nodes.json");
-    this.edgesPath = path14.join(kgDir, "edges.json");
-    this.indexPath = path14.join(kgDir, "indexes.json");
+    const kgDir = path13.join(storagePath, "knowledge_graph");
+    this.nodesPath = path13.join(kgDir, "nodes.json");
+    this.edgesPath = path13.join(kgDir, "edges.json");
+    this.indexPath = path13.join(kgDir, "indexes.json");
     this.maxNodes = config2?.maxNodes || 1e4;
     this.graph = {
       nodes: {},
@@ -17821,30 +17432,30 @@ class KnowledgeGraphStore {
     this.loadGraph();
   }
   ensureStorage() {
-    const dir = path14.dirname(this.nodesPath);
-    if (!fs13.existsSync(dir)) {
-      fs13.mkdirSync(dir, { recursive: true });
+    const dir = path13.dirname(this.nodesPath);
+    if (!fs12.existsSync(dir)) {
+      fs12.mkdirSync(dir, { recursive: true });
     }
   }
   loadGraph() {
-    if (fs13.existsSync(this.nodesPath)) {
-      const nodesData = fs13.readFileSync(this.nodesPath, "utf-8");
+    if (fs12.existsSync(this.nodesPath)) {
+      const nodesData = fs12.readFileSync(this.nodesPath, "utf-8");
       this.graph.nodes = JSON.parse(nodesData);
     }
-    if (fs13.existsSync(this.edgesPath)) {
-      const edgesData = fs13.readFileSync(this.edgesPath, "utf-8");
+    if (fs12.existsSync(this.edgesPath)) {
+      const edgesData = fs12.readFileSync(this.edgesPath, "utf-8");
       this.graph.edges = JSON.parse(edgesData);
     }
-    if (fs13.existsSync(this.indexPath)) {
-      const indexesData = fs13.readFileSync(this.indexPath, "utf-8");
+    if (fs12.existsSync(this.indexPath)) {
+      const indexesData = fs12.readFileSync(this.indexPath, "utf-8");
       this.graph.indexes = JSON.parse(indexesData);
     }
     console.log(`[KnowledgeGraph] Loaded ${Object.keys(this.graph.nodes).length} nodes, ${this.graph.edges.length} edges`);
   }
   saveGraph() {
-    fs13.writeFileSync(this.nodesPath, JSON.stringify(this.graph.nodes, null, 2), "utf-8");
-    fs13.writeFileSync(this.edgesPath, JSON.stringify(this.graph.edges, null, 2), "utf-8");
-    fs13.writeFileSync(this.indexPath, JSON.stringify(this.graph.indexes, null, 2), "utf-8");
+    fs12.writeFileSync(this.nodesPath, JSON.stringify(this.graph.nodes, null, 2), "utf-8");
+    fs12.writeFileSync(this.edgesPath, JSON.stringify(this.graph.edges, null, 2), "utf-8");
+    fs12.writeFileSync(this.indexPath, JSON.stringify(this.graph.indexes, null, 2), "utf-8");
   }
   async addNode(id, type, data, source = "manual") {
     const now = new Date().toISOString();
@@ -17958,15 +17569,15 @@ class KnowledgeGraphStore {
     const visited = new Set;
     const queue = [{ id: fromId, path: [fromId] }];
     while (queue.length > 0) {
-      const { id, path: path15 } = queue.shift();
+      const { id, path: path14 } = queue.shift();
       if (id === toId) {
-        return path15.map((p) => this.graph.nodes[p]);
+        return path14.map((p) => this.graph.nodes[p]);
       }
       visited.add(id);
       const neighbors = this.graph.edges.filter((e) => e.from === id || e.to === id).map((e) => e.from === id ? e.to : e.from);
       for (const neighbor of neighbors) {
         if (!visited.has(neighbor)) {
-          queue.push({ id: neighbor, path: [...path15, neighbor] });
+          queue.push({ id: neighbor, path: [...path14, neighbor] });
         }
       }
     }
@@ -18119,8 +17730,8 @@ class KnowledgeGraphStore {
 }
 
 // src/features/learning/pattern-detection.ts
-import * as fs14 from "fs";
-import * as path15 from "path";
+import * as fs13 from "fs";
+import * as path14 from "path";
 
 class PatternDetector {
   patternsPath;
@@ -18128,8 +17739,8 @@ class PatternDetector {
   minFrequency;
   minConfidence;
   constructor(storagePath, config2) {
-    const patternsDir = path15.join(storagePath, "patterns");
-    this.patternsPath = path15.join(patternsDir, "detection_patterns.json");
+    const patternsDir = path14.join(storagePath, "patterns");
+    this.patternsPath = path14.join(patternsDir, "detection_patterns.json");
     this.minFrequency = config2?.minFrequency || 3;
     this.minConfidence = config2?.minConfidence || 0.7;
     this.patterns = new Map;
@@ -18137,15 +17748,15 @@ class PatternDetector {
     this.loadPatterns();
   }
   ensureStorage() {
-    const dir = path15.dirname(this.patternsPath);
-    if (!fs14.existsSync(dir)) {
-      fs14.mkdirSync(dir, { recursive: true });
+    const dir = path14.dirname(this.patternsPath);
+    if (!fs13.existsSync(dir)) {
+      fs13.mkdirSync(dir, { recursive: true });
     }
   }
   loadPatterns() {
-    if (fs14.existsSync(this.patternsPath)) {
+    if (fs13.existsSync(this.patternsPath)) {
       try {
-        const data = fs14.readFileSync(this.patternsPath, "utf-8");
+        const data = fs13.readFileSync(this.patternsPath, "utf-8");
         const patternsArray = JSON.parse(data);
         for (const pattern of patternsArray) {
           this.patterns.set(pattern.id, pattern);
@@ -18155,7 +17766,7 @@ class PatternDetector {
         console.error(`[PatternDetector] Failed to load patterns from ${this.patternsPath}:`, error);
         const archivePath = `${this.patternsPath}.corrupted-${Date.now()}`;
         try {
-          fs14.renameSync(this.patternsPath, archivePath);
+          fs13.renameSync(this.patternsPath, archivePath);
           console.log(`[PatternDetector] Archived corrupted file to ${archivePath}`);
         } catch (renameError) {
           console.error(`[PatternDetector] Failed to archive corrupted file:`, renameError);
@@ -18167,7 +17778,7 @@ class PatternDetector {
   }
   savePatterns() {
     const patternsArray = Array.from(this.patterns.values());
-    fs14.writeFileSync(this.patternsPath, JSON.stringify(patternsArray, null, 2), "utf-8");
+    fs13.writeFileSync(this.patternsPath, JSON.stringify(patternsArray, null, 2), "utf-8");
   }
   async analyzeExperiences(experiences) {
     const detectedPatterns = [];
@@ -18388,29 +17999,29 @@ class PatternDetector {
 }
 
 // src/features/learning/state-machine.ts
-import * as fs15 from "fs";
-import * as path16 from "path";
+import * as fs14 from "fs";
+import * as path15 from "path";
 
 class StateMachineEngine {
   stateMachinesPath;
   stateMachines;
   currentMachineId;
   constructor(storagePath) {
-    const smDir = path16.join(storagePath, "state_machines");
-    this.stateMachinesPath = path16.join(smDir, "machines.json");
+    const smDir = path15.join(storagePath, "state_machines");
+    this.stateMachinesPath = path15.join(smDir, "machines.json");
     this.stateMachines = new Map;
     this.ensureStorage();
     this.loadStateMachines();
   }
   ensureStorage() {
-    const dir = path16.dirname(this.stateMachinesPath);
-    if (!fs15.existsSync(dir)) {
-      fs15.mkdirSync(dir, { recursive: true });
+    const dir = path15.dirname(this.stateMachinesPath);
+    if (!fs14.existsSync(dir)) {
+      fs14.mkdirSync(dir, { recursive: true });
     }
   }
   loadStateMachines() {
-    if (fs15.existsSync(this.stateMachinesPath)) {
-      const data = fs15.readFileSync(this.stateMachinesPath, "utf-8");
+    if (fs14.existsSync(this.stateMachinesPath)) {
+      const data = fs14.readFileSync(this.stateMachinesPath, "utf-8");
       const machinesArray = JSON.parse(data);
       for (const machine of machinesArray) {
         this.stateMachines.set(machine.id, machine);
@@ -18420,7 +18031,7 @@ class StateMachineEngine {
   }
   saveStateMachines() {
     const machinesArray = Array.from(this.stateMachines.values());
-    fs15.writeFileSync(this.stateMachinesPath, JSON.stringify(machinesArray, null, 2), "utf-8");
+    fs14.writeFileSync(this.stateMachinesPath, JSON.stringify(machinesArray, null, 2), "utf-8");
   }
   createMachine(id, name, initialState, states) {
     if (!states[initialState]) {
@@ -18675,30 +18286,30 @@ class StateMachineEngine {
 }
 
 // src/features/learning/fsrs-scheduler.ts
-import * as fs16 from "fs";
-import * as path17 from "path";
+import * as fs15 from "fs";
+import * as path16 from "path";
 
 class FSRScheduler {
   itemsPath;
   items;
   initialIntervals;
   constructor(storagePath, config2) {
-    const fsrsDir = path17.join(storagePath, "fsrs");
-    this.itemsPath = path17.join(fsrsDir, "items.json");
+    const fsrsDir = path16.join(storagePath, "fsrs");
+    this.itemsPath = path16.join(fsrsDir, "items.json");
     this.items = new Map;
     this.initialIntervals = config2?.initialIntervals || [1, 3, 7, 14, 30, 60, 120, 240, 480];
     this.ensureStorage();
     this.loadItems();
   }
   ensureStorage() {
-    const dir = path17.dirname(this.itemsPath);
-    if (!fs16.existsSync(dir)) {
-      fs16.mkdirSync(dir, { recursive: true });
+    const dir = path16.dirname(this.itemsPath);
+    if (!fs15.existsSync(dir)) {
+      fs15.mkdirSync(dir, { recursive: true });
     }
   }
   loadItems() {
-    if (fs16.existsSync(this.itemsPath)) {
-      const data = fs16.readFileSync(this.itemsPath, "utf-8");
+    if (fs15.existsSync(this.itemsPath)) {
+      const data = fs15.readFileSync(this.itemsPath, "utf-8");
       const itemsArray = JSON.parse(data);
       for (const item of itemsArray) {
         this.items.set(item.id, item);
@@ -18708,7 +18319,7 @@ class FSRScheduler {
   }
   saveItems() {
     const itemsArray = Array.from(this.items.values());
-    fs16.writeFileSync(this.itemsPath, JSON.stringify(itemsArray, null, 2), "utf-8");
+    fs15.writeFileSync(this.itemsPath, JSON.stringify(itemsArray, null, 2), "utf-8");
   }
   createItem(id, ease = 5) {
     const now = new Date;
@@ -19092,17 +18703,17 @@ function createLearningHooks(input, learningContext, config2) {
 }
 
 // src/tools/learning/learning-experience.ts
-import { z as z17 } from "zod";
+import { z as z16 } from "zod";
 function createExperienceTool(experienceStore) {
   return tool({
     description: "Add or query experiences from the learning system. " + "Use this tool to record successful or unsuccessful actions for future reference, " + "or to query past experiences to find similar situations and their outcomes.",
     args: {
-      action: z17.enum(["add", "query", "recent"]).describe("Action to perform: 'add' to record an experience, 'query' to find similar experiences, " + "'recent' to get recent experiences"),
-      actionName: z17.string().optional().describe("Action taken (for add action)"),
-      reward: z17.number().min(-1).max(1).optional().describe("Reward: -1 (failure) to 1 (success), 0 for neutral (for add action)"),
-      confidence: z17.number().min(0).max(1).optional().describe("Confidence in this experience: 0 (low) to 1 (high) (for add action)"),
-      keywords: z17.array(z17.string()).optional().describe("Keywords describing this experience (for add/query actions)"),
-      limit: z17.number().int().min(1).max(100).optional().describe("Maximum number of results (for query/recent actions, default: 10)")
+      action: z16.enum(["add", "query", "recent"]).describe("Action to perform: 'add' to record an experience, 'query' to find similar experiences, " + "'recent' to get recent experiences"),
+      actionName: z16.string().optional().describe("Action taken (for add action)"),
+      reward: z16.number().min(-1).max(1).optional().describe("Reward: -1 (failure) to 1 (success), 0 for neutral (for add action)"),
+      confidence: z16.number().min(0).max(1).optional().describe("Confidence in this experience: 0 (low) to 1 (high) (for add action)"),
+      keywords: z16.array(z16.string()).optional().describe("Keywords describing this experience (for add/query actions)"),
+      limit: z16.number().int().min(1).max(100).optional().describe("Maximum number of results (for query/recent actions, default: 10)")
     },
     async execute(args) {
       const { action, actionName, reward, confidence, keywords, limit } = args;
@@ -19191,23 +18802,23 @@ function createExperienceTool(experienceStore) {
 }
 
 // src/tools/learning/learning-knowledge.ts
-import { z as z18 } from "zod";
+import { z as z17 } from "zod";
 function createKnowledgeTool(knowledgeGraph) {
   return tool({
     description: "Manage knowledge graph of entities and relationships. " + "Use this tool to store important concepts, their properties, and how they relate to each other.",
     args: {
-      action: z18.enum(["addNode", "addEdge", "getNode", "search", "list"]).describe("Action to perform: 'addNode', 'addEdge', 'getNode', 'search', 'list'"),
-      nodeId: z18.string().optional().describe("Node ID (for addNode, getNode)"),
-      type: z18.string().optional().describe("Node type: person, concept, tool, pattern, file, api, error (for addNode)"),
-      data: z18.object({}).passthrough().optional().describe("Data to store with the node (for addNode)"),
-      source: z18.enum(["experience", "manual", "inference"]).optional().describe("Source of the node (for addNode)"),
-      fromNodeId: z18.string().optional().describe("Source node ID (for addEdge)"),
-      toNodeId: z18.string().optional().describe("Target node ID (for addEdge)"),
-      edgeType: z18.enum(["relatedTo", "conflictsWith", "dependsOn"]).optional().describe("Relationship type (for addEdge)"),
-      weight: z18.number().min(0).max(1).optional().describe("Relationship strength: 0-1 (for addEdge)"),
-      query: z18.string().optional().describe("Query text (for search action)"),
-      limit: z18.number().int().min(1).max(100).optional().describe("Maximum results (for search/list, default: 10)"),
-      byType: z18.string().optional().describe("Filter by node type (for list action)")
+      action: z17.enum(["addNode", "addEdge", "getNode", "search", "list"]).describe("Action to perform: 'addNode', 'addEdge', 'getNode', 'search', 'list'"),
+      nodeId: z17.string().optional().describe("Node ID (for addNode, getNode)"),
+      type: z17.string().optional().describe("Node type: person, concept, tool, pattern, file, api, error (for addNode)"),
+      data: z17.object({}).passthrough().optional().describe("Data to store with the node (for addNode)"),
+      source: z17.enum(["experience", "manual", "inference"]).optional().describe("Source of the node (for addNode)"),
+      fromNodeId: z17.string().optional().describe("Source node ID (for addEdge)"),
+      toNodeId: z17.string().optional().describe("Target node ID (for addEdge)"),
+      edgeType: z17.enum(["relatedTo", "conflictsWith", "dependsOn"]).optional().describe("Relationship type (for addEdge)"),
+      weight: z17.number().min(0).max(1).optional().describe("Relationship strength: 0-1 (for addEdge)"),
+      query: z17.string().optional().describe("Query text (for search action)"),
+      limit: z17.number().int().min(1).max(100).optional().describe("Maximum results (for search/list, default: 10)"),
+      byType: z17.string().optional().describe("Filter by node type (for list action)")
     },
     async execute(args) {
       const {
@@ -19346,17 +18957,17 @@ function createKnowledgeTool(knowledgeGraph) {
 }
 
 // src/tools/learning/learning-pattern.ts
-import { z as z19 } from "zod";
+import { z as z18 } from "zod";
 function createPatternTool(patternDetector) {
   return tool({
     description: "Detect and manage behavioral patterns. " + "Use this tool to identify recurring wins and losses, " + "find successful strategies, and avoid mistakes.",
     args: {
-      action: z19.enum(["get", "list", "update"]).describe("Action to perform: 'get', 'list', 'update'"),
-      patternId: z19.string().optional().describe("Pattern ID (for get, update actions)"),
-      status: z19.enum(["active", "resolved", "superseded"]).optional().describe("Pattern status (for update action)"),
-      minFrequency: z19.number().int().min(1).optional().describe("Minimum frequency threshold (for list action)"),
-      minConfidence: z19.number().min(0).max(1).optional().describe("Minimum confidence threshold (for list action)"),
-      limit: z19.number().int().min(1).max(100).optional().describe("Maximum results (for list action, default: 20)")
+      action: z18.enum(["get", "list", "update"]).describe("Action to perform: 'get', 'list', 'update'"),
+      patternId: z18.string().optional().describe("Pattern ID (for get, update actions)"),
+      status: z18.enum(["active", "resolved", "superseded"]).optional().describe("Pattern status (for update action)"),
+      minFrequency: z18.number().int().min(1).optional().describe("Minimum frequency threshold (for list action)"),
+      minConfidence: z18.number().min(0).max(1).optional().describe("Minimum confidence threshold (for list action)"),
+      limit: z18.number().int().min(1).max(100).optional().describe("Maximum results (for list action, default: 20)")
     },
     async execute(args) {
       const {
@@ -19456,17 +19067,17 @@ function createPatternTool(patternDetector) {
 }
 
 // src/tools/learning/learning-fsm.ts
-import { z as z20 } from "zod";
+import { z as z19 } from "zod";
 function createFsmTool(stateMachine) {
   return tool({
     description: "Manage state machines for behavioral control. " + "Use this tool to create state machines for workflows, track state transitions.",
     args: {
-      action: z20.enum(["createMachine", "getMachine", "listMachines", "transition", "getCurrentState"]).describe("Action to perform: 'createMachine', 'getMachine', 'listMachines', 'transition', 'getCurrentState'"),
-      machineId: z20.string().optional().describe("Machine ID (for most actions)"),
-      name: z20.string().optional().describe("Machine name/description (for createMachine)"),
-      initialState: z20.string().optional().describe("Initial state name (for createMachine)"),
-      toState: z20.string().optional().describe("Target state (for transition action)"),
-      trigger: z20.string().optional().describe("Transition trigger (for transition action)")
+      action: z19.enum(["createMachine", "getMachine", "listMachines", "transition", "getCurrentState"]).describe("Action to perform: 'createMachine', 'getMachine', 'listMachines', 'transition', 'getCurrentState'"),
+      machineId: z19.string().optional().describe("Machine ID (for most actions)"),
+      name: z19.string().optional().describe("Machine name/description (for createMachine)"),
+      initialState: z19.string().optional().describe("Initial state name (for createMachine)"),
+      toState: z19.string().optional().describe("Target state (for transition action)"),
+      trigger: z19.string().optional().describe("Transition trigger (for transition action)")
     },
     async execute(args) {
       const {
@@ -19596,13 +19207,13 @@ function createFsmTool(stateMachine) {
 }
 
 // src/tools/learning/learning-stats.ts
-import { z as z21 } from "zod";
+import { z as z20 } from "zod";
 function createStatsTool(config2) {
   const { experienceStore, knowledgeGraph, patternDetector, stateMachine } = config2;
   return tool({
     description: "Get comprehensive statistics across the learning system. " + "Shows experience metrics, knowledge graph stats, patterns, and state machine status.",
     args: {
-      section: z21.enum(["all", "experience", "knowledge", "patterns", "fsm"]).describe("Which section to show: 'all' for everything, or specific section")
+      section: z20.enum(["all", "experience", "knowledge", "patterns", "fsm"]).describe("Which section to show: 'all' for everything, or specific section")
     },
     async execute(args) {
       const { section } = args;
@@ -19721,7 +19332,7 @@ var learningSystemInstance = null;
 function initializeLearningSystem(input, config2) {
   const mergedConfig = {
     enabled: config2?.enabled ?? true,
-    storagePath: config2?.storagePath ?? path18.join(os11.homedir(), ".clawd", "learning"),
+    storagePath: config2?.storagePath ?? path17.join(os10.homedir(), ".clawd", "learning"),
     experienceStore: {
       enabled: config2?.experienceStore?.enabled ?? true,
       bufferSize: config2?.experienceStore?.bufferSize ?? 1000,
@@ -19952,63 +19563,63 @@ function getLiteralValue(schema) {
 }
 
 // node_modules/@modelcontextprotocol/sdk/dist/esm/types.js
-import * as z22 from "zod/v4";
+import * as z21 from "zod/v4";
 var LATEST_PROTOCOL_VERSION = "2025-11-25";
 var SUPPORTED_PROTOCOL_VERSIONS = [LATEST_PROTOCOL_VERSION, "2025-06-18", "2025-03-26", "2024-11-05", "2024-10-07"];
 var RELATED_TASK_META_KEY = "io.modelcontextprotocol/related-task";
 var JSONRPC_VERSION = "2.0";
-var AssertObjectSchema = z22.custom((v) => v !== null && (typeof v === "object" || typeof v === "function"));
-var ProgressTokenSchema = z22.union([z22.string(), z22.number().int()]);
-var CursorSchema = z22.string();
-var TaskCreationParamsSchema = z22.looseObject({
-  ttl: z22.union([z22.number(), z22.null()]).optional(),
-  pollInterval: z22.number().optional()
+var AssertObjectSchema = z21.custom((v) => v !== null && (typeof v === "object" || typeof v === "function"));
+var ProgressTokenSchema = z21.union([z21.string(), z21.number().int()]);
+var CursorSchema = z21.string();
+var TaskCreationParamsSchema = z21.looseObject({
+  ttl: z21.union([z21.number(), z21.null()]).optional(),
+  pollInterval: z21.number().optional()
 });
-var TaskMetadataSchema = z22.object({
-  ttl: z22.number().optional()
+var TaskMetadataSchema = z21.object({
+  ttl: z21.number().optional()
 });
-var RelatedTaskMetadataSchema = z22.object({
-  taskId: z22.string()
+var RelatedTaskMetadataSchema = z21.object({
+  taskId: z21.string()
 });
-var RequestMetaSchema = z22.looseObject({
+var RequestMetaSchema = z21.looseObject({
   progressToken: ProgressTokenSchema.optional(),
   [RELATED_TASK_META_KEY]: RelatedTaskMetadataSchema.optional()
 });
-var BaseRequestParamsSchema = z22.object({
+var BaseRequestParamsSchema = z21.object({
   _meta: RequestMetaSchema.optional()
 });
 var TaskAugmentedRequestParamsSchema = BaseRequestParamsSchema.extend({
   task: TaskMetadataSchema.optional()
 });
 var isTaskAugmentedRequestParams = (value) => TaskAugmentedRequestParamsSchema.safeParse(value).success;
-var RequestSchema = z22.object({
-  method: z22.string(),
+var RequestSchema = z21.object({
+  method: z21.string(),
   params: BaseRequestParamsSchema.loose().optional()
 });
-var NotificationsParamsSchema = z22.object({
+var NotificationsParamsSchema = z21.object({
   _meta: RequestMetaSchema.optional()
 });
-var NotificationSchema = z22.object({
-  method: z22.string(),
+var NotificationSchema = z21.object({
+  method: z21.string(),
   params: NotificationsParamsSchema.loose().optional()
 });
-var ResultSchema = z22.looseObject({
+var ResultSchema = z21.looseObject({
   _meta: RequestMetaSchema.optional()
 });
-var RequestIdSchema = z22.union([z22.string(), z22.number().int()]);
-var JSONRPCRequestSchema = z22.object({
-  jsonrpc: z22.literal(JSONRPC_VERSION),
+var RequestIdSchema = z21.union([z21.string(), z21.number().int()]);
+var JSONRPCRequestSchema = z21.object({
+  jsonrpc: z21.literal(JSONRPC_VERSION),
   id: RequestIdSchema,
   ...RequestSchema.shape
 }).strict();
 var isJSONRPCRequest = (value) => JSONRPCRequestSchema.safeParse(value).success;
-var JSONRPCNotificationSchema = z22.object({
-  jsonrpc: z22.literal(JSONRPC_VERSION),
+var JSONRPCNotificationSchema = z21.object({
+  jsonrpc: z21.literal(JSONRPC_VERSION),
   ...NotificationSchema.shape
 }).strict();
 var isJSONRPCNotification = (value) => JSONRPCNotificationSchema.safeParse(value).success;
-var JSONRPCResultResponseSchema = z22.object({
-  jsonrpc: z22.literal(JSONRPC_VERSION),
+var JSONRPCResultResponseSchema = z21.object({
+  jsonrpc: z21.literal(JSONRPC_VERSION),
   id: RequestIdSchema,
   result: ResultSchema
 }).strict();
@@ -20024,150 +19635,150 @@ var ErrorCode;
   ErrorCode2[ErrorCode2["InternalError"] = -32603] = "InternalError";
   ErrorCode2[ErrorCode2["UrlElicitationRequired"] = -32042] = "UrlElicitationRequired";
 })(ErrorCode || (ErrorCode = {}));
-var JSONRPCErrorResponseSchema = z22.object({
-  jsonrpc: z22.literal(JSONRPC_VERSION),
+var JSONRPCErrorResponseSchema = z21.object({
+  jsonrpc: z21.literal(JSONRPC_VERSION),
   id: RequestIdSchema.optional(),
-  error: z22.object({
-    code: z22.number().int(),
-    message: z22.string(),
-    data: z22.unknown().optional()
+  error: z21.object({
+    code: z21.number().int(),
+    message: z21.string(),
+    data: z21.unknown().optional()
   })
 }).strict();
 var isJSONRPCErrorResponse = (value) => JSONRPCErrorResponseSchema.safeParse(value).success;
-var JSONRPCMessageSchema = z22.union([
+var JSONRPCMessageSchema = z21.union([
   JSONRPCRequestSchema,
   JSONRPCNotificationSchema,
   JSONRPCResultResponseSchema,
   JSONRPCErrorResponseSchema
 ]);
-var JSONRPCResponseSchema = z22.union([JSONRPCResultResponseSchema, JSONRPCErrorResponseSchema]);
+var JSONRPCResponseSchema = z21.union([JSONRPCResultResponseSchema, JSONRPCErrorResponseSchema]);
 var EmptyResultSchema = ResultSchema.strict();
 var CancelledNotificationParamsSchema = NotificationsParamsSchema.extend({
   requestId: RequestIdSchema.optional(),
-  reason: z22.string().optional()
+  reason: z21.string().optional()
 });
 var CancelledNotificationSchema = NotificationSchema.extend({
-  method: z22.literal("notifications/cancelled"),
+  method: z21.literal("notifications/cancelled"),
   params: CancelledNotificationParamsSchema
 });
-var IconSchema = z22.object({
-  src: z22.string(),
-  mimeType: z22.string().optional(),
-  sizes: z22.array(z22.string()).optional(),
-  theme: z22.enum(["light", "dark"]).optional()
+var IconSchema = z21.object({
+  src: z21.string(),
+  mimeType: z21.string().optional(),
+  sizes: z21.array(z21.string()).optional(),
+  theme: z21.enum(["light", "dark"]).optional()
 });
-var IconsSchema = z22.object({
-  icons: z22.array(IconSchema).optional()
+var IconsSchema = z21.object({
+  icons: z21.array(IconSchema).optional()
 });
-var BaseMetadataSchema = z22.object({
-  name: z22.string(),
-  title: z22.string().optional()
+var BaseMetadataSchema = z21.object({
+  name: z21.string(),
+  title: z21.string().optional()
 });
 var ImplementationSchema = BaseMetadataSchema.extend({
   ...BaseMetadataSchema.shape,
   ...IconsSchema.shape,
-  version: z22.string(),
-  websiteUrl: z22.string().optional(),
-  description: z22.string().optional()
+  version: z21.string(),
+  websiteUrl: z21.string().optional(),
+  description: z21.string().optional()
 });
-var FormElicitationCapabilitySchema = z22.intersection(z22.object({
-  applyDefaults: z22.boolean().optional()
-}), z22.record(z22.string(), z22.unknown()));
-var ElicitationCapabilitySchema = z22.preprocess((value) => {
+var FormElicitationCapabilitySchema = z21.intersection(z21.object({
+  applyDefaults: z21.boolean().optional()
+}), z21.record(z21.string(), z21.unknown()));
+var ElicitationCapabilitySchema = z21.preprocess((value) => {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     if (Object.keys(value).length === 0) {
       return { form: {} };
     }
   }
   return value;
-}, z22.intersection(z22.object({
+}, z21.intersection(z21.object({
   form: FormElicitationCapabilitySchema.optional(),
   url: AssertObjectSchema.optional()
-}), z22.record(z22.string(), z22.unknown()).optional()));
-var ClientTasksCapabilitySchema = z22.looseObject({
+}), z21.record(z21.string(), z21.unknown()).optional()));
+var ClientTasksCapabilitySchema = z21.looseObject({
   list: AssertObjectSchema.optional(),
   cancel: AssertObjectSchema.optional(),
-  requests: z22.looseObject({
-    sampling: z22.looseObject({
+  requests: z21.looseObject({
+    sampling: z21.looseObject({
       createMessage: AssertObjectSchema.optional()
     }).optional(),
-    elicitation: z22.looseObject({
+    elicitation: z21.looseObject({
       create: AssertObjectSchema.optional()
     }).optional()
   }).optional()
 });
-var ServerTasksCapabilitySchema = z22.looseObject({
+var ServerTasksCapabilitySchema = z21.looseObject({
   list: AssertObjectSchema.optional(),
   cancel: AssertObjectSchema.optional(),
-  requests: z22.looseObject({
-    tools: z22.looseObject({
+  requests: z21.looseObject({
+    tools: z21.looseObject({
       call: AssertObjectSchema.optional()
     }).optional()
   }).optional()
 });
-var ClientCapabilitiesSchema = z22.object({
-  experimental: z22.record(z22.string(), AssertObjectSchema).optional(),
-  sampling: z22.object({
+var ClientCapabilitiesSchema = z21.object({
+  experimental: z21.record(z21.string(), AssertObjectSchema).optional(),
+  sampling: z21.object({
     context: AssertObjectSchema.optional(),
     tools: AssertObjectSchema.optional()
   }).optional(),
   elicitation: ElicitationCapabilitySchema.optional(),
-  roots: z22.object({
-    listChanged: z22.boolean().optional()
+  roots: z21.object({
+    listChanged: z21.boolean().optional()
   }).optional(),
   tasks: ClientTasksCapabilitySchema.optional()
 });
 var InitializeRequestParamsSchema = BaseRequestParamsSchema.extend({
-  protocolVersion: z22.string(),
+  protocolVersion: z21.string(),
   capabilities: ClientCapabilitiesSchema,
   clientInfo: ImplementationSchema
 });
 var InitializeRequestSchema = RequestSchema.extend({
-  method: z22.literal("initialize"),
+  method: z21.literal("initialize"),
   params: InitializeRequestParamsSchema
 });
-var ServerCapabilitiesSchema = z22.object({
-  experimental: z22.record(z22.string(), AssertObjectSchema).optional(),
+var ServerCapabilitiesSchema = z21.object({
+  experimental: z21.record(z21.string(), AssertObjectSchema).optional(),
   logging: AssertObjectSchema.optional(),
   completions: AssertObjectSchema.optional(),
-  prompts: z22.object({
-    listChanged: z22.boolean().optional()
+  prompts: z21.object({
+    listChanged: z21.boolean().optional()
   }).optional(),
-  resources: z22.object({
-    subscribe: z22.boolean().optional(),
-    listChanged: z22.boolean().optional()
+  resources: z21.object({
+    subscribe: z21.boolean().optional(),
+    listChanged: z21.boolean().optional()
   }).optional(),
-  tools: z22.object({
-    listChanged: z22.boolean().optional()
+  tools: z21.object({
+    listChanged: z21.boolean().optional()
   }).optional(),
   tasks: ServerTasksCapabilitySchema.optional()
 });
 var InitializeResultSchema = ResultSchema.extend({
-  protocolVersion: z22.string(),
+  protocolVersion: z21.string(),
   capabilities: ServerCapabilitiesSchema,
   serverInfo: ImplementationSchema,
-  instructions: z22.string().optional()
+  instructions: z21.string().optional()
 });
 var InitializedNotificationSchema = NotificationSchema.extend({
-  method: z22.literal("notifications/initialized"),
+  method: z21.literal("notifications/initialized"),
   params: NotificationsParamsSchema.optional()
 });
 var PingRequestSchema = RequestSchema.extend({
-  method: z22.literal("ping"),
+  method: z21.literal("ping"),
   params: BaseRequestParamsSchema.optional()
 });
-var ProgressSchema = z22.object({
-  progress: z22.number(),
-  total: z22.optional(z22.number()),
-  message: z22.optional(z22.string())
+var ProgressSchema = z21.object({
+  progress: z21.number(),
+  total: z21.optional(z21.number()),
+  message: z21.optional(z21.string())
 });
-var ProgressNotificationParamsSchema = z22.object({
+var ProgressNotificationParamsSchema = z21.object({
   ...NotificationsParamsSchema.shape,
   ...ProgressSchema.shape,
   progressToken: ProgressTokenSchema
 });
 var ProgressNotificationSchema = NotificationSchema.extend({
-  method: z22.literal("notifications/progress"),
+  method: z21.literal("notifications/progress"),
   params: ProgressNotificationParamsSchema
 });
 var PaginatedRequestParamsSchema = BaseRequestParamsSchema.extend({
@@ -20179,60 +19790,60 @@ var PaginatedRequestSchema = RequestSchema.extend({
 var PaginatedResultSchema = ResultSchema.extend({
   nextCursor: CursorSchema.optional()
 });
-var TaskStatusSchema = z22.enum(["working", "input_required", "completed", "failed", "cancelled"]);
-var TaskSchema = z22.object({
-  taskId: z22.string(),
+var TaskStatusSchema = z21.enum(["working", "input_required", "completed", "failed", "cancelled"]);
+var TaskSchema = z21.object({
+  taskId: z21.string(),
   status: TaskStatusSchema,
-  ttl: z22.union([z22.number(), z22.null()]),
-  createdAt: z22.string(),
-  lastUpdatedAt: z22.string(),
-  pollInterval: z22.optional(z22.number()),
-  statusMessage: z22.optional(z22.string())
+  ttl: z21.union([z21.number(), z21.null()]),
+  createdAt: z21.string(),
+  lastUpdatedAt: z21.string(),
+  pollInterval: z21.optional(z21.number()),
+  statusMessage: z21.optional(z21.string())
 });
 var CreateTaskResultSchema = ResultSchema.extend({
   task: TaskSchema
 });
 var TaskStatusNotificationParamsSchema = NotificationsParamsSchema.merge(TaskSchema);
 var TaskStatusNotificationSchema = NotificationSchema.extend({
-  method: z22.literal("notifications/tasks/status"),
+  method: z21.literal("notifications/tasks/status"),
   params: TaskStatusNotificationParamsSchema
 });
 var GetTaskRequestSchema = RequestSchema.extend({
-  method: z22.literal("tasks/get"),
+  method: z21.literal("tasks/get"),
   params: BaseRequestParamsSchema.extend({
-    taskId: z22.string()
+    taskId: z21.string()
   })
 });
 var GetTaskResultSchema = ResultSchema.merge(TaskSchema);
 var GetTaskPayloadRequestSchema = RequestSchema.extend({
-  method: z22.literal("tasks/result"),
+  method: z21.literal("tasks/result"),
   params: BaseRequestParamsSchema.extend({
-    taskId: z22.string()
+    taskId: z21.string()
   })
 });
 var GetTaskPayloadResultSchema = ResultSchema.loose();
 var ListTasksRequestSchema = PaginatedRequestSchema.extend({
-  method: z22.literal("tasks/list")
+  method: z21.literal("tasks/list")
 });
 var ListTasksResultSchema = PaginatedResultSchema.extend({
-  tasks: z22.array(TaskSchema)
+  tasks: z21.array(TaskSchema)
 });
 var CancelTaskRequestSchema = RequestSchema.extend({
-  method: z22.literal("tasks/cancel"),
+  method: z21.literal("tasks/cancel"),
   params: BaseRequestParamsSchema.extend({
-    taskId: z22.string()
+    taskId: z21.string()
   })
 });
 var CancelTaskResultSchema = ResultSchema.merge(TaskSchema);
-var ResourceContentsSchema = z22.object({
-  uri: z22.string(),
-  mimeType: z22.optional(z22.string()),
-  _meta: z22.record(z22.string(), z22.unknown()).optional()
+var ResourceContentsSchema = z21.object({
+  uri: z21.string(),
+  mimeType: z21.optional(z21.string()),
+  _meta: z21.record(z21.string(), z21.unknown()).optional()
 });
 var TextResourceContentsSchema = ResourceContentsSchema.extend({
-  text: z22.string()
+  text: z21.string()
 });
-var Base64Schema = z22.string().refine((val) => {
+var Base64Schema = z21.string().refine((val) => {
   try {
     atob(val);
     return true;
@@ -20243,446 +19854,446 @@ var Base64Schema = z22.string().refine((val) => {
 var BlobResourceContentsSchema = ResourceContentsSchema.extend({
   blob: Base64Schema
 });
-var RoleSchema = z22.enum(["user", "assistant"]);
-var AnnotationsSchema = z22.object({
-  audience: z22.array(RoleSchema).optional(),
-  priority: z22.number().min(0).max(1).optional(),
-  lastModified: z22.iso.datetime({ offset: true }).optional()
+var RoleSchema = z21.enum(["user", "assistant"]);
+var AnnotationsSchema = z21.object({
+  audience: z21.array(RoleSchema).optional(),
+  priority: z21.number().min(0).max(1).optional(),
+  lastModified: z21.iso.datetime({ offset: true }).optional()
 });
-var ResourceSchema = z22.object({
+var ResourceSchema = z21.object({
   ...BaseMetadataSchema.shape,
   ...IconsSchema.shape,
-  uri: z22.string(),
-  description: z22.optional(z22.string()),
-  mimeType: z22.optional(z22.string()),
+  uri: z21.string(),
+  description: z21.optional(z21.string()),
+  mimeType: z21.optional(z21.string()),
   annotations: AnnotationsSchema.optional(),
-  _meta: z22.optional(z22.looseObject({}))
+  _meta: z21.optional(z21.looseObject({}))
 });
-var ResourceTemplateSchema = z22.object({
+var ResourceTemplateSchema = z21.object({
   ...BaseMetadataSchema.shape,
   ...IconsSchema.shape,
-  uriTemplate: z22.string(),
-  description: z22.optional(z22.string()),
-  mimeType: z22.optional(z22.string()),
+  uriTemplate: z21.string(),
+  description: z21.optional(z21.string()),
+  mimeType: z21.optional(z21.string()),
   annotations: AnnotationsSchema.optional(),
-  _meta: z22.optional(z22.looseObject({}))
+  _meta: z21.optional(z21.looseObject({}))
 });
 var ListResourcesRequestSchema = PaginatedRequestSchema.extend({
-  method: z22.literal("resources/list")
+  method: z21.literal("resources/list")
 });
 var ListResourcesResultSchema = PaginatedResultSchema.extend({
-  resources: z22.array(ResourceSchema)
+  resources: z21.array(ResourceSchema)
 });
 var ListResourceTemplatesRequestSchema = PaginatedRequestSchema.extend({
-  method: z22.literal("resources/templates/list")
+  method: z21.literal("resources/templates/list")
 });
 var ListResourceTemplatesResultSchema = PaginatedResultSchema.extend({
-  resourceTemplates: z22.array(ResourceTemplateSchema)
+  resourceTemplates: z21.array(ResourceTemplateSchema)
 });
 var ResourceRequestParamsSchema = BaseRequestParamsSchema.extend({
-  uri: z22.string()
+  uri: z21.string()
 });
 var ReadResourceRequestParamsSchema = ResourceRequestParamsSchema;
 var ReadResourceRequestSchema = RequestSchema.extend({
-  method: z22.literal("resources/read"),
+  method: z21.literal("resources/read"),
   params: ReadResourceRequestParamsSchema
 });
 var ReadResourceResultSchema = ResultSchema.extend({
-  contents: z22.array(z22.union([TextResourceContentsSchema, BlobResourceContentsSchema]))
+  contents: z21.array(z21.union([TextResourceContentsSchema, BlobResourceContentsSchema]))
 });
 var ResourceListChangedNotificationSchema = NotificationSchema.extend({
-  method: z22.literal("notifications/resources/list_changed"),
+  method: z21.literal("notifications/resources/list_changed"),
   params: NotificationsParamsSchema.optional()
 });
 var SubscribeRequestParamsSchema = ResourceRequestParamsSchema;
 var SubscribeRequestSchema = RequestSchema.extend({
-  method: z22.literal("resources/subscribe"),
+  method: z21.literal("resources/subscribe"),
   params: SubscribeRequestParamsSchema
 });
 var UnsubscribeRequestParamsSchema = ResourceRequestParamsSchema;
 var UnsubscribeRequestSchema = RequestSchema.extend({
-  method: z22.literal("resources/unsubscribe"),
+  method: z21.literal("resources/unsubscribe"),
   params: UnsubscribeRequestParamsSchema
 });
 var ResourceUpdatedNotificationParamsSchema = NotificationsParamsSchema.extend({
-  uri: z22.string()
+  uri: z21.string()
 });
 var ResourceUpdatedNotificationSchema = NotificationSchema.extend({
-  method: z22.literal("notifications/resources/updated"),
+  method: z21.literal("notifications/resources/updated"),
   params: ResourceUpdatedNotificationParamsSchema
 });
-var PromptArgumentSchema = z22.object({
-  name: z22.string(),
-  description: z22.optional(z22.string()),
-  required: z22.optional(z22.boolean())
+var PromptArgumentSchema = z21.object({
+  name: z21.string(),
+  description: z21.optional(z21.string()),
+  required: z21.optional(z21.boolean())
 });
-var PromptSchema = z22.object({
+var PromptSchema = z21.object({
   ...BaseMetadataSchema.shape,
   ...IconsSchema.shape,
-  description: z22.optional(z22.string()),
-  arguments: z22.optional(z22.array(PromptArgumentSchema)),
-  _meta: z22.optional(z22.looseObject({}))
+  description: z21.optional(z21.string()),
+  arguments: z21.optional(z21.array(PromptArgumentSchema)),
+  _meta: z21.optional(z21.looseObject({}))
 });
 var ListPromptsRequestSchema = PaginatedRequestSchema.extend({
-  method: z22.literal("prompts/list")
+  method: z21.literal("prompts/list")
 });
 var ListPromptsResultSchema = PaginatedResultSchema.extend({
-  prompts: z22.array(PromptSchema)
+  prompts: z21.array(PromptSchema)
 });
 var GetPromptRequestParamsSchema = BaseRequestParamsSchema.extend({
-  name: z22.string(),
-  arguments: z22.record(z22.string(), z22.string()).optional()
+  name: z21.string(),
+  arguments: z21.record(z21.string(), z21.string()).optional()
 });
 var GetPromptRequestSchema = RequestSchema.extend({
-  method: z22.literal("prompts/get"),
+  method: z21.literal("prompts/get"),
   params: GetPromptRequestParamsSchema
 });
-var TextContentSchema = z22.object({
-  type: z22.literal("text"),
-  text: z22.string(),
+var TextContentSchema = z21.object({
+  type: z21.literal("text"),
+  text: z21.string(),
   annotations: AnnotationsSchema.optional(),
-  _meta: z22.record(z22.string(), z22.unknown()).optional()
+  _meta: z21.record(z21.string(), z21.unknown()).optional()
 });
-var ImageContentSchema = z22.object({
-  type: z22.literal("image"),
+var ImageContentSchema = z21.object({
+  type: z21.literal("image"),
   data: Base64Schema,
-  mimeType: z22.string(),
+  mimeType: z21.string(),
   annotations: AnnotationsSchema.optional(),
-  _meta: z22.record(z22.string(), z22.unknown()).optional()
+  _meta: z21.record(z21.string(), z21.unknown()).optional()
 });
-var AudioContentSchema = z22.object({
-  type: z22.literal("audio"),
+var AudioContentSchema = z21.object({
+  type: z21.literal("audio"),
   data: Base64Schema,
-  mimeType: z22.string(),
+  mimeType: z21.string(),
   annotations: AnnotationsSchema.optional(),
-  _meta: z22.record(z22.string(), z22.unknown()).optional()
+  _meta: z21.record(z21.string(), z21.unknown()).optional()
 });
-var ToolUseContentSchema = z22.object({
-  type: z22.literal("tool_use"),
-  name: z22.string(),
-  id: z22.string(),
-  input: z22.record(z22.string(), z22.unknown()),
-  _meta: z22.record(z22.string(), z22.unknown()).optional()
+var ToolUseContentSchema = z21.object({
+  type: z21.literal("tool_use"),
+  name: z21.string(),
+  id: z21.string(),
+  input: z21.record(z21.string(), z21.unknown()),
+  _meta: z21.record(z21.string(), z21.unknown()).optional()
 });
-var EmbeddedResourceSchema = z22.object({
-  type: z22.literal("resource"),
-  resource: z22.union([TextResourceContentsSchema, BlobResourceContentsSchema]),
+var EmbeddedResourceSchema = z21.object({
+  type: z21.literal("resource"),
+  resource: z21.union([TextResourceContentsSchema, BlobResourceContentsSchema]),
   annotations: AnnotationsSchema.optional(),
-  _meta: z22.record(z22.string(), z22.unknown()).optional()
+  _meta: z21.record(z21.string(), z21.unknown()).optional()
 });
 var ResourceLinkSchema = ResourceSchema.extend({
-  type: z22.literal("resource_link")
+  type: z21.literal("resource_link")
 });
-var ContentBlockSchema = z22.union([
+var ContentBlockSchema = z21.union([
   TextContentSchema,
   ImageContentSchema,
   AudioContentSchema,
   ResourceLinkSchema,
   EmbeddedResourceSchema
 ]);
-var PromptMessageSchema = z22.object({
+var PromptMessageSchema = z21.object({
   role: RoleSchema,
   content: ContentBlockSchema
 });
 var GetPromptResultSchema = ResultSchema.extend({
-  description: z22.string().optional(),
-  messages: z22.array(PromptMessageSchema)
+  description: z21.string().optional(),
+  messages: z21.array(PromptMessageSchema)
 });
 var PromptListChangedNotificationSchema = NotificationSchema.extend({
-  method: z22.literal("notifications/prompts/list_changed"),
+  method: z21.literal("notifications/prompts/list_changed"),
   params: NotificationsParamsSchema.optional()
 });
-var ToolAnnotationsSchema = z22.object({
-  title: z22.string().optional(),
-  readOnlyHint: z22.boolean().optional(),
-  destructiveHint: z22.boolean().optional(),
-  idempotentHint: z22.boolean().optional(),
-  openWorldHint: z22.boolean().optional()
+var ToolAnnotationsSchema = z21.object({
+  title: z21.string().optional(),
+  readOnlyHint: z21.boolean().optional(),
+  destructiveHint: z21.boolean().optional(),
+  idempotentHint: z21.boolean().optional(),
+  openWorldHint: z21.boolean().optional()
 });
-var ToolExecutionSchema = z22.object({
-  taskSupport: z22.enum(["required", "optional", "forbidden"]).optional()
+var ToolExecutionSchema = z21.object({
+  taskSupport: z21.enum(["required", "optional", "forbidden"]).optional()
 });
-var ToolSchema = z22.object({
+var ToolSchema = z21.object({
   ...BaseMetadataSchema.shape,
   ...IconsSchema.shape,
-  description: z22.string().optional(),
-  inputSchema: z22.object({
-    type: z22.literal("object"),
-    properties: z22.record(z22.string(), AssertObjectSchema).optional(),
-    required: z22.array(z22.string()).optional()
-  }).catchall(z22.unknown()),
-  outputSchema: z22.object({
-    type: z22.literal("object"),
-    properties: z22.record(z22.string(), AssertObjectSchema).optional(),
-    required: z22.array(z22.string()).optional()
-  }).catchall(z22.unknown()).optional(),
+  description: z21.string().optional(),
+  inputSchema: z21.object({
+    type: z21.literal("object"),
+    properties: z21.record(z21.string(), AssertObjectSchema).optional(),
+    required: z21.array(z21.string()).optional()
+  }).catchall(z21.unknown()),
+  outputSchema: z21.object({
+    type: z21.literal("object"),
+    properties: z21.record(z21.string(), AssertObjectSchema).optional(),
+    required: z21.array(z21.string()).optional()
+  }).catchall(z21.unknown()).optional(),
   annotations: ToolAnnotationsSchema.optional(),
   execution: ToolExecutionSchema.optional(),
-  _meta: z22.record(z22.string(), z22.unknown()).optional()
+  _meta: z21.record(z21.string(), z21.unknown()).optional()
 });
 var ListToolsRequestSchema = PaginatedRequestSchema.extend({
-  method: z22.literal("tools/list")
+  method: z21.literal("tools/list")
 });
 var ListToolsResultSchema = PaginatedResultSchema.extend({
-  tools: z22.array(ToolSchema)
+  tools: z21.array(ToolSchema)
 });
 var CallToolResultSchema = ResultSchema.extend({
-  content: z22.array(ContentBlockSchema).default([]),
-  structuredContent: z22.record(z22.string(), z22.unknown()).optional(),
-  isError: z22.boolean().optional()
+  content: z21.array(ContentBlockSchema).default([]),
+  structuredContent: z21.record(z21.string(), z21.unknown()).optional(),
+  isError: z21.boolean().optional()
 });
 var CompatibilityCallToolResultSchema = CallToolResultSchema.or(ResultSchema.extend({
-  toolResult: z22.unknown()
+  toolResult: z21.unknown()
 }));
 var CallToolRequestParamsSchema = TaskAugmentedRequestParamsSchema.extend({
-  name: z22.string(),
-  arguments: z22.record(z22.string(), z22.unknown()).optional()
+  name: z21.string(),
+  arguments: z21.record(z21.string(), z21.unknown()).optional()
 });
 var CallToolRequestSchema = RequestSchema.extend({
-  method: z22.literal("tools/call"),
+  method: z21.literal("tools/call"),
   params: CallToolRequestParamsSchema
 });
 var ToolListChangedNotificationSchema = NotificationSchema.extend({
-  method: z22.literal("notifications/tools/list_changed"),
+  method: z21.literal("notifications/tools/list_changed"),
   params: NotificationsParamsSchema.optional()
 });
-var ListChangedOptionsBaseSchema = z22.object({
-  autoRefresh: z22.boolean().default(true),
-  debounceMs: z22.number().int().nonnegative().default(300)
+var ListChangedOptionsBaseSchema = z21.object({
+  autoRefresh: z21.boolean().default(true),
+  debounceMs: z21.number().int().nonnegative().default(300)
 });
-var LoggingLevelSchema = z22.enum(["debug", "info", "notice", "warning", "error", "critical", "alert", "emergency"]);
+var LoggingLevelSchema = z21.enum(["debug", "info", "notice", "warning", "error", "critical", "alert", "emergency"]);
 var SetLevelRequestParamsSchema = BaseRequestParamsSchema.extend({
   level: LoggingLevelSchema
 });
 var SetLevelRequestSchema = RequestSchema.extend({
-  method: z22.literal("logging/setLevel"),
+  method: z21.literal("logging/setLevel"),
   params: SetLevelRequestParamsSchema
 });
 var LoggingMessageNotificationParamsSchema = NotificationsParamsSchema.extend({
   level: LoggingLevelSchema,
-  logger: z22.string().optional(),
-  data: z22.unknown()
+  logger: z21.string().optional(),
+  data: z21.unknown()
 });
 var LoggingMessageNotificationSchema = NotificationSchema.extend({
-  method: z22.literal("notifications/message"),
+  method: z21.literal("notifications/message"),
   params: LoggingMessageNotificationParamsSchema
 });
-var ModelHintSchema = z22.object({
-  name: z22.string().optional()
+var ModelHintSchema = z21.object({
+  name: z21.string().optional()
 });
-var ModelPreferencesSchema = z22.object({
-  hints: z22.array(ModelHintSchema).optional(),
-  costPriority: z22.number().min(0).max(1).optional(),
-  speedPriority: z22.number().min(0).max(1).optional(),
-  intelligencePriority: z22.number().min(0).max(1).optional()
+var ModelPreferencesSchema = z21.object({
+  hints: z21.array(ModelHintSchema).optional(),
+  costPriority: z21.number().min(0).max(1).optional(),
+  speedPriority: z21.number().min(0).max(1).optional(),
+  intelligencePriority: z21.number().min(0).max(1).optional()
 });
-var ToolChoiceSchema = z22.object({
-  mode: z22.enum(["auto", "required", "none"]).optional()
+var ToolChoiceSchema = z21.object({
+  mode: z21.enum(["auto", "required", "none"]).optional()
 });
-var ToolResultContentSchema = z22.object({
-  type: z22.literal("tool_result"),
-  toolUseId: z22.string().describe("The unique identifier for the corresponding tool call."),
-  content: z22.array(ContentBlockSchema).default([]),
-  structuredContent: z22.object({}).loose().optional(),
-  isError: z22.boolean().optional(),
-  _meta: z22.record(z22.string(), z22.unknown()).optional()
+var ToolResultContentSchema = z21.object({
+  type: z21.literal("tool_result"),
+  toolUseId: z21.string().describe("The unique identifier for the corresponding tool call."),
+  content: z21.array(ContentBlockSchema).default([]),
+  structuredContent: z21.object({}).loose().optional(),
+  isError: z21.boolean().optional(),
+  _meta: z21.record(z21.string(), z21.unknown()).optional()
 });
-var SamplingContentSchema = z22.discriminatedUnion("type", [TextContentSchema, ImageContentSchema, AudioContentSchema]);
-var SamplingMessageContentBlockSchema = z22.discriminatedUnion("type", [
+var SamplingContentSchema = z21.discriminatedUnion("type", [TextContentSchema, ImageContentSchema, AudioContentSchema]);
+var SamplingMessageContentBlockSchema = z21.discriminatedUnion("type", [
   TextContentSchema,
   ImageContentSchema,
   AudioContentSchema,
   ToolUseContentSchema,
   ToolResultContentSchema
 ]);
-var SamplingMessageSchema = z22.object({
+var SamplingMessageSchema = z21.object({
   role: RoleSchema,
-  content: z22.union([SamplingMessageContentBlockSchema, z22.array(SamplingMessageContentBlockSchema)]),
-  _meta: z22.record(z22.string(), z22.unknown()).optional()
+  content: z21.union([SamplingMessageContentBlockSchema, z21.array(SamplingMessageContentBlockSchema)]),
+  _meta: z21.record(z21.string(), z21.unknown()).optional()
 });
 var CreateMessageRequestParamsSchema = TaskAugmentedRequestParamsSchema.extend({
-  messages: z22.array(SamplingMessageSchema),
+  messages: z21.array(SamplingMessageSchema),
   modelPreferences: ModelPreferencesSchema.optional(),
-  systemPrompt: z22.string().optional(),
-  includeContext: z22.enum(["none", "thisServer", "allServers"]).optional(),
-  temperature: z22.number().optional(),
-  maxTokens: z22.number().int(),
-  stopSequences: z22.array(z22.string()).optional(),
+  systemPrompt: z21.string().optional(),
+  includeContext: z21.enum(["none", "thisServer", "allServers"]).optional(),
+  temperature: z21.number().optional(),
+  maxTokens: z21.number().int(),
+  stopSequences: z21.array(z21.string()).optional(),
   metadata: AssertObjectSchema.optional(),
-  tools: z22.array(ToolSchema).optional(),
+  tools: z21.array(ToolSchema).optional(),
   toolChoice: ToolChoiceSchema.optional()
 });
 var CreateMessageRequestSchema = RequestSchema.extend({
-  method: z22.literal("sampling/createMessage"),
+  method: z21.literal("sampling/createMessage"),
   params: CreateMessageRequestParamsSchema
 });
 var CreateMessageResultSchema = ResultSchema.extend({
-  model: z22.string(),
-  stopReason: z22.optional(z22.enum(["endTurn", "stopSequence", "maxTokens"]).or(z22.string())),
+  model: z21.string(),
+  stopReason: z21.optional(z21.enum(["endTurn", "stopSequence", "maxTokens"]).or(z21.string())),
   role: RoleSchema,
   content: SamplingContentSchema
 });
 var CreateMessageResultWithToolsSchema = ResultSchema.extend({
-  model: z22.string(),
-  stopReason: z22.optional(z22.enum(["endTurn", "stopSequence", "maxTokens", "toolUse"]).or(z22.string())),
+  model: z21.string(),
+  stopReason: z21.optional(z21.enum(["endTurn", "stopSequence", "maxTokens", "toolUse"]).or(z21.string())),
   role: RoleSchema,
-  content: z22.union([SamplingMessageContentBlockSchema, z22.array(SamplingMessageContentBlockSchema)])
+  content: z21.union([SamplingMessageContentBlockSchema, z21.array(SamplingMessageContentBlockSchema)])
 });
-var BooleanSchemaSchema = z22.object({
-  type: z22.literal("boolean"),
-  title: z22.string().optional(),
-  description: z22.string().optional(),
-  default: z22.boolean().optional()
+var BooleanSchemaSchema = z21.object({
+  type: z21.literal("boolean"),
+  title: z21.string().optional(),
+  description: z21.string().optional(),
+  default: z21.boolean().optional()
 });
-var StringSchemaSchema = z22.object({
-  type: z22.literal("string"),
-  title: z22.string().optional(),
-  description: z22.string().optional(),
-  minLength: z22.number().optional(),
-  maxLength: z22.number().optional(),
-  format: z22.enum(["email", "uri", "date", "date-time"]).optional(),
-  default: z22.string().optional()
+var StringSchemaSchema = z21.object({
+  type: z21.literal("string"),
+  title: z21.string().optional(),
+  description: z21.string().optional(),
+  minLength: z21.number().optional(),
+  maxLength: z21.number().optional(),
+  format: z21.enum(["email", "uri", "date", "date-time"]).optional(),
+  default: z21.string().optional()
 });
-var NumberSchemaSchema = z22.object({
-  type: z22.enum(["number", "integer"]),
-  title: z22.string().optional(),
-  description: z22.string().optional(),
-  minimum: z22.number().optional(),
-  maximum: z22.number().optional(),
-  default: z22.number().optional()
+var NumberSchemaSchema = z21.object({
+  type: z21.enum(["number", "integer"]),
+  title: z21.string().optional(),
+  description: z21.string().optional(),
+  minimum: z21.number().optional(),
+  maximum: z21.number().optional(),
+  default: z21.number().optional()
 });
-var UntitledSingleSelectEnumSchemaSchema = z22.object({
-  type: z22.literal("string"),
-  title: z22.string().optional(),
-  description: z22.string().optional(),
-  enum: z22.array(z22.string()),
-  default: z22.string().optional()
+var UntitledSingleSelectEnumSchemaSchema = z21.object({
+  type: z21.literal("string"),
+  title: z21.string().optional(),
+  description: z21.string().optional(),
+  enum: z21.array(z21.string()),
+  default: z21.string().optional()
 });
-var TitledSingleSelectEnumSchemaSchema = z22.object({
-  type: z22.literal("string"),
-  title: z22.string().optional(),
-  description: z22.string().optional(),
-  oneOf: z22.array(z22.object({
-    const: z22.string(),
-    title: z22.string()
+var TitledSingleSelectEnumSchemaSchema = z21.object({
+  type: z21.literal("string"),
+  title: z21.string().optional(),
+  description: z21.string().optional(),
+  oneOf: z21.array(z21.object({
+    const: z21.string(),
+    title: z21.string()
   })),
-  default: z22.string().optional()
+  default: z21.string().optional()
 });
-var LegacyTitledEnumSchemaSchema = z22.object({
-  type: z22.literal("string"),
-  title: z22.string().optional(),
-  description: z22.string().optional(),
-  enum: z22.array(z22.string()),
-  enumNames: z22.array(z22.string()).optional(),
-  default: z22.string().optional()
+var LegacyTitledEnumSchemaSchema = z21.object({
+  type: z21.literal("string"),
+  title: z21.string().optional(),
+  description: z21.string().optional(),
+  enum: z21.array(z21.string()),
+  enumNames: z21.array(z21.string()).optional(),
+  default: z21.string().optional()
 });
-var SingleSelectEnumSchemaSchema = z22.union([UntitledSingleSelectEnumSchemaSchema, TitledSingleSelectEnumSchemaSchema]);
-var UntitledMultiSelectEnumSchemaSchema = z22.object({
-  type: z22.literal("array"),
-  title: z22.string().optional(),
-  description: z22.string().optional(),
-  minItems: z22.number().optional(),
-  maxItems: z22.number().optional(),
-  items: z22.object({
-    type: z22.literal("string"),
-    enum: z22.array(z22.string())
+var SingleSelectEnumSchemaSchema = z21.union([UntitledSingleSelectEnumSchemaSchema, TitledSingleSelectEnumSchemaSchema]);
+var UntitledMultiSelectEnumSchemaSchema = z21.object({
+  type: z21.literal("array"),
+  title: z21.string().optional(),
+  description: z21.string().optional(),
+  minItems: z21.number().optional(),
+  maxItems: z21.number().optional(),
+  items: z21.object({
+    type: z21.literal("string"),
+    enum: z21.array(z21.string())
   }),
-  default: z22.array(z22.string()).optional()
+  default: z21.array(z21.string()).optional()
 });
-var TitledMultiSelectEnumSchemaSchema = z22.object({
-  type: z22.literal("array"),
-  title: z22.string().optional(),
-  description: z22.string().optional(),
-  minItems: z22.number().optional(),
-  maxItems: z22.number().optional(),
-  items: z22.object({
-    anyOf: z22.array(z22.object({
-      const: z22.string(),
-      title: z22.string()
+var TitledMultiSelectEnumSchemaSchema = z21.object({
+  type: z21.literal("array"),
+  title: z21.string().optional(),
+  description: z21.string().optional(),
+  minItems: z21.number().optional(),
+  maxItems: z21.number().optional(),
+  items: z21.object({
+    anyOf: z21.array(z21.object({
+      const: z21.string(),
+      title: z21.string()
     }))
   }),
-  default: z22.array(z22.string()).optional()
+  default: z21.array(z21.string()).optional()
 });
-var MultiSelectEnumSchemaSchema = z22.union([UntitledMultiSelectEnumSchemaSchema, TitledMultiSelectEnumSchemaSchema]);
-var EnumSchemaSchema = z22.union([LegacyTitledEnumSchemaSchema, SingleSelectEnumSchemaSchema, MultiSelectEnumSchemaSchema]);
-var PrimitiveSchemaDefinitionSchema = z22.union([EnumSchemaSchema, BooleanSchemaSchema, StringSchemaSchema, NumberSchemaSchema]);
+var MultiSelectEnumSchemaSchema = z21.union([UntitledMultiSelectEnumSchemaSchema, TitledMultiSelectEnumSchemaSchema]);
+var EnumSchemaSchema = z21.union([LegacyTitledEnumSchemaSchema, SingleSelectEnumSchemaSchema, MultiSelectEnumSchemaSchema]);
+var PrimitiveSchemaDefinitionSchema = z21.union([EnumSchemaSchema, BooleanSchemaSchema, StringSchemaSchema, NumberSchemaSchema]);
 var ElicitRequestFormParamsSchema = TaskAugmentedRequestParamsSchema.extend({
-  mode: z22.literal("form").optional(),
-  message: z22.string(),
-  requestedSchema: z22.object({
-    type: z22.literal("object"),
-    properties: z22.record(z22.string(), PrimitiveSchemaDefinitionSchema),
-    required: z22.array(z22.string()).optional()
+  mode: z21.literal("form").optional(),
+  message: z21.string(),
+  requestedSchema: z21.object({
+    type: z21.literal("object"),
+    properties: z21.record(z21.string(), PrimitiveSchemaDefinitionSchema),
+    required: z21.array(z21.string()).optional()
   })
 });
 var ElicitRequestURLParamsSchema = TaskAugmentedRequestParamsSchema.extend({
-  mode: z22.literal("url"),
-  message: z22.string(),
-  elicitationId: z22.string(),
-  url: z22.string().url()
+  mode: z21.literal("url"),
+  message: z21.string(),
+  elicitationId: z21.string(),
+  url: z21.string().url()
 });
-var ElicitRequestParamsSchema = z22.union([ElicitRequestFormParamsSchema, ElicitRequestURLParamsSchema]);
+var ElicitRequestParamsSchema = z21.union([ElicitRequestFormParamsSchema, ElicitRequestURLParamsSchema]);
 var ElicitRequestSchema = RequestSchema.extend({
-  method: z22.literal("elicitation/create"),
+  method: z21.literal("elicitation/create"),
   params: ElicitRequestParamsSchema
 });
 var ElicitationCompleteNotificationParamsSchema = NotificationsParamsSchema.extend({
-  elicitationId: z22.string()
+  elicitationId: z21.string()
 });
 var ElicitationCompleteNotificationSchema = NotificationSchema.extend({
-  method: z22.literal("notifications/elicitation/complete"),
+  method: z21.literal("notifications/elicitation/complete"),
   params: ElicitationCompleteNotificationParamsSchema
 });
 var ElicitResultSchema = ResultSchema.extend({
-  action: z22.enum(["accept", "decline", "cancel"]),
-  content: z22.preprocess((val) => val === null ? undefined : val, z22.record(z22.string(), z22.union([z22.string(), z22.number(), z22.boolean(), z22.array(z22.string())])).optional())
+  action: z21.enum(["accept", "decline", "cancel"]),
+  content: z21.preprocess((val) => val === null ? undefined : val, z21.record(z21.string(), z21.union([z21.string(), z21.number(), z21.boolean(), z21.array(z21.string())])).optional())
 });
-var ResourceTemplateReferenceSchema = z22.object({
-  type: z22.literal("ref/resource"),
-  uri: z22.string()
+var ResourceTemplateReferenceSchema = z21.object({
+  type: z21.literal("ref/resource"),
+  uri: z21.string()
 });
-var PromptReferenceSchema = z22.object({
-  type: z22.literal("ref/prompt"),
-  name: z22.string()
+var PromptReferenceSchema = z21.object({
+  type: z21.literal("ref/prompt"),
+  name: z21.string()
 });
 var CompleteRequestParamsSchema = BaseRequestParamsSchema.extend({
-  ref: z22.union([PromptReferenceSchema, ResourceTemplateReferenceSchema]),
-  argument: z22.object({
-    name: z22.string(),
-    value: z22.string()
+  ref: z21.union([PromptReferenceSchema, ResourceTemplateReferenceSchema]),
+  argument: z21.object({
+    name: z21.string(),
+    value: z21.string()
   }),
-  context: z22.object({
-    arguments: z22.record(z22.string(), z22.string()).optional()
+  context: z21.object({
+    arguments: z21.record(z21.string(), z21.string()).optional()
   }).optional()
 });
 var CompleteRequestSchema = RequestSchema.extend({
-  method: z22.literal("completion/complete"),
+  method: z21.literal("completion/complete"),
   params: CompleteRequestParamsSchema
 });
 var CompleteResultSchema = ResultSchema.extend({
-  completion: z22.looseObject({
-    values: z22.array(z22.string()).max(100),
-    total: z22.optional(z22.number().int()),
-    hasMore: z22.optional(z22.boolean())
+  completion: z21.looseObject({
+    values: z21.array(z21.string()).max(100),
+    total: z21.optional(z21.number().int()),
+    hasMore: z21.optional(z21.boolean())
   })
 });
-var RootSchema = z22.object({
-  uri: z22.string().startsWith("file://"),
-  name: z22.string().optional(),
-  _meta: z22.record(z22.string(), z22.unknown()).optional()
+var RootSchema = z21.object({
+  uri: z21.string().startsWith("file://"),
+  name: z21.string().optional(),
+  _meta: z21.record(z21.string(), z21.unknown()).optional()
 });
 var ListRootsRequestSchema = RequestSchema.extend({
-  method: z22.literal("roots/list"),
+  method: z21.literal("roots/list"),
   params: BaseRequestParamsSchema.optional()
 });
 var ListRootsResultSchema = ResultSchema.extend({
-  roots: z22.array(RootSchema)
+  roots: z21.array(RootSchema)
 });
 var RootsListChangedNotificationSchema = NotificationSchema.extend({
-  method: z22.literal("notifications/roots/list_changed"),
+  method: z21.literal("notifications/roots/list_changed"),
   params: NotificationsParamsSchema.optional()
 });
-var ClientRequestSchema = z22.union([
+var ClientRequestSchema = z21.union([
   PingRequestSchema,
   InitializeRequestSchema,
   CompleteRequestSchema,
@@ -20701,14 +20312,14 @@ var ClientRequestSchema = z22.union([
   ListTasksRequestSchema,
   CancelTaskRequestSchema
 ]);
-var ClientNotificationSchema = z22.union([
+var ClientNotificationSchema = z21.union([
   CancelledNotificationSchema,
   ProgressNotificationSchema,
   InitializedNotificationSchema,
   RootsListChangedNotificationSchema,
   TaskStatusNotificationSchema
 ]);
-var ClientResultSchema = z22.union([
+var ClientResultSchema = z21.union([
   EmptyResultSchema,
   CreateMessageResultSchema,
   CreateMessageResultWithToolsSchema,
@@ -20718,7 +20329,7 @@ var ClientResultSchema = z22.union([
   ListTasksResultSchema,
   CreateTaskResultSchema
 ]);
-var ServerRequestSchema = z22.union([
+var ServerRequestSchema = z21.union([
   PingRequestSchema,
   CreateMessageRequestSchema,
   ElicitRequestSchema,
@@ -20728,7 +20339,7 @@ var ServerRequestSchema = z22.union([
   ListTasksRequestSchema,
   CancelTaskRequestSchema
 ]);
-var ServerNotificationSchema = z22.union([
+var ServerNotificationSchema = z21.union([
   CancelledNotificationSchema,
   ProgressNotificationSchema,
   LoggingMessageNotificationSchema,
@@ -20739,7 +20350,7 @@ var ServerNotificationSchema = z22.union([
   TaskStatusNotificationSchema,
   ElicitationCompleteNotificationSchema
 ]);
-var ServerResultSchema = z22.union([
+var ServerResultSchema = z21.union([
   EmptyResultSchema,
   InitializeResultSchema,
   CompleteResultSchema,
@@ -20869,10 +20480,10 @@ class Protocol {
             while (queuedMessage = await this._taskMessageQueue.dequeue(taskId, extra.sessionId)) {
               if (queuedMessage.type === "response" || queuedMessage.type === "error") {
                 const message = queuedMessage.message;
-                const requestId2 = message.id;
-                const resolver = this._requestResolvers.get(requestId2);
+                const requestId = message.id;
+                const resolver = this._requestResolvers.get(requestId);
                 if (resolver) {
-                  this._requestResolvers.delete(requestId2);
+                  this._requestResolvers.delete(requestId);
                   if (queuedMessage.type === "response") {
                     resolver(message);
                   } else {
@@ -20882,7 +20493,7 @@ class Protocol {
                   }
                 } else {
                   const messageType = queuedMessage.type === "response" ? "Response" : "Error";
-                  this._onerror(new Error(`${messageType} handler missing for request ${requestId2}`));
+                  this._onerror(new Error(`${messageType} handler missing for request ${requestId}`));
                 }
                 continue;
               }
@@ -21531,13 +21142,13 @@ class Protocol {
       const messages = await this._taskMessageQueue.dequeueAll(taskId, sessionId);
       for (const message of messages) {
         if (message.type === "request" && isJSONRPCRequest(message.message)) {
-          const requestId2 = message.message.id;
-          const resolver = this._requestResolvers.get(requestId2);
+          const requestId = message.message.id;
+          const resolver = this._requestResolvers.get(requestId);
           if (resolver) {
             resolver(new McpError(ErrorCode.InternalError, "Task cancelled or completed"));
-            this._requestResolvers.delete(requestId2);
+            this._requestResolvers.delete(requestId);
           } else {
-            this._onerror(new Error(`Resolver missing for request ${requestId2} during task ${taskId} cleanup`));
+            this._onerror(new Error(`Resolver missing for request ${requestId} during task ${taskId} cleanup`));
           }
         }
       }
@@ -22691,11 +22302,11 @@ var createOpenCodeXPlugin = async (input) => {
   let krakenConfig = inputConfig.kraken_code;
   if (!krakenConfig) {
     try {
-      const fs17 = await import("node:fs/promises");
-      const path19 = await import("path");
-      const os12 = await import("os");
-      const krakenConfigPath = path19.default.join(os12.default.homedir(), ".config", "opencode", "kraken-code.json");
-      const configContent = await fs17.default.readFile(krakenConfigPath, "utf-8");
+      const fs16 = await import("node:fs/promises");
+      const path18 = await import("path");
+      const os11 = await import("os");
+      const krakenConfigPath = path18.default.join(os11.default.homedir(), ".config", "opencode", "kraken-code.json");
+      const configContent = await fs16.default.readFile(krakenConfigPath, "utf-8");
       krakenConfig = JSON.parse(configContent);
       console.log("[kraken-code] Loaded config from kraken-code.json");
     } catch (e) {
@@ -22725,7 +22336,7 @@ var createOpenCodeXPlugin = async (input) => {
     console.error("[kraken-code] Error initializing learning system:", e);
   }
   const modeHooks = createModeHooks(input, {
-    enabled: config2.modes?.ultrawork?.enabled ?? true,
+    enabled: config2.modes?.search?.enabled ?? true,
     autoActivate: true
   });
   hooks.push(modeHooks);
@@ -22798,12 +22409,6 @@ var createOpenCodeXPlugin = async (input) => {
       } catch (e) {
         console.error("[kraken-code] Error initializing skill MCP manager:", e);
       }
-      try {
-        await initializeKratos();
-        console.log("[kraken-code] Kratos initialized");
-      } catch (e) {
-        console.error("[kraken-code] Error initializing Kratos:", e);
-      }
       const mcpConfig = newConfig.mcp || {};
       try {
         await initializeAllMcpServers(mcpConfig);
@@ -22860,7 +22465,6 @@ var createOpenCodeXPlugin = async (input) => {
   process.on("exit", async () => {
     try {
       await shutdownAllMcpServers();
-      await shutdownKratos();
       await shutdownLearningSystem();
     } catch (e) {
       console.error("Kraken Code: Error shutting down services", e);

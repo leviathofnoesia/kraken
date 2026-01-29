@@ -29,9 +29,8 @@ export function createKeywordDetector(
       "[REVIEW]": "review",
 
       "think": "think",
+      "think deeply": "think",
       "ultrathink": "think",
-      "ulw": "ultrawork",
-      "ultrawork": "ultrawork",
 
       "search": "search",
       "analyze": "analyze",
@@ -196,13 +195,6 @@ export function createKeywordDetector(
       ...thaiKeywords,
     ]
 
-    const ultraworkModeKeywords = [
-      "ultrawork", "ulw", "ultra work", "ultra work mode",
-      "초신속", "슈퍼모드", "스피드", "super rapid", "ultra rapid",
-      "أسرع", "על הכי מהיר", "kerja super cepat", "ультра-быстро",
-      "υπερταχύτητα", "super rychle", "super viteză",
-    ]
-
     const searchModeKeywords = [
       "search", "find", "locate", "search for", "find in", "locate in",
       "검색", "찾아", "查找", "検索", "rechercher", "buscar", "suchen", "cercare", "найти", "חפש", "بحث", "cari", "пошук", "αναζήτηση", "hledat", "căuta", "søg", "sök", "zoek", "ค้นหา",
@@ -212,10 +204,6 @@ export function createKeywordDetector(
       "analyze", "investigate", "examine", "deep dive", "deep analysis",
       "분석", "조사", "分析", "分析", "analyser", "analizar", "analysieren", "analizzare", "анализировать", "נתח", "تحليل", "analisis", "analiza", "аналізувати", "ανάλυση", "analyzovat", "analiza", "analyseer", "onderzoek", "วิเคราะห์",
     ]
-
-    if (ultraworkModeKeywords.includes(keyword.toLowerCase())) {
-      return { mode: "ultrawork", language: detectLanguage(keyword) }
-    }
 
     if (searchModeKeywords.includes(keyword.toLowerCase())) {
       return { mode: "search", language: detectLanguage(keyword) }
@@ -234,7 +222,7 @@ export function createKeywordDetector(
 
   function detectLanguage(keyword: string): string | undefined {
     const keywordLower = keyword.toLowerCase()
-    const arabicMatch = /[ا-ي-ع]/
+    const arabicMatch = /[\u0600-\u06FF]/
     const hebrewMatch = /[\u0590-\u05FF]/
     const cyrillicMatch = /[\u0400-\u04FF]/
     const chineseMatch = /[\u4E00-\u9FFF]/
@@ -311,11 +299,7 @@ export function createKeywordDetector(
 
           const pluginConfig = (input as any).config as any
 
-          if (detected.mode === "ultrawork") {
-            if (pluginConfig?.enhanced?.enabled === false) {
-              pluginConfig.enhanced = { ...pluginConfig.enhanced, enabled: true }
-            }
-          } else if (detected.mode === "search") {
+          if (detected.mode === "search") {
             console.log(`[keyword-detector] Activating search mode for ${detected.language}`)
           } else if (detected.mode === "analyze") {
             console.log(`[keyword-detector] Activating analyze mode for ${detected.language}`)

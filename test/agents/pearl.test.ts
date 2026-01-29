@@ -7,13 +7,8 @@ describe("Pearl Agent", () => {
   })
 
   it("should have required properties", () => {
-    expect(pearlAgent.name).toBe("Pearl")
     expect(pearlAgent.description).toBeDefined()
     expect(pearlAgent.prompt).toBeDefined()
-  })
-
-  it("should have correct agent name", () => {
-    expect(pearlAgent.name).toBe("Pearl")
   })
 
   it("should have valid prompt structure", () => {

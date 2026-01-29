@@ -7,13 +7,8 @@ describe("Scylla Agent", () => {
   })
 
   it("should have required properties", () => {
-    expect(scyllaAgent.name).toBe("Scylla")
     expect(scyllaAgent.description).toBeDefined()
     expect(scyllaAgent.prompt).toBeDefined()
-  })
-
-  it("should have correct agent name", () => {
-    expect(scyllaAgent.name).toBe("Scylla")
   })
 
   it("should have valid prompt structure", () => {

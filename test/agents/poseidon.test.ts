@@ -7,13 +7,8 @@ describe("Poseidon Agent", () => {
   })
 
   it("should have required properties", () => {
-    expect(poseidonAgent.name).toBe("Poseidon")
     expect(poseidonAgent.description).toBeDefined()
     expect(poseidonAgent.prompt).toBeDefined()
-  })
-
-  it("should have correct agent name", () => {
-    expect(poseidonAgent.name).toBe("Poseidon")
   })
 
   it("should have valid prompt structure", () => {

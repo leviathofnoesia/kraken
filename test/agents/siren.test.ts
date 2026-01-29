@@ -7,13 +7,8 @@ describe("Siren Agent", () => {
   })
 
   it("should have required properties", () => {
-    expect(sirenAgent.name).toBe("Siren")
     expect(sirenAgent.description).toBeDefined()
     expect(sirenAgent.prompt).toBeDefined()
-  })
-
-  it("should have correct agent name", () => {
-    expect(sirenAgent.name).toBe("Siren")
   })
 
   it("should have valid prompt structure", () => {

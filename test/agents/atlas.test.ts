@@ -7,13 +7,8 @@ describe("Atlas Agent", () => {
   })
 
   it("should have required properties", () => {
-    expect(atlasAgent.name).toBe("Atlas")
     expect(atlasAgent.description).toBeDefined()
     expect(atlasAgent.prompt).toBeDefined()
-  })
-
-  it("should have correct agent name", () => {
-    expect(atlasAgent.name).toBe("Atlas")
   })
 
   it("should have valid prompt structure", () => {

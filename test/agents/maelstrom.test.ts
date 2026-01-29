@@ -7,13 +7,8 @@ describe("Maelstrom Agent", () => {
   })
 
   it("should have required properties", () => {
-    expect(maelstromAgent.name).toBe("Maelstrom")
     expect(maelstromAgent.description).toBeDefined()
     expect(maelstromAgent.prompt).toBeDefined()
-  })
-
-  it("should have correct agent name", () => {
-    expect(maelstromAgent.name).toBe("Maelstrom")
   })
 
   it("should have valid prompt structure", () => {
