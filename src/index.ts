@@ -202,22 +202,47 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
 
       // Sanitize agent permissions to prevent ruleset validation errors
       // This fixes "Invalid option: expected one of 'allow'|'deny'|'ask'" at ruleset[12] and ruleset[14]
+      //
+      // The issue: Some agents (Nautilus, Maelstrom) set permission keys like "write" and "task"
+      // which are NOT valid according to OpenCode's AgentPermissionSchema.
+      // Valid keys are: edit, bash, webfetch, doom_loop, external_directory
+      const validPermissionKeys = ["edit", "bash", "webfetch", "doom_loop", "external_directory"] as const;
       const defaultPermissions = {
-        edit: "ask",
-        bash: "ask",
-        webfetch: "ask",
-        doom_loop: "ask",
-        external_directory: "ask",
+        edit: "ask" as const,
+        bash: "ask" as const,
+        webfetch: "ask" as const,
+        doom_loop: "ask" as const,
+        external_directory: "ask" as const,
       };
-      
+
       for (const agentName of Object.keys(newConfig.agent)) {
         const agent = newConfig.agent[agentName];
-        if (agent && !agent.permission) {
-          // Merge default permissions into existing agent config
-          agent.permission = {
-            ...defaultPermissions,
-            ...(agent.permission || {}),
-          };
+        if (agent) {
+          // Create a clean permission object with only valid keys
+          const cleanPermission: Record<string, "allow" | "ask" | "deny"> = {};
+
+          // Copy only valid permission keys from existing agent.permission
+          if (agent.permission && typeof agent.permission === "object") {
+            for (const key of validPermissionKeys) {
+              if (key in agent.permission) {
+                const value = agent.permission[key];
+                // Validate the value is a valid permission
+                if (value === "allow" || value === "ask" || value === "deny") {
+                  cleanPermission[key] = value;
+                }
+              }
+            }
+          }
+
+          // Merge with defaults for any missing valid keys
+          for (const key of validPermissionKeys) {
+            if (!(key in cleanPermission)) {
+              cleanPermission[key] = defaultPermissions[key];
+            }
+          }
+
+          // Replace with sanitized permission object
+          agent.permission = cleanPermission;
         }
       }
 

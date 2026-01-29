@@ -22701,6 +22701,36 @@ var createOpenCodeXPlugin = async (input) => {
       }
       if (!newConfig.default_agent && newConfig.agent["Kraken"])
         newConfig.default_agent = "Kraken";
+      const validPermissionKeys = ["edit", "bash", "webfetch", "doom_loop", "external_directory"];
+      const defaultPermissions = {
+        edit: "ask",
+        bash: "ask",
+        webfetch: "ask",
+        doom_loop: "ask",
+        external_directory: "ask"
+      };
+      for (const agentName of Object.keys(newConfig.agent)) {
+        const agent = newConfig.agent[agentName];
+        if (agent) {
+          const cleanPermission = {};
+          if (agent.permission && typeof agent.permission === "object") {
+            for (const key of validPermissionKeys) {
+              if (key in agent.permission) {
+                const value = agent.permission[key];
+                if (value === "allow" || value === "ask" || value === "deny") {
+                  cleanPermission[key] = value;
+                }
+              }
+            }
+          }
+          for (const key of validPermissionKeys) {
+            if (!(key in cleanPermission)) {
+              cleanPermission[key] = defaultPermissions[key];
+            }
+          }
+          agent.permission = cleanPermission;
+        }
+      }
       try {
         await initializeCommandLoader();
         console.log("[kraken-code] Command loader initialized");
