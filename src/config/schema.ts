@@ -64,7 +64,13 @@ export const AgentOverrideConfigSchema = z.object({
   description: z.string().optional(),
   mode: z.enum(["subagent", "primary", "all"]).optional(),
   color: z.string().optional(),
-  permission: AgentPermissionSchema.optional(),
+  permission: AgentPermissionSchema.default({
+    edit: "ask",
+    bash: "ask",
+    webfetch: "ask",
+    doom_loop: "ask",
+    external_directory: "ask"
+  }),
 })
 
 export const AgentOverridesSchema = z.object({

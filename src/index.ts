@@ -200,6 +200,22 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
       }
       if (!newConfig.default_agent && newConfig.agent["Kraken"]) newConfig.default_agent = "Kraken";
 
+      // Sanitize agent permissions to prevent ruleset validation errors
+      // This fixes "Invalid option: expected one of 'allow'|'deny'|'ask'" at ruleset[12] and ruleset[14]
+      for (const agentName of Object.keys(newConfig.agent)) {
+        const agent = newConfig.agent[agentName];
+        if (agent && !agent.permission) {
+          // Add default permissions if missing
+          agent.permission = {
+            edit: "ask",
+            bash: "ask",
+            webfetch: "ask",
+            doom_loop: "ask",
+            external_directory: "ask"
+          };
+        }
+      }
+
       // Initialize command loader
       try {
         await initializeCommandLoader();
