@@ -1278,7 +1278,98 @@ async function runInit(options) {
   const isMinimal = options.minimal;
   const isFull = options.full;
   const opencodeConfig = {
-    plugin: ["kraken-code"]
+    plugin: ["kraken-code"],
+    agent: {
+      Kraken: {
+        description: "Orchestration agent with integrated pre-planning. Coordinates development workflows through PDSA cycles, intelligent delegation, and constraint analysis.",
+        mode: "primary",
+        permission: {
+          edit: "ask",
+          bash: "ask",
+          webfetch: "ask",
+          doom_loop: "ask",
+          external_directory: "ask"
+        }
+      },
+      Atlas: {
+        description: "Architecture specialist using first-principles reasoning and structural analysis.",
+        mode: "subagent",
+        permission: {
+          edit: "ask",
+          bash: "ask",
+          webfetch: "ask",
+          doom_loop: "ask",
+          external_directory: "ask"
+        }
+      },
+      Nautilus: {
+        description: "Codebase exploration agent with pattern recognition and systematic search capabilities.",
+        mode: "subagent",
+        permission: {
+          edit: "ask",
+          bash: "ask",
+          webfetch: "ask",
+          doom_loop: "ask",
+          external_directory: "ask"
+        }
+      },
+      Abyssal: {
+        description: "External research agent for docs, OSS projects, and API references.",
+        mode: "subagent",
+        permission: {
+          edit: "ask",
+          bash: "ask",
+          webfetch: "ask",
+          doom_loop: "ask",
+          external_directory: "ask"
+        }
+      },
+      Coral: {
+        description: "Visual/UI/UX design specialist with design sensibility.",
+        mode: "subagent",
+        permission: {
+          edit: "ask",
+          bash: "ask",
+          webfetch: "ask",
+          doom_loop: "ask",
+          external_directory: "ask"
+        }
+      },
+      Siren: {
+        description: "Technical writing and documentation specialist.",
+        mode: "subagent",
+        permission: {
+          edit: "ask",
+          bash: "ask",
+          webfetch: "ask",
+          doom_loop: "ask",
+          external_directory: "ask"
+        }
+      },
+      Scylla: {
+        description: "Code review and quality gate specialist.",
+        mode: "subagent",
+        permission: {
+          edit: "ask",
+          bash: "ask",
+          webfetch: "ask",
+          doom_loop: "ask",
+          external_directory: "ask"
+        }
+      },
+      Pearl: {
+        description: "Code summarization and analysis specialist.",
+        mode: "subagent",
+        permission: {
+          edit: "ask",
+          bash: "ask",
+          webfetch: "ask",
+          doom_loop: "ask",
+          external_directory: "ask"
+        }
+      }
+    },
+    default_agent: "Kraken"
   };
   const krakenConfig = {
     agents: {
