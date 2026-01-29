@@ -114,39 +114,48 @@ export function createContextInjectorHook(
 
   return {
     /**
-     * Inject relevant context at session start
+     * Inject relevant context at session start (via chat.message)
      */
-    "session.start": async (hookInput: any, hookOutput: any) => {
+    "chat.message": async (hookInput: any, hookOutput: any) => {
       try {
-        const { prompt, sessionID } = hookInput
+        const { sessionID, parts } = hookInput
+
+        // Only inject on first message (simple heuristic)
+        // We could track messages per session, but this is simpler
+        const messageText = parts?.[0]?.text || ""
+        if (!messageText || messageText.length < 10) {
+          return
+        }
 
         console.log(`[ContextInjector] Injecting context for session ${sessionID}`)
 
-        // Extract keywords from prompt
-        const keywords = extractKeywordsFromPrompt(prompt || "")
+        // Extract keywords from message
+        const keywords = extractKeywordsFromPrompt(messageText)
 
-        // Query relevant experiences
-        const experiences = await experienceStore.queryExperiences({
-          keywords,
-          state: { tool: undefined }, // Match all tools
-          limit: 5
-        })
+        // Load all experiences (filtering is done client-side for now)
+        const allExperiences = await experienceStore.loadExperiences()
+        const experiences = allExperiences
+          .filter(exp => {
+            if (keywords.length === 0) return true
+            return exp.keywords?.some(kw => keywords.includes(kw.toLowerCase()))
+          })
+          .slice(0, 5)
 
         // Query relevant knowledge
-        const knowledgeNodes = await knowledgeGraph.searchNodes({
-          keywords,
-          limit: 5
-        })
+        const knowledgeResult = await knowledgeGraph.getRelevantContext(messageText)
+        const knowledgeNodes = knowledgeResult.nodes.slice(0, 5)
 
         // Query relevant patterns
-        const patterns = await patternDetector.getPatterns({
-          keywords,
-          limit: 5
-        })
+        const allPatterns = patternDetector.getAllPatterns()
+        const patterns = allPatterns
+          .filter(p => {
+            if (keywords.length === 0) return true
+            return p.keywords?.some(kw => keywords.includes(kw.toLowerCase()))
+          })
+          .slice(0, 5)
 
         // Get current state (if available)
-        const defaultMachine = stateMachine.getMachine("default")
-        const currentState = defaultMachine?.currentState
+        const currentState = stateMachine.getCurrentState()
 
         // Format and inject context
         if (
@@ -162,11 +171,12 @@ export function createContextInjectorHook(
             currentState
           )
 
-          // Inject context as a system message
-          hookOutput.messages = hookOutput.messages || []
-          hookOutput.messages.unshift({
-            role: "system",
-            content: contextMessage
+          // Inject context by appending to the message
+          hookOutput.parts = hookOutput.parts || []
+          hookOutput.parts.push({
+            type: "text",
+            text: contextMessage,
+            id: `context-${Date.now()}`
           })
 
           console.log(

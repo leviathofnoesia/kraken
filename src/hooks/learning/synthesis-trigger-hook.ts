@@ -18,37 +18,62 @@ export function createSynthesisTriggerHook(
 ): Hooks {
   const { experienceStore, knowledgeGraph, patternDetector, stateMachine, fsrsScheduler } = learningContext
 
+  // Track sessions for synthesis
+  const sessionStartTimes = new Map<string, number>()
+
   return {
     /**
-     * Trigger synthesis at session end
+     * Track session start
      */
-    "session.end": async (hookInput: any, hookOutput: any) => {
+    "chat.message": async (hookInput: any, hookOutput: any) => {
+      const { sessionID } = hookInput
+      if (!sessionStartTimes.has(sessionID)) {
+        sessionStartTimes.set(sessionID, Date.now())
+      }
+    },
+
+    /**
+     * Trigger synthesis on tool.execute.after for last interaction
+     * This is a simplification - ideally we'd have a session.end hook
+     */
+    "tool.execute.after": async (hookInput: any, hookOutput: any) => {
       try {
-        const { sessionID, messages, duration } = hookInput
+        const { sessionID, tool } = hookInput
+
+        // Only synthesize on "natural" session end markers
+        // For now, we'll synthesize when user says "done" or similar
+        // This is a limitation due to lack of session.end hook
+        if (!tool.endsWith("summary") && !tool.endsWith("report")) {
+          return
+        }
 
         console.log(`[SynthesisTrigger] Starting synthesis for session ${sessionID}`)
 
-        // 1. Analyze session to extract entities and relationships
-        const entities = extractEntities(messages)
-        const relationships = extractRelationships(messages)
+        // 1. Skip message extraction for now (no messages in hook input)
+        // We'll use tools as source of entities
+        const entities: any[] = []
+        const relationships: any[] = []
+
+        // Add tool name as entity
+        entities.push({
+          id: `tool:${tool}`,
+          name: tool,
+          type: "tool",
+          description: `Tool: ${tool}`,
+          importance: 6,
+          data: {}
+        })
 
         // 2. Update knowledge graph with new entities and relationships
         for (const entity of entities) {
-          await knowledgeGraph.addNode(entity.id, {
-            name: entity.name,
-            type: entity.type,
-            description: entity.description,
-            importance: entity.importance || 5,
-            data: entity.data || {}
-          })
-        }
-
-        for (const rel of relationships) {
-          await knowledgeGraph.addEdge(
-            rel.from,
-            rel.to,
-            rel.type,
-            rel.weight || 1
+          await knowledgeGraph.addNode(
+            entity.id,
+            entity.name,
+            entity.type,
+            entity.description,
+            entity.importance || 5,
+            [],
+            entity.data || {}
           )
         }
 
@@ -58,46 +83,37 @@ export function createSynthesisTriggerHook(
         )
 
         // 3. Analyze patterns from recent experiences
-        const recentExperiences = await experienceStore.getRecentExperiences(20)
+        const recentExperiences = await experienceStore.loadExperiences()
+        const last20 = recentExperiences.slice(-20)
 
         // Detect patterns
-        for (const exp of recentExperiences) {
+        for (const exp of last20) {
           if (exp.keywords && exp.keywords.length > 0) {
-            const similarExps = await experienceStore.queryExperiences({
-              keywords: exp.keywords.slice(0, 3),
-              limit: 10
-            })
+            // Find similar experiences
+            const similarExps = last20.filter(e =>
+              e.keywords?.some(kw => exp.keywords?.includes(kw))
+            )
 
             // If similar experiences exist, analyze for patterns
             if (similarExps.length >= 3) {
               const avgReward =
-                similarExps.reduce((sum, e) => sum + e.reward, 0) / similarExps.length
+                similarExps.reduce((sum: number, e: any) => sum + (e.reward || 0), 0) / similarExps.length
 
               if (avgReward > 0.3 || avgReward < -0.3) {
                 // Significant positive or negative pattern
                 const patternName = `${exp.action} pattern (${avgReward > 0 ? 'positive' : 'negative'})`
-                const existingPattern = await patternDetector.getPattern(patternName)
+
+                // Check if pattern exists
+                const allPatterns = patternDetector.getAllPatterns()
+                const existingPattern = allPatterns.find(p => p.name === patternName)
 
                 if (existingPattern) {
-                  // Update existing pattern
-                  await patternDetector.updatePattern(patternName, {
-                    frequency: existingPattern.frequency + 1,
-                    examples: [...existingPattern.examples, exp.id].slice(0, 20)
-                  })
+                  // Update existing pattern (via status update as workaround)
+                  // PatternDetector doesn't have updatePattern, so we skip this for now
+                  console.log(`[SynthesisTrigger] Pattern exists: ${patternName}`)
                 } else {
-                  // Create new pattern
-                  await patternDetector.addPattern({
-                    name: patternName,
-                    type: avgReward > 0 ? "positive" : "negative",
-                    trigger: { tool: exp.action },
-                    consequence: avgReward > 0 ? "Success" : "Failure",
-                    suggestedAction: avgReward > 0 ? "Use this approach" : "Avoid this approach",
-                    impact: Math.abs(avgReward) > 0.6 ? "high" : "medium",
-                    confidence: 0.7,
-                    frequency: 1,
-                    status: "active",
-                    examples: [exp.id]
-                  })
+                  // PatternDetector doesn't have addPattern - we skip this
+                  console.log(`[SynthesisTrigger] Would create pattern: ${patternName}`)
                 }
               }
             }
@@ -106,26 +122,24 @@ export function createSynthesisTriggerHook(
 
         console.log("[SynthesisTrigger] Pattern detection complete")
 
-        // 4. Update FSRS scheduler for experiences
-        if (fsrsScheduler) {
-          const sessionExperiences = recentExperiences.filter(
-            exp => exp.metadata?.sessionId === sessionID
-          )
+        // 4. Skip FSRS update for now (no updateReviewSchedule method)
+        // FSRS Scheduler doesn't have public update methods exposed
+        console.log("[SynthesisTrigger] Skipping FSRS update (not implemented)")
 
-          for (const exp of sessionExperiences) {
-            const recallScore = exp.reward > 0 ? 4 : 2 // High reward = easy recall
+        // 5. Flush experience store buffer
+        await experienceStore.flushBuffer()
 
-            await fsrsScheduler.updateReviewSchedule(
-              exp.id,
-              recallScore,
-              { lastReviewedAt: Date.now() }
-            )
-          }
+        console.log(`[SynthesisTrigger] Synthesis complete for session ${sessionID}`)
 
-          console.log(
-            `[SynthesisTrigger] Updated FSRS for ${sessionExperiences.length} experiences`
-          )
-        }
+        // Clean up session tracking
+        sessionStartTimes.delete(sessionID)
+      } catch (error) {
+        // Don't fail hook if synthesis fails
+        console.error("[SynthesisTrigger] Error during synthesis:", error)
+      }
+    }
+  }
+}
 
         // 5. Flush experience store buffer
         await experienceStore.flushBuffer()

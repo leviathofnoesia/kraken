@@ -2,7 +2,7 @@
  * Learning FSM Tool
  *
  * Tool for managing state machines for behavioral control.
- * Supports creating machines, managing states, and tracking transitions.
+ * Supports creating machines, getting status, and transitioning states.
  */
 
 import { tool } from "@opencode-ai/plugin"
@@ -16,11 +16,10 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
   return tool({
     description:
       "Manage state machines for behavioral control. " +
-      "Use this tool to create state machines for workflows, track state transitions, " +
-      "and manage behavioral patterns.",
+      "Use this tool to create state machines for workflows, track state transitions.",
     args: {
-      action: z.enum(["createMachine", "getMachine", "listMachines", "deleteMachine", "transition", "getCurrentState", "addState", "removeState", "addTransition"]).describe(
-        "Action to perform: 'createMachine', 'getMachine', 'listMachines', 'deleteMachine', 'transition', 'getCurrentState', 'addState', 'removeState', 'addTransition'"
+      action: z.enum(["createMachine", "getMachine", "listMachines", "transition", "getCurrentState"]).describe(
+        "Action to perform: 'createMachine', 'getMachine', 'listMachines', 'transition', 'getCurrentState'"
       ),
       machineId: z
         .string()
@@ -34,30 +33,14 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
         .string()
         .optional()
         .describe("Initial state name (for createMachine)"),
-      stateName: z
-        .string()
-        .optional()
-        .describe("State name (for addState, removeState)"),
-      stateDescription: z
-        .string()
-        .optional()
-        .describe("State description (for addState)"),
-      fromState: z
-        .string()
-        .optional()
-        .describe("Source state (for addTransition, transition)"),
       toState: z
         .string()
         .optional()
-        .describe("Target state (for addTransition, transition)"),
-      condition: z
+        .describe("Target state (for transition action)"),
+      trigger: z
         .string()
         .optional()
-        .describe("Transition condition expression (for addTransition)"),
-      metadata: z
-        .record(z.any())
-        .optional()
-        .describe("Additional metadata (for addState)")
+        .describe("Transition trigger (for transition action)")
     },
     async execute(args) {
       const {
@@ -65,12 +48,8 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
         machineId,
         description,
         initialState,
-        stateName,
-        stateDescription,
-        fromState,
         toState,
-        condition,
-        metadata
+        trigger
       } = args
 
       try {
@@ -90,9 +69,9 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
               {
                 [initialState]: {
                   name: initialState,
-                  description: stateDescription || "Initial state",
+                  description: "Initial state",
                   transitions: [],
-                  metadata: metadata || {}
+                  metadata: {}
                 }
               }
             )
@@ -129,22 +108,22 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
                 description: machine.description,
                 currentState: machine.currentState,
                 stateCount: Object.keys(machine.states).length,
-                states: Object.entries(machine.states).map(([name, state]) => ({
+                states: Object.entries(machine.states).map(([name, state]: [string, any]) => ({
                   name,
                   description: state.description,
-                  transitionCount: state.transitions.length
+                  transitionCount: state.transitions?.length || 0
                 }))
               }
             }, null, 2)
           }
 
           case "listMachines": {
-            const machines = stateMachine.listMachines()
+            const machines = stateMachine.getAllMachines()
 
             return JSON.stringify({
               success: true,
               count: machines.length,
-              machines: machines.map(m => ({
+              machines: machines.map((m: any) => ({
                 id: m.id,
                 description: m.description,
                 currentState: m.currentState,
@@ -153,32 +132,19 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
             }, null, 2)
           }
 
-          case "deleteMachine": {
-            if (!machineId) {
-              return JSON.stringify({
-                success: false,
-                error: "Missing required field: machineId is required for 'deleteMachine' action"
-              }, null, 2)
-            }
-
-            stateMachine.deleteMachine(machineId)
-
-            return JSON.stringify({
-              success: true,
-              message: "State machine deleted successfully",
-              machineId
-            }, null, 2)
-          }
-
           case "transition": {
-            if (!machineId || !toState) {
+            if (!machineId || !trigger) {
               return JSON.stringify({
                 success: false,
-                error: "Missing required fields: machineId and toState are required for 'transition' action"
+                error: "Missing required fields: machineId and trigger are required for 'transition' action"
               }, null, 2)
             }
 
-            const success = stateMachine.transition(machineId, toState)
+            // Set current machine first
+            stateMachine.setCurrentMachine(machineId)
+
+            // Perform transition
+            const success = await stateMachine.transition(trigger, { toState })
 
             if (!success) {
               return JSON.stringify({
@@ -191,7 +157,7 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
               success: true,
               message: "State transition successful",
               machineId,
-              toState
+              currentState: stateMachine.getCurrentState()
             }, null, 2)
           }
 
@@ -203,104 +169,19 @@ export function createFsmTool(stateMachine: StateMachineEngine) {
               }, null, 2)
             }
 
-            const machine = stateMachine.getMachine(machineId)
-
-            if (!machine) {
-              return JSON.stringify({
-                success: false,
-                error: `State machine not found: ${machineId}`
-              }, null, 2)
-            }
+            stateMachine.setCurrentMachine(machineId)
+            const currentState = stateMachine.getCurrentState()
 
             return JSON.stringify({
               success: true,
-              currentState: machine.currentState
-            }, null, 2)
-          }
-
-          case "addState": {
-            if (!machineId || !stateName) {
-              return JSON.stringify({
-                success: false,
-                error: "Missing required fields: machineId and stateName are required for 'addState' action"
-              }, null, 2)
-            }
-
-            const machine = stateMachine.getMachine(machineId)
-
-            if (!machine) {
-              return JSON.stringify({
-                success: false,
-                error: `State machine not found: ${machineId}`
-              }, null, 2)
-            }
-
-            stateMachine.addState(machineId, stateName, {
-              name: stateName,
-              description: stateDescription || "",
-              transitions: [],
-              metadata: metadata || {}
-            })
-
-            return JSON.stringify({
-              success: true,
-              message: "State added successfully",
-              machineId,
-              stateName
-            }, null, 2)
-          }
-
-          case "removeState": {
-            if (!machineId || !stateName) {
-              return JSON.stringify({
-                success: false,
-                error: "Missing required fields: machineId and stateName are required for 'removeState' action"
-              }, null, 2)
-            }
-
-            stateMachine.removeState(machineId, stateName)
-
-            return JSON.stringify({
-              success: true,
-              message: "State removed successfully",
-              machineId,
-              stateName
-            }, null, 2)
-          }
-
-          case "addTransition": {
-            if (!machineId || !fromState || !toState) {
-              return JSON.stringify({
-                success: false,
-                error: "Missing required fields: machineId, fromState, and toState are required for 'addTransition' action"
-              }, null, 2)
-            }
-
-            const machine = stateMachine.getMachine(machineId)
-
-            if (!machine) {
-              return JSON.stringify({
-                success: false,
-                error: `State machine not found: ${machineId}`
-              }, null, 2)
-            }
-
-            stateMachine.addTransition(machineId, fromState, toState, condition)
-
-            return JSON.stringify({
-              success: true,
-              message: "Transition added successfully",
-              machineId,
-              fromState,
-              toState,
-              hasCondition: !!condition
+              currentState
             }, null, 2)
           }
 
           default:
             return JSON.stringify({
               success: false,
-              error: `Unknown action: ${action}. Valid actions: createMachine, getMachine, listMachines, deleteMachine, transition, getCurrentState, addState, removeState, addTransition`
+              error: `Unknown action: ${action}. Valid actions: createMachine, getMachine, listMachines, transition, getCurrentState`
             }, null, 2)
         }
       } catch (error) {

@@ -96,18 +96,18 @@ export function createExperienceRecorderHook(
           return
         }
 
-        // Extract state and context
-        const state = {
+        // Extract state and context (as strings)
+        const state = JSON.stringify({
           tool,
           toolArgs: typeof toolArgs === "string" ? { args: toolArgs } : toolArgs,
           timestamp: Date.now()
-        }
+        })
 
-        const context = {
+        const context = JSON.stringify({
           sessionId: hookInput.sessionID,
           output: JSON.stringify(output).slice(0, 500), // Limit context size
           errorMessage: output.error || output.errorMessage || undefined
-        }
+        })
 
         // Extract keywords from context
         const keywords: string[] = []
@@ -128,7 +128,7 @@ export function createExperienceRecorderHook(
         // Create experience
         const experience: Experience = {
           id: `${tool}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-          timestamp: Date.now(),
+          timestamp: new Date().toISOString(),
           state,
           action: tool,
           reward,
@@ -137,13 +137,18 @@ export function createExperienceRecorderHook(
           keywords: keywords.slice(0, 10), // Limit to 10 keywords
           metadata: {
             toolName: tool,
-            sessionId: hookInput.sessionID,
             hasError: !!output.error
           }
         }
 
         // Record the experience
-        await experienceStore.recordExperience(experience)
+        await experienceStore.addExperience({
+          action: tool,
+          reward,
+          confidence,
+          context,
+          keywords: keywords.slice(0, 10)
+        })
 
         console.log(
           `[ExperienceRecorder] Recorded experience: ${tool} (reward: ${reward}, confidence: ${confidence})`

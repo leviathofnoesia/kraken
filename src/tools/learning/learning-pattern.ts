@@ -8,7 +8,6 @@
 import { tool } from "@opencode-ai/plugin"
 import { z } from "zod"
 import type { PatternDetector } from "../../features/learning/pattern-detection"
-import type { Pattern } from "../../features/learning/types-unified"
 
 /**
  * Create learning-pattern tool
@@ -20,47 +19,21 @@ export function createPatternTool(patternDetector: PatternDetector) {
       "Use this tool to identify recurring wins and losses, " +
       "find successful strategies, and avoid mistakes.",
     args: {
-      action: z.enum(["add", "get", "list", "update", "detect", "remove"]).describe(
-        "Action to perform: 'add', 'get', 'list', 'update', 'detect', 'remove'"
+      action: z.enum(["get", "list", "update", "detect"]).describe(
+        "Action to perform: 'get', 'list', 'update', 'detect'"
       ),
       patternName: z
         .string()
         .optional()
-        .describe("Pattern name (for add, get, update, remove actions)"),
-      type: z
-        .enum(["positive", "negative", "neutral"])
-        .optional()
-        .describe("Pattern type: 'positive' (win), 'negative' (loss), 'neutral' (for add action)"),
-      trigger: z
-        .record(z.any())
-        .optional()
-        .describe("Trigger conditions (for add action)"),
-      consequence: z
-        .string()
-        .optional()
-        .describe("What happens when pattern triggers (for add action)"),
-      suggestedAction: z
-        .string()
-        .optional()
-        .describe("Recommended action (for add action)"),
-      impact: z
-        .enum(["low", "medium", "high", "critical"])
-        .optional()
-        .describe("Impact level (for add action)"),
-      confidence: z
-        .number()
-        .min(0)
-        .max(1)
-        .optional()
-        .describe("Confidence level: 0-1 (for add action)"),
-      keywords: z
-        .array(z.string())
-        .optional()
-        .describe("Keywords for pattern detection (for add, detect actions)"),
+        .describe("Pattern name (for get, update actions)"),
       status: z
         .enum(["active", "resolved", "superseded"])
         .optional()
-        .describe("Pattern status (for add, update actions)"),
+        .describe("Pattern status (for update action)"),
+      keywords: z
+        .array(z.string())
+        .optional()
+        .describe("Keywords for pattern detection (for detect action)"),
       minFrequency: z
         .number()
         .int()
@@ -85,14 +58,8 @@ export function createPatternTool(patternDetector: PatternDetector) {
       const {
         action,
         patternName,
-        type,
-        trigger,
-        consequence,
-        suggestedAction,
-        impact,
-        confidence,
-        keywords,
         status,
+        keywords,
         minFrequency,
         minConfidence,
         limit
@@ -100,40 +67,6 @@ export function createPatternTool(patternDetector: PatternDetector) {
 
       try {
         switch (action) {
-          case "add": {
-            if (!patternName || !type || !trigger) {
-              return JSON.stringify({
-                success: false,
-                error: "Missing required fields: patternName, type, and trigger are required for 'add' action"
-              }, null, 2)
-            }
-
-            const pattern: Pattern = {
-              name: patternName,
-              type,
-              trigger,
-              consequence: consequence || "",
-              suggestedAction: suggestedAction || "",
-              impact: impact || "medium",
-              confidence: confidence ?? 0.5,
-              frequency: 1,
-              status: status || "active",
-              examples: [],
-              keywords: keywords || [],
-              lastDetected: Date.now()
-            }
-
-            await patternDetector.addPattern(pattern)
-
-            return JSON.stringify({
-              success: true,
-              message: "Pattern added successfully",
-              patternName,
-              type,
-              impact
-            }, null, 2)
-          }
-
           case "get": {
             if (!patternName) {
               return JSON.stringify({
@@ -142,7 +75,8 @@ export function createPatternTool(patternDetector: PatternDetector) {
               }, null, 2)
             }
 
-            const pattern = await patternDetector.getPattern(patternName)
+            const allPatterns = patternDetector.getAllPatterns()
+            const pattern = allPatterns.find(p => p.name === patternName)
 
             if (!pattern) {
               return JSON.stringify({
@@ -165,17 +99,17 @@ export function createPatternTool(patternDetector: PatternDetector) {
                 status: pattern.status,
                 keywords: pattern.keywords,
                 lastDetected: pattern.lastDetected,
-                exampleCount: pattern.examples.length
+                exampleCount: pattern.examples?.length || 0
               }
             }, null, 2)
           }
 
           case "list": {
-            const patterns = await patternDetector.getPatterns({
-              minFrequency: minFrequency,
-              minConfidence: minConfidence,
-              limit: limit || 20
-            })
+            const filters: any = {}
+            if (minFrequency) filters.minFrequency = minFrequency
+            if (minConfidence) filters.minConfidence = minConfidence
+
+            const patterns = await patternDetector.listPatterns(filters)
 
             return JSON.stringify({
               success: true,
@@ -200,33 +134,34 @@ export function createPatternTool(patternDetector: PatternDetector) {
               }, null, 2)
             }
 
-            const updateData: Partial<Pattern> = {}
-            if (type !== undefined) updateData.type = type
-            if (status !== undefined) updateData.status = status
-            if (confidence !== undefined) updateData.confidence = confidence
-            if (impact !== undefined) updateData.impact = impact
-            if (suggestedAction !== undefined) updateData.suggestedAction = suggestedAction
-            if (consequence !== undefined) updateData.consequence = consequence
-
-            await patternDetector.updatePattern(patternName, updateData)
+            if (status) {
+              await patternDetector.updatePatternStatus(patternName, status)
+            }
 
             return JSON.stringify({
               success: true,
-              message: "Pattern updated successfully",
-              patternName
+              message: "Pattern status updated successfully",
+              patternName,
+              updatedFields: status ? ["status"] : []
             }, null, 2)
           }
 
           case "detect": {
-            const patterns = await patternDetector.detectPatterns({
-              keywords: keywords || [],
-              limit: limit || 10
-            })
+            const allPatterns = patternDetector.getAllPatterns()
+            let patterns = allPatterns
+
+            if (keywords && keywords.length > 0) {
+              patterns = patterns.filter(p =>
+                p.keywords?.some(kw => keywords.includes(kw.toLowerCase()))
+              )
+            }
+
+            const results = patterns.slice(0, limit || 10)
 
             return JSON.stringify({
               success: true,
-              count: patterns.length,
-              patterns: patterns.map(p => ({
+              count: results.length,
+              patterns: results.map(p => ({
                 name: p.name,
                 type: p.type,
                 confidence: p.confidence,
@@ -235,27 +170,10 @@ export function createPatternTool(patternDetector: PatternDetector) {
             }, null, 2)
           }
 
-          case "remove": {
-            if (!patternName) {
-              return JSON.stringify({
-                success: false,
-                error: "Missing required field: patternName is required for 'remove' action"
-              }, null, 2)
-            }
-
-            await patternDetector.removePattern(patternName)
-
-            return JSON.stringify({
-              success: true,
-              message: "Pattern removed successfully",
-              patternName
-            }, null, 2)
-          }
-
           default:
             return JSON.stringify({
               success: false,
-              error: `Unknown action: ${action}. Valid actions: add, get, list, update, detect, remove`
+              error: `Unknown action: ${action}. Valid actions: get, list, update, detect`
             }, null, 2)
         }
       } catch (error) {

@@ -226,16 +226,15 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         console.error("[kraken-code] Error initializing MCP servers:", e);
       }
 
-      // Initialize Learning System (Unified AI Memory) - TEMPORARILY DISABLED FOR WIP PR
-      // TODO: Fix TypeScript errors in learning integration (method signature mismatches)
-      // try {
-      //   const learningSystem = initializeLearningSystem(input, newConfig.learning);
-      //   Object.assign(hooks, learningSystem.hooks);
-      //   hooks.push({ tool: learningSystem.tools });
-      //   console.log("[kraken-code] Learning system initialized");
-      // } catch (e) {
-      //   console.error("[kraken-code] Error initializing learning system:", e);
-      // }
+      // Initialize Learning System (Unified AI Memory)
+      try {
+        const learningSystem = initializeLearningSystem(input, newConfig.learning);
+        Object.assign(hooks, learningSystem.hooks);
+        hooks.push({ tool: learningSystem.tools });
+        console.log("[kraken-code] Learning system initialized");
+      } catch (e) {
+        console.error("[kraken-code] Error initializing learning system:", e);
+      }
     },
   });
 
@@ -301,7 +300,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     try {
       await shutdownAllMcpServers();
       await shutdownKratos();
-      // await shutdownLearningSystem(); // TEMPORARILY DISABLED
+      await shutdownLearningSystem();
     } catch (e) {
       console.error("Kraken Code: Error shutting down services", e);
     }
