@@ -4878,8 +4878,8 @@ var require_utils = __commonJS((exports, module) => {
     }
     return ind;
   }
-  function removeDotSegments(path13) {
-    let input = path13;
+  function removeDotSegments(path19) {
+    let input = path19;
     const output = [];
     let nextSlash = -1;
     let len = 0;
@@ -5069,8 +5069,8 @@ var require_schemes = __commonJS((exports, module) => {
       wsComponent.secure = undefined;
     }
     if (wsComponent.resourceName) {
-      const [path13, query] = wsComponent.resourceName.split("?");
-      wsComponent.path = path13 && path13 !== "/" ? path13 : undefined;
+      const [path19, query] = wsComponent.resourceName.split("?");
+      wsComponent.path = path19 && path19 !== "/" ? path19 : undefined;
       wsComponent.query = query;
       wsComponent.resourceName = undefined;
     }
@@ -8205,12 +8205,12 @@ var require_dist = __commonJS((exports, module) => {
       throw new Error(`Unknown format "${name}"`);
     return f;
   };
-  function addFormats(ajv, list, fs12, exportName) {
+  function addFormats(ajv, list, fs17, exportName) {
     var _a;
     var _b;
     (_a = (_b = ajv.opts.code).formats) !== null && _a !== undefined || (_b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`);
     for (const f of list)
-      ajv.addFormat(f, fs12[f]);
+      ajv.addFormat(f, fs17[f]);
   }
   module.exports = exports = formatsPlugin;
   Object.defineProperty(exports, "__esModule", { value: true });
@@ -8221,8 +8221,8 @@ var require_dist = __commonJS((exports, module) => {
 var require_windows = __commonJS((exports, module) => {
   module.exports = isexe;
   isexe.sync = sync;
-  var fs12 = __require("fs");
-  function checkPathExt(path13, options) {
+  var fs17 = __require("fs");
+  function checkPathExt(path19, options) {
     var pathext = options.pathExt !== undefined ? options.pathExt : process.env.PATHEXT;
     if (!pathext) {
       return true;
@@ -8233,25 +8233,25 @@ var require_windows = __commonJS((exports, module) => {
     }
     for (var i = 0;i < pathext.length; i++) {
       var p = pathext[i].toLowerCase();
-      if (p && path13.substr(-p.length).toLowerCase() === p) {
+      if (p && path19.substr(-p.length).toLowerCase() === p) {
         return true;
       }
     }
     return false;
   }
-  function checkStat(stat, path13, options) {
+  function checkStat(stat, path19, options) {
     if (!stat.isSymbolicLink() && !stat.isFile()) {
       return false;
     }
-    return checkPathExt(path13, options);
+    return checkPathExt(path19, options);
   }
-  function isexe(path13, options, cb) {
-    fs12.stat(path13, function(er, stat) {
-      cb(er, er ? false : checkStat(stat, path13, options));
+  function isexe(path19, options, cb) {
+    fs17.stat(path19, function(er, stat) {
+      cb(er, er ? false : checkStat(stat, path19, options));
     });
   }
-  function sync(path13, options) {
-    return checkStat(fs12.statSync(path13), path13, options);
+  function sync(path19, options) {
+    return checkStat(fs17.statSync(path19), path19, options);
   }
 });
 
@@ -8259,14 +8259,14 @@ var require_windows = __commonJS((exports, module) => {
 var require_mode = __commonJS((exports, module) => {
   module.exports = isexe;
   isexe.sync = sync;
-  var fs12 = __require("fs");
-  function isexe(path13, options, cb) {
-    fs12.stat(path13, function(er, stat) {
+  var fs17 = __require("fs");
+  function isexe(path19, options, cb) {
+    fs17.stat(path19, function(er, stat) {
       cb(er, er ? false : checkStat(stat, options));
     });
   }
-  function sync(path13, options) {
-    return checkStat(fs12.statSync(path13), options);
+  function sync(path19, options) {
+    return checkStat(fs17.statSync(path19), options);
   }
   function checkStat(stat, options) {
     return stat.isFile() && checkMode(stat, options);
@@ -8288,7 +8288,7 @@ var require_mode = __commonJS((exports, module) => {
 
 // node_modules/isexe/index.js
 var require_isexe = __commonJS((exports, module) => {
-  var fs12 = __require("fs");
+  var fs17 = __require("fs");
   var core;
   if (process.platform === "win32" || global.TESTING_WINDOWS) {
     core = require_windows();
@@ -8297,7 +8297,7 @@ var require_isexe = __commonJS((exports, module) => {
   }
   module.exports = isexe;
   isexe.sync = sync;
-  function isexe(path13, options, cb) {
+  function isexe(path19, options, cb) {
     if (typeof options === "function") {
       cb = options;
       options = {};
@@ -8307,7 +8307,7 @@ var require_isexe = __commonJS((exports, module) => {
         throw new TypeError("callback not provided");
       }
       return new Promise(function(resolve2, reject) {
-        isexe(path13, options || {}, function(er, is) {
+        isexe(path19, options || {}, function(er, is) {
           if (er) {
             reject(er);
           } else {
@@ -8316,7 +8316,7 @@ var require_isexe = __commonJS((exports, module) => {
         });
       });
     }
-    core(path13, options || {}, function(er, is) {
+    core(path19, options || {}, function(er, is) {
       if (er) {
         if (er.code === "EACCES" || options && options.ignoreErrors) {
           er = null;
@@ -8326,9 +8326,9 @@ var require_isexe = __commonJS((exports, module) => {
       cb(er, is);
     });
   }
-  function sync(path13, options) {
+  function sync(path19, options) {
     try {
-      return core.sync(path13, options || {});
+      return core.sync(path19, options || {});
     } catch (er) {
       if (options && options.ignoreErrors || er.code === "EACCES") {
         return false;
@@ -8342,7 +8342,7 @@ var require_isexe = __commonJS((exports, module) => {
 // node_modules/which/which.js
 var require_which = __commonJS((exports, module) => {
   var isWindows = process.platform === "win32" || process.env.OSTYPE === "cygwin" || process.env.OSTYPE === "msys";
-  var path13 = __require("path");
+  var path19 = __require("path");
   var COLON = isWindows ? ";" : ":";
   var isexe = require_isexe();
   var getNotFoundError = (cmd) => Object.assign(new Error(`not found: ${cmd}`), { code: "ENOENT" });
@@ -8378,7 +8378,7 @@ var require_which = __commonJS((exports, module) => {
         return opt.all && found.length ? resolve2(found) : reject(getNotFoundError(cmd));
       const ppRaw = pathEnv[i];
       const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
-      const pCmd = path13.join(pathPart, cmd);
+      const pCmd = path19.join(pathPart, cmd);
       const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd : pCmd;
       resolve2(subStep(p, i, 0));
     });
@@ -8405,7 +8405,7 @@ var require_which = __commonJS((exports, module) => {
     for (let i = 0;i < pathEnv.length; i++) {
       const ppRaw = pathEnv[i];
       const pathPart = /^".*"$/.test(ppRaw) ? ppRaw.slice(1, -1) : ppRaw;
-      const pCmd = path13.join(pathPart, cmd);
+      const pCmd = path19.join(pathPart, cmd);
       const p = !pathPart && /^\.[\\\/]/.test(cmd) ? cmd.slice(0, 2) + pCmd : pCmd;
       for (let j = 0;j < pathExt.length; j++) {
         const cur = p + pathExt[j];
@@ -8446,7 +8446,7 @@ var require_path_key = __commonJS((exports, module) => {
 
 // node_modules/cross-spawn/lib/util/resolveCommand.js
 var require_resolveCommand = __commonJS((exports, module) => {
-  var path13 = __require("path");
+  var path19 = __require("path");
   var which = require_which();
   var getPathKey = require_path_key();
   function resolveCommandAttempt(parsed, withoutPathExt) {
@@ -8463,7 +8463,7 @@ var require_resolveCommand = __commonJS((exports, module) => {
     try {
       resolved = which.sync(parsed.command, {
         path: env[getPathKey({ env })],
-        pathExt: withoutPathExt ? path13.delimiter : undefined
+        pathExt: withoutPathExt ? path19.delimiter : undefined
       });
     } catch (e) {} finally {
       if (shouldSwitchCwd) {
@@ -8471,7 +8471,7 @@ var require_resolveCommand = __commonJS((exports, module) => {
       }
     }
     if (resolved) {
-      resolved = path13.resolve(hasCustomCwd ? parsed.options.cwd : "", resolved);
+      resolved = path19.resolve(hasCustomCwd ? parsed.options.cwd : "", resolved);
     }
     return resolved;
   }
@@ -8516,8 +8516,8 @@ var require_shebang_command = __commonJS((exports, module) => {
     if (!match) {
       return null;
     }
-    const [path13, argument] = match[0].replace(/#! ?/, "").split(" ");
-    const binary = path13.split("/").pop();
+    const [path19, argument] = match[0].replace(/#! ?/, "").split(" ");
+    const binary = path19.split("/").pop();
     if (binary === "env") {
       return argument;
     }
@@ -8527,16 +8527,16 @@ var require_shebang_command = __commonJS((exports, module) => {
 
 // node_modules/cross-spawn/lib/util/readShebang.js
 var require_readShebang = __commonJS((exports, module) => {
-  var fs12 = __require("fs");
+  var fs17 = __require("fs");
   var shebangCommand = require_shebang_command();
   function readShebang(command) {
     const size = 150;
     const buffer = Buffer.alloc(size);
     let fd;
     try {
-      fd = fs12.openSync(command, "r");
-      fs12.readSync(fd, buffer, 0, size, 0);
-      fs12.closeSync(fd);
+      fd = fs17.openSync(command, "r");
+      fs17.readSync(fd, buffer, 0, size, 0);
+      fs17.closeSync(fd);
     } catch (e) {}
     return shebangCommand(buffer.toString());
   }
@@ -8545,7 +8545,7 @@ var require_readShebang = __commonJS((exports, module) => {
 
 // node_modules/cross-spawn/lib/parse.js
 var require_parse = __commonJS((exports, module) => {
-  var path13 = __require("path");
+  var path19 = __require("path");
   var resolveCommand = require_resolveCommand();
   var escape2 = require_escape();
   var readShebang = require_readShebang();
@@ -8570,7 +8570,7 @@ var require_parse = __commonJS((exports, module) => {
     const needsShell = !isExecutableRegExp.test(commandFile);
     if (parsed.options.forceShell || needsShell) {
       const needsDoubleEscapeMetaChars = isCmdShimRegExp.test(commandFile);
-      parsed.command = path13.normalize(parsed.command);
+      parsed.command = path19.normalize(parsed.command);
       parsed.command = escape2.command(parsed.command);
       parsed.args = parsed.args.map((arg) => escape2.argument(arg, needsDoubleEscapeMetaChars));
       const shellCommand = [parsed.command].concat(parsed.args).join(" ");
@@ -10618,9 +10618,14 @@ function createAtlasConfig(model = DEFAULT_MODEL11, options) {
 }
 var atlasAgent = createAtlasConfig();
 
-// src/tools/compression.ts
-import { tool } from "@opencode-ai/plugin";
+// node_modules/@opencode-ai/plugin/dist/tool.js
 import { z } from "zod";
+function tool(input) {
+  return input;
+}
+tool.schema = z;
+// src/tools/compression.ts
+import { z as z2 } from "zod";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import path from "node:path";
@@ -10660,8 +10665,8 @@ async function runCompression(prompt) {
 var opencodeXCompress = tool({
   description: "Compress prompts using LLM-TLDR algorithm (5× compression, <2% quality loss). " + "Uses dictionary-based compression with CRC64 caching for repeated prompts. " + "Optimized for cost reduction on API calls while maintaining output quality.",
   args: {
-    text: z.string().describe("Text to compress"),
-    level: z.enum(["cache_hit", "partial", "full"]).default("partial").describe("Compression level: cache_hit (return cached if available), partial (light compression), full (maximum compression)")
+    text: z2.string().describe("Text to compress"),
+    level: z2.enum(["cache_hit", "partial", "full"]).default("partial").describe("Compression level: cache_hit (return cached if available), partial (light compression), full (maximum compression)")
   },
   async execute(args) {
     const { text, level } = args;
@@ -10959,8 +10964,7 @@ function createAutoUpdateChecker(_input, options) {
 }
 
 // src/tools/ast-grep/index.ts
-import { tool as tool2 } from "@opencode-ai/plugin";
-import { z as z2 } from "zod";
+import { z as z3 } from "zod";
 import { execFile as execFile2 } from "node:child_process";
 import { promisify as promisify2 } from "node:util";
 var execFileAsync2 = promisify2(execFile2);
@@ -11006,13 +11010,13 @@ async function runAstGrep(pattern, language, options) {
     };
   }
 }
-var ast_grep_search = tool2({
+var ast_grep_search = tool({
   description: "Search code using AST patterns. More powerful than regex as it understands code structure. " + "Example patterns: 'function $_$ { $body$ }' to find all functions, '$A = $B' to find assignments.",
   args: {
-    pattern: z2.string().describe("AST pattern to search for (use $VAR for variables)"),
-    language: z2.string().describe("Programming language (typescript, javascript, python, rust, go, java, cpp, etc.)"),
-    path: z2.string().optional().describe("Directory or file to search in (default: current directory)"),
-    glob: z2.string().optional().describe("File glob pattern (e.g., '*.ts', 'src/**/*.ts')")
+    pattern: z3.string().describe("AST pattern to search for (use $VAR for variables)"),
+    language: z3.string().describe("Programming language (typescript, javascript, python, rust, go, java, cpp, etc.)"),
+    path: z3.string().optional().describe("Directory or file to search in (default: current directory)"),
+    glob: z3.string().optional().describe("File glob pattern (e.g., '*.ts', 'src/**/*.ts')")
   },
   async execute(args) {
     const { pattern, language, path: searchPath, glob } = args;
@@ -11020,14 +11024,14 @@ var ast_grep_search = tool2({
     return JSON.stringify(result, null, 2);
   }
 });
-var ast_grep_replace = tool2({
+var ast_grep_replace = tool({
   description: "Search and replace code using AST patterns. Safer than regex replacement as it respects code structure. " + "Use the same variable names in replacement to preserve matched content.",
   args: {
-    pattern: z2.string().describe("AST pattern to search for"),
-    replacement: z2.string().describe("AST pattern to replace with (use $VAR to reference matched variables)"),
-    language: z2.string().describe("Programming language"),
-    path: z2.string().optional().describe("Directory or file to search in (default: current directory)"),
-    glob: z2.string().optional().describe("File glob pattern")
+    pattern: z3.string().describe("AST pattern to search for"),
+    replacement: z3.string().describe("AST pattern to replace with (use $VAR to reference matched variables)"),
+    language: z3.string().describe("Programming language"),
+    path: z3.string().optional().describe("Directory or file to search in (default: current directory)"),
+    glob: z3.string().optional().describe("File glob pattern")
   },
   async execute(args) {
     const { pattern, replacement, language, path: searchPath, glob } = args;
@@ -11040,8 +11044,7 @@ var ast_grep_replace = tool2({
 import * as fs6 from "fs";
 import * as path7 from "path";
 import * as os8 from "os";
-import { tool as tool3 } from "@opencode-ai/plugin";
-import { z as z3 } from "zod";
+import { z as z4 } from "zod";
 var SESSION_STORAGE_DIR = path7.join(os8.homedir(), ".opencode", "sessions");
 function getSessionStorageDir() {
   if (!fs6.existsSync(SESSION_STORAGE_DIR)) {
@@ -11108,14 +11111,14 @@ function sortSessionsByDate(sessions, order = "desc") {
     return order === "asc" ? dateA - dateB : dateB - dateA;
   });
 }
-var session_list = tool3({
+var session_list = tool({
   description: "List all OpenCode sessions with filtering and pagination options.",
   args: {
-    limit: z3.number().int().min(1).max(1000).optional(),
-    startDate: z3.string().optional(),
-    endDate: z3.string().optional(),
-    order: z3.enum(["asc", "desc"]).optional(),
-    includeMetadata: z3.boolean().default(false)
+    limit: z4.number().int().min(1).max(1000).optional(),
+    startDate: z4.string().optional(),
+    endDate: z4.string().optional(),
+    order: z4.enum(["asc", "desc"]).optional(),
+    includeMetadata: z4.boolean().default(false)
   },
   async execute(args) {
     try {
@@ -11169,18 +11172,17 @@ var session_list = tool3({
 // src/tools/session/read.ts
 import * as fs7 from "fs";
 import * as path8 from "path";
-import { tool as tool4 } from "@opencode-ai/plugin";
-import { z as z4 } from "zod";
+import { z as z5 } from "zod";
 function getSessionFilePath(sessionID) {
   return path8.join(getSessionStorageDir(), `${sessionID}.json`);
 }
-var session_read = tool4({
+var session_read = tool({
   description: "Read messages from a specific session with pagination and filtering options.",
   args: {
-    sessionID: z4.string().describe("Session ID to read from"),
-    limit: z4.number().int().min(1).max(1000).optional(),
-    offset: z4.number().int().min(0).default(0).describe("Offset for pagination"),
-    includeMetadata: z4.boolean().default(false).describe("Include full session metadata")
+    sessionID: z5.string().describe("Session ID to read from"),
+    limit: z5.number().int().min(1).max(1000).optional(),
+    offset: z5.number().int().min(0).default(0).describe("Offset for pagination"),
+    includeMetadata: z5.boolean().default(false).describe("Include full session metadata")
   },
   async execute(args) {
     try {
@@ -11244,8 +11246,7 @@ var session_read = tool4({
 import * as fs8 from "fs";
 import * as path9 from "path";
 import * as os9 from "os";
-import { tool as tool5 } from "@opencode-ai/plugin";
-import { z as z5 } from "zod";
+import { z as z6 } from "zod";
 var SESSION_STORAGE_DIR2 = path9.join(os9.homedir(), ".opencode", "sessions");
 function indexSession(sessionFilePath) {
   try {
@@ -11339,13 +11340,13 @@ function getAllSessionFiles2() {
   }
   return entries;
 }
-var session_search = tool5({
+var session_search = tool({
   description: "Full-text search across all OpenCode sessions with ranked results.",
   args: {
-    q: z5.string().describe("Search query text"),
-    limit: z5.number().int().min(1).max(100).default(10).describe("Maximum number of results to return"),
-    offset: z5.number().int().min(0).default(0).describe("Offset for pagination"),
-    sessionID: z5.string().optional().describe("Search within a specific session only")
+    q: z6.string().describe("Search query text"),
+    limit: z6.number().int().min(1).max(100).default(10).describe("Maximum number of results to return"),
+    offset: z6.number().int().min(0).default(0).describe("Offset for pagination"),
+    sessionID: z6.string().optional().describe("Search within a specific session only")
   },
   async execute(args) {
     try {
@@ -11435,8 +11436,7 @@ var session_search = tool5({
 // src/tools/session/info.ts
 import * as fs9 from "fs";
 import * as path10 from "path";
-import { tool as tool6 } from "@opencode-ai/plugin";
-import { z as z6 } from "zod";
+import { z as z7 } from "zod";
 var SESSION_STORAGE_DIR3 = path10.join(process.env.HOME || "", ".opencode", "sessions");
 function getSessionFilePath2(sessionID) {
   return path10.join(getSessionStorageDir(), `${sessionID}.json`);
@@ -11477,18 +11477,18 @@ function calculateSessionStats(metadata) {
   if (metadata.duration) {
     stats.averageMessagesPerMinute = metadata.messageCount / (metadata.duration / 60000);
   }
-  for (const [tool7, count] of Object.entries(metadata.toolUsage || {})) {
+  for (const [tool3, count] of Object.entries(metadata.toolUsage || {})) {
     if (count > stats.mostUsedToolCount) {
-      stats.mostUsedTool = tool7;
+      stats.mostUsedTool = tool3;
       stats.mostUsedToolCount = count;
     }
   }
   return stats;
 }
-var session_info = tool6({
+var session_info = tool({
   description: "Get detailed metadata and statistics about a specific session.",
   args: {
-    sessionID: z6.string().describe("Session ID to query")
+    sessionID: z7.string().describe("Session ID to query")
   },
   async execute(args) {
     try {
@@ -11532,8 +11532,7 @@ var session_info = tool6({
   }
 });
 // src/tools/grep.ts
-import { tool as tool7 } from "@opencode-ai/plugin";
-import { z as z7 } from "zod";
+import { z as z8 } from "zod";
 import { execFile as execFile3 } from "node:child_process";
 import { promisify as promisify3 } from "node:util";
 var execFileAsync3 = promisify3(execFile3);
@@ -11587,14 +11586,14 @@ async function runGrep(pattern, options) {
     };
   }
 }
-var grep = tool7({
+var grep = tool({
   description: "Search for text patterns in files using ripgrep. Supports regex and file type filtering. " + "Example: grep({pattern: 'function \\w+', type: 'ts', context: 2})",
   args: {
-    pattern: z7.string().describe("Regex pattern to search for"),
-    path: z7.string().optional().describe("Directory or file to search in (default: current directory)"),
-    type: z7.string().optional().describe("Filter by file type (ts, js, py, rust, go, java, etc.)"),
-    context: z7.number().optional().describe("Number of context lines around each match (default: 0)"),
-    invert: z7.boolean().optional().describe("Show lines that do NOT match the pattern")
+    pattern: z8.string().describe("Regex pattern to search for"),
+    path: z8.string().optional().describe("Directory or file to search in (default: current directory)"),
+    type: z8.string().optional().describe("Filter by file type (ts, js, py, rust, go, java, etc.)"),
+    context: z8.number().optional().describe("Number of context lines around each match (default: 0)"),
+    invert: z8.boolean().optional().describe("Show lines that do NOT match the pattern")
   },
   async execute(args) {
     const { pattern, path: searchPath, type, context, invert } = args;
@@ -11612,14 +11611,13 @@ var grep = tool7({
 });
 
 // src/tools/ralph-loop.ts
-import { tool as tool8 } from "@opencode-ai/plugin";
-import { z as z8 } from "zod";
-var ralphLoop = tool8({
+import { z as z9 } from "zod";
+var ralphLoop = tool({
   description: "Control Ralph-Loop iterations for achieving completion promises. " + "Ralph complements Kraken's PDSA cycles by iteratively refining until <promise> is satisfied. " + "Automatically triggered when chat contains <promise>...</promise> pattern, or use this tool for manual control.",
   args: {
-    command: z8.enum(["status", "cancel", "continue", "info"]).describe("Ralph-Loop command"),
-    sessionID: z8.string().optional().describe("Session ID (required for status, cancel)"),
-    maxIterations: z8.number().min(1).max(100).optional().describe("Max iterations (default: 24)")
+    command: z9.enum(["status", "cancel", "continue", "info"]).describe("Ralph-Loop command"),
+    sessionID: z9.string().optional().describe("Session ID (required for status, cancel)"),
+    maxIterations: z9.number().min(1).max(100).optional().describe("Max iterations (default: 24)")
   },
   async execute(args) {
     const { command, sessionID, maxIterations } = args;
@@ -11691,13 +11689,12 @@ var ralphLoop = tool8({
 });
 
 // src/tools/agent-call.ts
-import { tool as tool9 } from "@opencode-ai/plugin";
-import { z as z9 } from "zod";
-var call_kraken_agent = tool9({
+import { z as z10 } from "zod";
+var call_kraken_agent = tool({
   description: "Call a specialized Kraken Code agent for a specific task. " + "Use this to delegate to agents like Atlas (navigation), Nautilus (semantic search), " + "Abyssal (external research), Coral (UI/UX), Siren (documentation), Scylla (code review), " + "or Pearl (testing).",
   args: {
-    agent: z9.enum(["Atlas", "Nautilus", "Abyssal", "Coral", "Siren", "Scylla", "Pearl", "Leviathan", "Maelstrom", "Poseidon"]).describe("Agent to call"),
-    task: z9.string().describe("Task or instruction for the agent")
+    agent: z10.enum(["Atlas", "Nautilus", "Abyssal", "Coral", "Siren", "Scylla", "Pearl", "Leviathan", "Maelstrom", "Poseidon"]).describe("Agent to call"),
+    task: z10.string().describe("Task or instruction for the agent")
   },
   async execute(args) {
     const { agent, task } = args;
@@ -11730,14 +11727,13 @@ init_utils();
 
 // src/tools/lsp/tools.ts
 init_utils();
-import { tool as tool10 } from "@opencode-ai/plugin";
-import { z as z10 } from "zod";
-var lsp_hover = tool10({
+import { z as z11 } from "zod";
+var lsp_hover = tool({
   description: "Get hover information (type, documentation) for a symbol at a position in a file. " + "Use this to get information about variables, functions, classes, etc.",
   args: {
-    path: z10.string().describe("Absolute path to the source file"),
-    line: z10.number().describe("0-indexed line number"),
-    character: z10.number().describe("0-indexed character position")
+    path: z11.string().describe("Absolute path to the source file"),
+    line: z11.number().describe("0-indexed line number"),
+    character: z11.number().describe("0-indexed character position")
   },
   async execute({ path: path11, line, character }) {
     try {
@@ -11756,12 +11752,12 @@ var lsp_hover = tool10({
     }
   }
 });
-var lsp_goto_definition = tool10({
+var lsp_goto_definition = tool({
   description: "Jump to the definition of a symbol at the given position. " + "Returns the location where the symbol is defined.",
   args: {
-    path: z10.string().describe("Absolute path to the source file"),
-    line: z10.number().describe("0-indexed line number"),
-    character: z10.number().describe("0-indexed character position")
+    path: z11.string().describe("Absolute path to the source file"),
+    line: z11.number().describe("0-indexed line number"),
+    character: z11.number().describe("0-indexed character position")
   },
   async execute({ path: path11, line, character }) {
     try {
@@ -11788,13 +11784,13 @@ var lsp_goto_definition = tool10({
     }
   }
 });
-var lsp_find_references = tool10({
+var lsp_find_references = tool({
   description: "Find all references to a symbol in the workspace. " + "Returns a list of locations where the symbol is used.",
   args: {
-    path: z10.string().describe("Absolute path to the source file"),
-    line: z10.number().describe("0-indexed line number"),
-    character: z10.number().describe("0-indexed character position"),
-    includeDeclaration: z10.boolean().optional().default(true).describe("Include the declaration location in results")
+    path: z11.string().describe("Absolute path to the source file"),
+    line: z11.number().describe("0-indexed line number"),
+    character: z11.number().describe("0-indexed character position"),
+    includeDeclaration: z11.boolean().optional().default(true).describe("Include the declaration location in results")
   },
   async execute({ path: path11, line, character, includeDeclaration }) {
     try {
@@ -11822,10 +11818,10 @@ var lsp_find_references = tool10({
     }
   }
 });
-var lsp_document_symbols = tool10({
+var lsp_document_symbols = tool({
   description: "Get all symbols (classes, functions, variables) in a document. " + "Returns a hierarchical tree of symbols with their locations.",
   args: {
-    path: z10.string().describe("Absolute path to the source file")
+    path: z11.string().describe("Absolute path to the source file")
   },
   async execute({ path: path11 }) {
     try {
@@ -11860,10 +11856,10 @@ var lsp_document_symbols = tool10({
     }
   }
 });
-var lsp_workspace_symbols = tool10({
+var lsp_workspace_symbols = tool({
   description: "Search for symbols across the entire workspace. " + "Use this to find classes, functions, etc. without knowing their location.",
   args: {
-    query: z10.string().describe("Search query (e.g., 'MyClass', 'createUser')")
+    query: z11.string().describe("Search query (e.g., 'MyClass', 'createUser')")
   },
   async execute({ query }) {
     try {
@@ -11896,11 +11892,11 @@ var lsp_workspace_symbols = tool10({
     }
   }
 });
-var lsp_diagnostics = tool10({
+var lsp_diagnostics = tool({
   description: "Get diagnostics (errors, warnings, hints) for a file. " + "Returns all issues reported by the language server.",
   args: {
-    path: z10.string().describe("Absolute path to the source file"),
-    severity: z10.enum(["error", "warning", "information", "hint", "all"]).optional().default("all").describe("Filter by severity level")
+    path: z11.string().describe("Absolute path to the source file"),
+    severity: z11.enum(["error", "warning", "information", "hint", "all"]).optional().default("all").describe("Filter by severity level")
   },
   async execute({ path: path11, severity }) {
     try {
@@ -11932,12 +11928,12 @@ var lsp_diagnostics = tool10({
     }
   }
 });
-var lsp_prepare_rename = tool10({
+var lsp_prepare_rename = tool({
   description: "Prepare a rename operation at a position. " + "Returns the range that would be renamed, if valid.",
   args: {
-    path: z10.string().describe("Absolute path to the source file"),
-    line: z10.number().describe("0-indexed line number"),
-    character: z10.number().describe("0-indexed character position")
+    path: z11.string().describe("Absolute path to the source file"),
+    line: z11.number().describe("0-indexed line number"),
+    character: z11.number().describe("0-indexed character position")
   },
   async execute({ path: path11, line, character }) {
     try {
@@ -11962,13 +11958,13 @@ var lsp_prepare_rename = tool10({
     }
   }
 });
-var lsp_rename = tool10({
+var lsp_rename = tool({
   description: "Rename a symbol at a position. " + "Performs a workspace-wide rename of the symbol to the new name.",
   args: {
-    path: z10.string().describe("Absolute path to the source file"),
-    line: z10.number().describe("0-indexed line number"),
-    character: z10.number().describe("0-indexed character position"),
-    newName: z10.string().describe("New name for the symbol")
+    path: z11.string().describe("Absolute path to the source file"),
+    line: z11.number().describe("0-indexed line number"),
+    character: z11.number().describe("0-indexed character position"),
+    newName: z11.string().describe("New name for the symbol")
   },
   async execute({ path: path11, line, character, newName }) {
     try {
@@ -11991,15 +11987,15 @@ var lsp_rename = tool10({
     }
   }
 });
-var lsp_code_actions = tool10({
+var lsp_code_actions = tool({
   description: "Get available code actions (refactors, quick fixes) for a range. " + "Returns a list of actions that can be applied to fix issues or refactor code.",
   args: {
-    path: z10.string().describe("Absolute path to the source file"),
-    startLine: z10.number().describe("0-indexed start line"),
-    startChar: z10.number().describe("0-indexed start character"),
-    endLine: z10.number().describe("0-indexed end line"),
-    endChar: z10.number().describe("0-indexed end character"),
-    only: z10.array(z10.string()).optional().describe("Filter by action kind (e.g., 'quickfix', 'refactor')")
+    path: z11.string().describe("Absolute path to the source file"),
+    startLine: z11.number().describe("0-indexed start line"),
+    startChar: z11.number().describe("0-indexed start character"),
+    endLine: z11.number().describe("0-indexed end line"),
+    endChar: z11.number().describe("0-indexed end character"),
+    only: z11.array(z11.string()).optional().describe("Filter by action kind (e.g., 'quickfix', 'refactor')")
   },
   async execute({ path: path11, startLine, startChar, endLine, endChar, only }) {
     try {
@@ -12021,10 +12017,10 @@ var lsp_code_actions = tool10({
     }
   }
 });
-var lsp_code_action_resolve = tool10({
+var lsp_code_action_resolve = tool({
   description: "Resolve a code action to get its full details (including edits).",
   args: {
-    action: z10.any().describe("Code action object from lsp_code_actions")
+    action: z11.any().describe("Code action object from lsp_code_actions")
   },
   async execute({ action }) {
     try {
@@ -12053,10 +12049,10 @@ var lsp_code_action_resolve = tool10({
     }
   }
 });
-var lsp_servers = tool10({
+var lsp_servers = tool({
   description: "List available LSP servers and their installation status. " + "Shows which servers are configured and installed for different file types.",
   args: {
-    extension: z10.string().optional().describe("Filter by file extension (e.g., 'ts', 'py', 'js')")
+    extension: z11.string().optional().describe("Filter by file extension (e.g., 'ts', 'py', 'js')")
   },
   async execute({ extension }) {
     try {
@@ -12391,13 +12387,13 @@ function createSessionStorageHook(input, options) {
     "tool.execute.after": async (input2, output) => {
       if (!output.output)
         return;
-      const { tool: tool11, sessionID } = input2;
+      const { tool: tool3, sessionID } = input2;
       if (sessionID) {
-        console.log(`[session-storage] Tool ${tool11} completed for session ${sessionID}`);
+        console.log(`[session-storage] Tool ${tool3} completed for session ${sessionID}`);
         const { appendTranscriptEntry: appendTranscriptEntry3 } = (init_storage(), __toCommonJS(exports_storage));
         const { recordToolUse: recordToolUse3 } = (init_storage(), __toCommonJS(exports_storage));
         if (output.output && output.output.toolOutput) {
-          await recordToolUse3(sessionID, tool11, output.output.toolInput, output.output.toolOutput);
+          await recordToolUse3(sessionID, tool3, output.output.toolInput, output.output.toolOutput);
         }
       }
     },
@@ -12528,9 +12524,6 @@ function setSessionState(sessionID, enabled) {
     activatedAt: Date.now()
   });
 }
-function clearSessionState(sessionID) {
-  thinkModeSessions.delete(sessionID);
-}
 function shouldActivateThinkMode(content) {
   const lowercaseContent = content.toLowerCase();
   for (const keyword of THINK_KEYWORDS) {
@@ -12542,9 +12535,9 @@ function shouldActivateThinkMode(content) {
 }
 function createThinkModeHook(input) {
   return {
-    "message.updated": async (messageInput, messageOutput) => {
-      const { sessionID } = messageInput;
-      const parts = messageOutput?.parts || [];
+    "chat.message": async (chatInput, chatOutput) => {
+      const { sessionID } = chatInput;
+      const parts = chatOutput?.parts || [];
       const content = parts.filter((p) => p.type === "text").map((p) => p.text).join(`
 `).trim();
       if (typeof content === "string" && content.length > 0) {
@@ -12554,7 +12547,6 @@ function createThinkModeHook(input) {
           setSessionState(sessionID, true);
         }
       }
-      return;
     },
     "tool.execute.before": async (toolInput, toolOutput) => {
       const { sessionID } = toolInput;
@@ -12568,25 +12560,17 @@ function createThinkModeHook(input) {
         }
       }
       return;
-    },
-    "session.deleted": async (input2) => {
-      const { info } = input2;
-      const sessionId = info?.id;
-      if (sessionId) {
-        clearSessionState(sessionId);
-      }
     }
   };
 }
 
 // src/features/background-agent/tool.ts
-import { tool as tool11 } from "@opencode-ai/plugin";
-import { z as z11 } from "zod";
+import { z as z12 } from "zod";
 function createCallAgentTool(manager2) {
-  return tool11({
+  return tool({
     description: "Delegate a task to a specialized subagent for domain expertise. " + "Supports both synchronous (wait=true) and asynchronous (wait=false) execution patterns. " + "Use this when tasks require specialized knowledge, extensive search, " + "or can benefit from parallel execution.",
     args: {
-      agent: z11.enum([
+      agent: z12.enum([
         "Nautilus",
         "Abyssal",
         "Maelstrom",
@@ -12606,9 +12590,9 @@ function createCallAgentTool(manager2) {
 ` + `- Poseidon: Planning, requirement analysis, test plan creation
 ` + `- Scylla: Code review, test coverage analysis, quality assurance
 ` + "- Pearl: Testing, test creation, test execution"),
-      task: z11.string().min(5).describe("Clear, specific description of what the agent should do. " + "Include relevant context, expected output format, and success criteria."),
-      context: z11.string().optional().describe("Additional context that may help the agent complete the task"),
-      wait: z11.boolean().default(false).describe("If true, wait for the agent to complete and return the full result. " + "If false (default), return immediately with a task ID for async tracking. " + "Use wait=false for parallel delegation to multiple agents.")
+      task: z12.string().min(5).describe("Clear, specific description of what the agent should do. " + "Include relevant context, expected output format, and success criteria."),
+      context: z12.string().optional().describe("Additional context that may help the agent complete the task"),
+      wait: z12.boolean().default(false).describe("If true, wait for the agent to complete and return the full result. " + "If false (default), return immediately with a task ID for async tracking. " + "Use wait=false for parallel delegation to multiple agents.")
     },
     async execute(args) {
       const { agent, task, context, wait: shouldWait } = args;
@@ -12644,10 +12628,10 @@ function createCallAgentTool(manager2) {
   });
 }
 function createBackgroundTaskStatusTool(manager2) {
-  return tool11({
+  return tool({
     description: "Check the status of a background agent task. Returns completion status, " + "results, and duration information for tasks created with call_agent(wait=false).",
     args: {
-      taskId: z11.string().describe("Task ID from a previous call_agent invocation")
+      taskId: z12.string().describe("Task ID from a previous call_agent invocation")
     },
     async execute(args) {
       const { taskId } = args;
@@ -12674,10 +12658,10 @@ function createBackgroundTaskStatusTool(manager2) {
   });
 }
 function createBackgroundTaskListTool(manager2) {
-  return tool11({
+  return tool({
     description: "List all background tasks for the current session. Returns both active and " + "recently completed tasks for tracking parallel delegation workflows.",
     args: {
-      status: z11.enum(["all", "pending", "running", "completed", "failed"]).default("all").describe("Filter by task status. Default 'all' shows all tasks.")
+      status: z12.enum(["all", "pending", "running", "completed", "failed"]).default("all").describe("Filter by task status. Default 'all' shows all tasks.")
     },
     async execute(args) {
       const { status: taskStatus } = args;
@@ -12692,10 +12676,10 @@ function createBackgroundTaskListTool(manager2) {
   });
 }
 function createBackgroundTaskCancelTool(manager2) {
-  return tool11({
+  return tool({
     description: "Cancel a running or pending background task. Use this when a task is " + "no longer needed or when you want to free up concurrency slots.",
     args: {
-      taskId: z11.string().describe("Task ID to cancel")
+      taskId: z12.string().describe("Task ID to cancel")
     },
     async execute(args) {
       const { taskId } = args;
@@ -13601,15 +13585,12 @@ function createAnthropicContextWindowLimitRecovery(_input, options) {
 function createCompactionContextInjector(_input, options) {
   const config2 = options?.config ?? { enabled: true };
   return {
-    "message.updated": async (input, output) => {
-      if (!config2.enabled)
-        return;
-      console.log("[compaction-context-injector] Processing message before compaction");
-    },
     "experimental.session.compacting": async (input, output) => {
       if (!config2.enabled)
         return;
       console.log("[compaction-context-injector] Adding context for session compaction");
+      output.context = output.context || [];
+      output.context.push("Include important decisions and learnings in the summary.");
     }
   };
 }
@@ -14479,9 +14460,9 @@ function createCommentChecker(_input, options) {
       }
       if (!output.output)
         return;
-      const { tool: tool12 } = input;
+      const { tool: tool3 } = input;
       const relevantTools = ["write", "edit", "multiEdit"];
-      if (!relevantTools.includes(tool12))
+      if (!relevantTools.includes(tool3))
         return;
       const toolOutput = typeof output.output === "string" ? output.output : JSON.stringify(output.output);
       const codeBlocks = extractCodeFromToolOutput(toolOutput);
@@ -14953,34 +14934,34 @@ function createNotificationsHook(input, options) {
     "tool.execute.after": async (toolInput, toolOutput) => {
       if (!config2.enabled)
         return;
-      const { tool: tool12 } = toolInput;
+      const { tool: tool3 } = toolInput;
       if (!toolOutput?.output)
         return;
       let soundEvent;
       let message = "";
       let title = "Kraken-Code";
-      if (tool12 === "session_list") {
+      if (tool3 === "session_list") {
         title = "Sessions Listed";
         message = "Session list retrieved successfully";
-      } else if (tool12 === "session_create") {
+      } else if (tool3 === "session_create") {
         title = "Session Created";
         message = "New session started";
         soundEvent = { type: "task_complete" };
-      } else if (tool12 === "session_close") {
+      } else if (tool3 === "session_close") {
         title = "Session Closed";
         message = "Session closed";
         soundEvent = { type: "task_complete" };
-      } else if (tool12 === "write" || tool12 === "edit" || tool12 === "multiEdit") {
+      } else if (tool3 === "write" || tool3 === "edit" || tool3 === "multiEdit") {
         title = "File Modified";
         message = "File operation completed";
         soundEvent = { type: "task_complete" };
-      } else if (tool12 === "ast_grep_replace") {
+      } else if (tool3 === "ast_grep_replace") {
         title = "Code Refactored";
         message = "AST grep replace completed";
         soundEvent = { type: "task_complete" };
-      } else if (tool12.startsWith("lsp_")) {
+      } else if (tool3.startsWith("lsp_")) {
         title = "LSP Operation";
-        message = `${tool12} completed`;
+        message = `${tool3} completed`;
       }
       if (message) {
         sendNotification(title, message, soundEvent, config2);
@@ -16558,9 +16539,6 @@ ${warningsMsg}`);
   };
 }
 
-// src/features/mcp/websearch.ts
-import { tool as tool12 } from "@opencode-ai/plugin";
-
 // src/features/mcp/types.ts
 class MCPError extends Error {
   code;
@@ -16607,7 +16585,7 @@ class RateLimiter {
 }
 
 // src/features/mcp/websearch.ts
-var z12 = tool12.schema;
+var z13 = tool.schema;
 var EXA_API_BASE_URL = "https://api.exa.ai";
 var DEFAULT_NUM_RESULTS = 8;
 var DEFAULT_TIMEOUT = 30000;
@@ -16733,14 +16711,14 @@ function truncateContent(content, maxChars) {
 
 [Content truncated...]`;
 }
-var websearchToolImpl = tool12({
+var websearchToolImpl = tool({
   description: "Search the web for information using AI-powered search via Exa AI. Returns relevant web pages with their content.",
   args: {
-    query: z12.string().describe("Search query for the web"),
-    numResults: z12.number().min(1).max(20).optional().default(DEFAULT_NUM_RESULTS).describe("Number of results to return (1-20)"),
-    livecrawl: z12.enum(["fallback", "preferred"]).optional().default("fallback").describe("Live crawl mode"),
-    searchType: z12.enum(["auto", "fast", "deep"]).optional().default("auto").describe("Search type"),
-    contextMaxCharacters: z12.number().min(1000).max(50000).optional().default(1e4).describe("Maximum characters per result")
+    query: z13.string().describe("Search query for the web"),
+    numResults: z13.number().min(1).max(20).optional().default(DEFAULT_NUM_RESULTS).describe("Number of results to return (1-20)"),
+    livecrawl: z13.enum(["fallback", "preferred"]).optional().default("fallback").describe("Live crawl mode"),
+    searchType: z13.enum(["auto", "fast", "deep"]).optional().default("auto").describe("Search type"),
+    contextMaxCharacters: z13.number().min(1000).max(50000).optional().default(1e4).describe("Maximum characters per result")
   },
   async execute(args) {
     const startTime = Date.now();
@@ -16766,12 +16744,12 @@ var websearchToolImpl = tool12({
     }
   }
 });
-var webfetchToolImpl = tool12({
+var webfetchToolImpl = tool({
   description: "Fetch and parse web content from a specific URL using Exa AI. Returns the content in the specified format.",
   args: {
-    url: z12.string().url().describe("URL to fetch content from"),
-    format: z12.enum(["markdown", "text", "html"]).optional().default("markdown").describe("Output format"),
-    timeout: z12.number().min(1000).max(60000).optional().describe("Timeout in milliseconds")
+    url: z13.string().url().describe("URL to fetch content from"),
+    format: z13.enum(["markdown", "text", "html"]).optional().default("markdown").describe("Output format"),
+    timeout: z13.number().min(1000).max(60000).optional().describe("Timeout in milliseconds")
   },
   async execute(args) {
     const startTime = Date.now();
@@ -16832,8 +16810,7 @@ var websearchMCP = {
 };
 
 // src/features/mcp/context7.ts
-import { tool as tool13 } from "@opencode-ai/plugin";
-var z13 = tool13.schema;
+var z14 = tool.schema;
 var CONTEXT7_API_BASE_URL = "https://api.context7.io/v1";
 var DEFAULT_NUM_RESULTS2 = 5;
 var DEFAULT_TIMEOUT2 = 30000;
@@ -16973,14 +16950,14 @@ async function getDocumentation(library, path12, options = {}) {
     throw error;
   }
 }
-var context7SearchTool = tool13({
+var context7SearchTool = tool({
   description: "Search official documentation for libraries, SDKs, and APIs. Returns relevant documentation pages with content.",
   args: {
-    query: z13.string().describe("Search query for documentation"),
-    library: z13.string().optional().describe('Library name (e.g., "react", "nodejs", "python")'),
-    version: z13.string().optional().describe('Library version (e.g., "18.0.0", "3.11")'),
-    numResults: z13.number().min(1).max(10).optional().default(DEFAULT_NUM_RESULTS2).describe("Number of results to return"),
-    maxTokens: z13.number().min(1000).max(20000).optional().describe("Maximum tokens per result")
+    query: z14.string().describe("Search query for documentation"),
+    library: z14.string().optional().describe('Library name (e.g., "react", "nodejs", "python")'),
+    version: z14.string().optional().describe('Library version (e.g., "18.0.0", "3.11")'),
+    numResults: z14.number().min(1).max(10).optional().default(DEFAULT_NUM_RESULTS2).describe("Number of results to return"),
+    maxTokens: z14.number().min(1000).max(20000).optional().describe("Maximum tokens per result")
   },
   async execute(args) {
     try {
@@ -17005,13 +16982,13 @@ var context7SearchTool = tool13({
     }
   }
 });
-var context7GetTool = tool13({
+var context7GetTool = tool({
   description: "Get specific documentation page by library and path. Fetches the exact documentation content.",
   args: {
-    library: z13.string().describe('Library name (e.g., "react", "nodejs", "python")'),
-    path: z13.string().describe('Documentation path (e.g., "/hooks/useEffect", "/api/fs")'),
-    version: z13.string().optional().describe('Library version (e.g., "18.0.0", "3.11")'),
-    maxTokens: z13.number().min(1000).max(20000).optional().describe("Maximum tokens to return")
+    library: z14.string().describe('Library name (e.g., "react", "nodejs", "python")'),
+    path: z14.string().describe('Documentation path (e.g., "/hooks/useEffect", "/api/fs")'),
+    version: z14.string().optional().describe('Library version (e.g., "18.0.0", "3.11")'),
+    maxTokens: z14.number().min(1000).max(20000).optional().describe("Maximum tokens to return")
   },
   async execute(args) {
     try {
@@ -17072,8 +17049,7 @@ var context7MCP = {
 };
 
 // src/features/mcp/grep-app.ts
-import { tool as tool14 } from "@opencode-ai/plugin";
-var z14 = tool14.schema;
+var z15 = tool.schema;
 var GITHUB_API_BASE_URL = "https://api.github.com";
 var DEFAULT_MAX_RESULTS = 10;
 var DEFAULT_TIMEOUT3 = 30000;
@@ -17234,14 +17210,14 @@ function inferLanguageFromPath(path12) {
   };
   return languageMap[ext || ""] || "unknown";
 }
-var grepSearchTool = tool14({
+var grepSearchTool = tool({
   description: "Search code across public GitHub repositories. Returns matching files with repository information.",
   args: {
-    query: z14.string().describe("Search query (supports GitHub code search syntax)"),
-    language: z14.string().optional().describe('Filter by programming language (e.g., "TypeScript", "Python")'),
-    extension: z14.string().optional().describe('Filter by file extension (e.g., "ts", "js", "py")'),
-    maxResults: z14.number().min(1).max(30).optional().default(DEFAULT_MAX_RESULTS).describe("Number of results to return"),
-    page: z14.number().min(1).optional().default(1).describe("Page number for pagination")
+    query: z15.string().describe("Search query (supports GitHub code search syntax)"),
+    language: z15.string().optional().describe('Filter by programming language (e.g., "TypeScript", "Python")'),
+    extension: z15.string().optional().describe('Filter by file extension (e.g., "ts", "js", "py")'),
+    maxResults: z15.number().min(1).max(30).optional().default(DEFAULT_MAX_RESULTS).describe("Number of results to return"),
+    page: z15.number().min(1).optional().default(1).describe("Page number for pagination")
   },
   async execute(args) {
     try {
@@ -17266,13 +17242,13 @@ var grepSearchTool = tool14({
     }
   }
 });
-var grepGetFileTool = tool14({
+var grepGetFileTool = tool({
   description: "Fetch file content from a GitHub repository. Can fetch individual files from search results.",
   args: {
-    owner: z14.string().describe('Repository owner (e.g., "facebook", "microsoft")'),
-    repo: z14.string().describe('Repository name (e.g., "react", "typescript")'),
-    path: z14.string().describe('File path (e.g., "src/index.ts", "README.md")'),
-    ref: z14.string().optional().describe('Git reference (branch, tag, or commit, defaults to "main")')
+    owner: z15.string().describe('Repository owner (e.g., "facebook", "microsoft")'),
+    repo: z15.string().describe('Repository name (e.g., "react", "typescript")'),
+    path: z15.string().describe('File path (e.g., "src/index.ts", "README.md")'),
+    ref: z15.string().optional().describe('Git reference (branch, tag, or commit, defaults to "main")')
   },
   async execute(args) {
     try {
@@ -17338,8 +17314,7 @@ import { spawn as spawn2 } from "child_process";
 import * as path12 from "path";
 import * as os10 from "os";
 import * as fs11 from "fs";
-import { tool as tool15 } from "@opencode-ai/plugin";
-var z15 = tool15.schema;
+var z16 = tool.schema;
 var kratosProcess = null;
 var requestId = 0;
 var pendingRequests = new Map;
@@ -17436,14 +17411,14 @@ async function sendKratosRequest(method, params = {}) {
     pendingRequests.set(id, { resolve: wrappedResolve, reject });
   });
 }
-var memorySaveToolImpl = tool15({
+var memorySaveToolImpl = tool({
   description: "Save a memory to Kratos project database",
   args: {
-    summary: z15.string().describe("Short 1-2 line summary of memory"),
-    text: z15.string().describe("Full memory content"),
-    tags: z15.array(z15.string()).describe("Tags for categorization"),
-    paths: z15.array(z15.string()).describe("Related file paths"),
-    importance: z15.number().min(1).max(5).default(3).describe("Importance 1-5")
+    summary: z16.string().describe("Short 1-2 line summary of memory"),
+    text: z16.string().describe("Full memory content"),
+    tags: z16.array(z16.string()).describe("Tags for categorization"),
+    paths: z16.array(z16.string()).describe("Related file paths"),
+    importance: z16.number().min(1).max(5).default(3).describe("Importance 1-5")
   },
   async execute(args, context) {
     try {
@@ -17463,12 +17438,12 @@ var memorySaveTool = {
   serverName: "kratos",
   category: "utility"
 };
-var memorySearchToolImpl = tool15({
+var memorySearchToolImpl = tool({
   description: "Search Kratos memories by query or tags",
   args: {
-    q: z15.string().describe("Search query or keywords"),
-    k: z15.number().default(10).describe("Maximum results"),
-    tags: z15.array(z15.string()).describe("Filter by tags")
+    q: z16.string().describe("Search query or keywords"),
+    k: z16.number().default(10).describe("Maximum results"),
+    tags: z16.array(z16.string()).describe("Filter by tags")
   },
   async execute(args, context) {
     try {
@@ -17488,11 +17463,11 @@ var memorySearchTool = {
   serverName: "kratos",
   category: "utility"
 };
-var memoryGetRecentToolImpl = tool15({
+var memoryGetRecentToolImpl = tool({
   description: "Get recent memories from Kratos",
   args: {
-    k: z15.number().default(10).describe("Maximum results"),
-    path_prefix: z15.string().describe("Filter by path prefix")
+    k: z16.number().default(10).describe("Maximum results"),
+    path_prefix: z16.string().describe("Filter by path prefix")
   },
   async execute(args, context) {
     try {
@@ -17512,11 +17487,11 @@ var memoryGetRecentTool = {
   serverName: "kratos",
   category: "utility"
 };
-var memoryAskToolImpl = tool15({
+var memoryAskToolImpl = tool({
   description: "Ask Kratos natural language questions",
   args: {
-    question: z15.string().describe("Natural language question"),
-    limit: z15.number().default(5).describe("Maximum results")
+    question: z16.string().describe("Natural language question"),
+    limit: z16.number().default(5).describe("Maximum results")
   },
   async execute(args, context) {
     try {
@@ -17577,6 +17552,2322 @@ async function shutdownAllMcpServers() {
         console.error(`Failed to shutdown MCP server '${mcp.name}':`, error);
       }
     }
+  }
+}
+
+// src/features/learning/integration.ts
+import * as path18 from "path";
+import * as os11 from "os";
+
+// src/features/learning/experience-store.ts
+import * as fs12 from "fs";
+import * as path13 from "path";
+import * as readline from "readline";
+
+class ExperienceStore {
+  experiencePath;
+  buffer;
+  maxBufferSize;
+  maxAgeDays;
+  constructor(storagePath, config2) {
+    this.experiencePath = path13.join(storagePath, "experiences.jsonl");
+    this.maxBufferSize = config2?.maxBufferSize || 1000;
+    this.maxAgeDays = config2?.maxAgeDays || 90;
+    this.buffer = [];
+    this.ensureStorage();
+  }
+  ensureStorage() {
+    const dir = path13.dirname(this.experiencePath);
+    if (!fs12.existsSync(dir)) {
+      fs12.mkdirSync(dir, { recursive: true });
+    }
+    if (!fs12.existsSync(this.experiencePath)) {
+      fs12.writeFileSync(this.experiencePath, "", "utf-8");
+    }
+  }
+  async addExperience(experience) {
+    const id = `exp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const timestamp = new Date().toISOString();
+    const fullExperience = {
+      id,
+      timestamp,
+      ...experience
+    };
+    this.buffer.push(fullExperience);
+    if (this.buffer.length >= 100) {
+      await this.flushBuffer();
+    }
+    return fullExperience;
+  }
+  async flushBuffer() {
+    if (this.buffer.length === 0)
+      return;
+    const lines = this.buffer.map((exp) => JSON.stringify(exp)).join(`
+`) + `
+`;
+    fs12.appendFileSync(this.experiencePath, lines, "utf-8");
+    console.log(`[ExperienceStore] Flushed ${this.buffer.length} experiences`);
+    this.buffer = [];
+  }
+  async loadExperiences() {
+    const experiences = [];
+    const fileStream = fs12.createReadStream(this.experiencePath);
+    const rl = readline.createInterface({
+      input: fileStream,
+      crlfDelay: Infinity
+    });
+    for await (const line of rl) {
+      if (line.trim()) {
+        try {
+          const exp = JSON.parse(line);
+          experiences.push(exp);
+        } catch (e) {
+          console.error(`[ExperienceStore] Failed to parse line: ${line}`);
+        }
+      }
+    }
+    const now = Date.now();
+    const maxAgeMs = this.maxAgeDays * 24 * 60 * 60 * 1000;
+    return experiences.filter((exp) => {
+      const expTime = new Date(exp.timestamp).getTime();
+      return now - expTime <= maxAgeMs;
+    });
+  }
+  async findRelevant(currentState, context, k = 5) {
+    const experiences = await this.loadExperiences();
+    const scored = experiences.map((exp) => ({
+      exp,
+      score: this.calculateSimilarityScore(exp, currentState, context)
+    })).sort((a, b) => b.score - a.score).slice(0, k).map((item) => item.exp);
+    return scored;
+  }
+  async getBestAction(currentState, context) {
+    const experiences = await this.findRelevant(currentState, context, 10);
+    if (experiences.length === 0) {
+      return null;
+    }
+    const scored = experiences.map((exp) => ({
+      exp,
+      score: this.scoreExperience(exp)
+    }));
+    scored.sort((a, b) => b.score - a.score);
+    const best = scored[0];
+    return {
+      bestAction: best.exp.action,
+      expectedReward: best.exp.reward,
+      confidence: best.exp.confidence,
+      similarExperiences: scored.slice(0, 3).map((s) => s.exp)
+    };
+  }
+  calculateSimilarityScore(exp, currentState, context) {
+    let score = 0;
+    if (exp.state === currentState) {
+      score += 2;
+    } else if (currentState.includes(exp.state) || exp.state.includes(currentState)) {
+      score += 1;
+    }
+    const contextLower = context.toLowerCase();
+    const expContext = exp.context.prompt || "";
+    const expContextLower = expContext.toLowerCase();
+    const keywords = this.extractKeywords(contextLower);
+    const expKeywords = this.extractKeywords(expContextLower);
+    const keywordMatches = keywords.filter((k) => expKeywords.includes(k)).length;
+    score += keywordMatches * 0.5;
+    if (exp.context.tool && contextLower.includes(exp.context.tool.toLowerCase())) {
+      score += 0.5;
+    }
+    return score;
+  }
+  scoreExperience(exp) {
+    let score = 0;
+    score += exp.reward * 2;
+    score += exp.confidence * 0.5;
+    const ageMs = Date.now() - new Date(exp.timestamp).getTime();
+    const ageDays = ageMs / (24 * 60 * 60 * 1000);
+    const recencyScore = Math.exp(-ageDays / 30);
+    score += recencyScore * 0.5;
+    return score;
+  }
+  extractKeywords(text) {
+    const words = text.split(/\s+/);
+    const stopWords = new Set([
+      "the",
+      "a",
+      "an",
+      "is",
+      "are",
+      "was",
+      "were",
+      "be",
+      "been",
+      "being",
+      "have",
+      "has",
+      "had",
+      "do",
+      "does",
+      "did",
+      "will",
+      "would",
+      "should",
+      "can",
+      "could",
+      "may",
+      "might",
+      "must",
+      "to",
+      "of",
+      "in",
+      "for",
+      "on",
+      "at",
+      "by",
+      "with",
+      "from",
+      "as",
+      "into",
+      "through",
+      "during",
+      "before",
+      "after",
+      "above",
+      "below",
+      "between",
+      "under",
+      "again"
+    ]);
+    return words.filter((w) => w.length > 3 && !stopWords.has(w)).filter((w, i, arr) => arr.indexOf(w) === i);
+  }
+  async getReplayBuffer(size = 100) {
+    const experiences = await this.loadExperiences();
+    const recent = experiences.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, size);
+    return {
+      buffer: recent,
+      maxSize: this.maxBufferSize
+    };
+  }
+  async getStats() {
+    const experiences = await this.loadExperiences();
+    if (experiences.length === 0) {
+      return {
+        totalExperiences: 0,
+        avgReward: 0,
+        successRate: 0,
+        recentExperiences: []
+      };
+    }
+    const avgReward = experiences.reduce((sum, exp) => sum + exp.reward, 0) / experiences.length;
+    const successCount = experiences.filter((exp) => exp.outcome === "success").length;
+    const successRate = successCount / experiences.length;
+    const recent = experiences.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
+    return {
+      totalExperiences: experiences.length,
+      avgReward,
+      successRate,
+      recentExperiences: recent
+    };
+  }
+  async compact() {
+    const experiences = await this.loadExperiences();
+    const lines = experiences.map((exp) => JSON.stringify(exp)).join(`
+`);
+    fs12.writeFileSync(this.experiencePath, lines + `
+`, "utf-8");
+    console.log(`[ExperienceStore] Compacted: kept ${experiences.length} experiences`);
+  }
+}
+
+// src/features/learning/knowledge-graph.ts
+import * as fs13 from "fs";
+import * as path14 from "path";
+
+class KnowledgeGraphStore {
+  nodesPath;
+  edgesPath;
+  indexPath;
+  graph;
+  maxNodes;
+  constructor(storagePath, config2) {
+    const kgDir = path14.join(storagePath, "knowledge_graph");
+    this.nodesPath = path14.join(kgDir, "nodes.json");
+    this.edgesPath = path14.join(kgDir, "edges.json");
+    this.indexPath = path14.join(kgDir, "indexes.json");
+    this.maxNodes = config2?.maxNodes || 1e4;
+    this.graph = {
+      nodes: {},
+      edges: [],
+      indexes: {
+        byType: {},
+        byImportance: [],
+        byTag: {}
+      }
+    };
+    this.ensureStorage();
+    this.loadGraph();
+  }
+  ensureStorage() {
+    const dir = path14.dirname(this.nodesPath);
+    if (!fs13.existsSync(dir)) {
+      fs13.mkdirSync(dir, { recursive: true });
+    }
+  }
+  loadGraph() {
+    if (fs13.existsSync(this.nodesPath)) {
+      const nodesData = fs13.readFileSync(this.nodesPath, "utf-8");
+      this.graph.nodes = JSON.parse(nodesData);
+    }
+    if (fs13.existsSync(this.edgesPath)) {
+      const edgesData = fs13.readFileSync(this.edgesPath, "utf-8");
+      this.graph.edges = JSON.parse(edgesData);
+    }
+    if (fs13.existsSync(this.indexPath)) {
+      const indexesData = fs13.readFileSync(this.indexPath, "utf-8");
+      this.graph.indexes = JSON.parse(indexesData);
+    }
+    console.log(`[KnowledgeGraph] Loaded ${Object.keys(this.graph.nodes).length} nodes, ${this.graph.edges.length} edges`);
+  }
+  saveGraph() {
+    fs13.writeFileSync(this.nodesPath, JSON.stringify(this.graph.nodes, null, 2), "utf-8");
+    fs13.writeFileSync(this.edgesPath, JSON.stringify(this.graph.edges, null, 2), "utf-8");
+    fs13.writeFileSync(this.indexPath, JSON.stringify(this.graph.indexes, null, 2), "utf-8");
+  }
+  async addNode(id, type, data, source = "manual") {
+    const now = new Date().toISOString();
+    if (this.graph.nodes[id]) {
+      const existing = this.graph.nodes[id];
+      existing.data = { ...existing.data, ...data };
+      existing.metadata.updated = now;
+      existing.lastAccessed = now;
+      existing.accessCount++;
+      this.graph.nodes[id] = existing;
+    } else {
+      const newNode = {
+        id,
+        type,
+        data,
+        relations: {
+          relatedTo: [],
+          conflictsWith: [],
+          dependsOn: []
+        },
+        importance: 5,
+        strength: 0.8,
+        lastAccessed: now,
+        accessCount: 0,
+        metadata: {
+          tags: data.tags || [],
+          source,
+          created: now,
+          updated: now
+        }
+      };
+      this.graph.nodes[id] = newNode;
+      this.updateIndexes(newNode);
+    }
+    this.saveGraph();
+    return this.graph.nodes[id];
+  }
+  getNode(id) {
+    const node = this.graph.nodes[id];
+    if (node) {
+      node.lastAccessed = new Date().toISOString();
+      node.accessCount++;
+      this.saveGraph();
+    }
+    return node || null;
+  }
+  async addEdge(from, to, type, weight = 1) {
+    const existing = this.graph.edges.find((e) => e.from === from && e.to === to && e.type === type);
+    if (existing) {
+      existing.weight = weight;
+    } else {
+      const newEdge = { from, to, type, weight };
+      this.graph.edges.push(newEdge);
+      const fromNode = this.graph.nodes[from];
+      const toNode = this.graph.nodes[to];
+      if (fromNode) {
+        switch (type) {
+          case "relates_to":
+            fromNode.relations.relatedTo.push(to);
+            break;
+          case "conflicts_with":
+            fromNode.relations.conflictsWith.push(to);
+            break;
+          case "depends_on":
+            fromNode.relations.dependsOn.push(to);
+            break;
+        }
+      }
+      if (type === "relates_to" && toNode) {
+        toNode.relations.relatedTo.push(from);
+      }
+    }
+    this.saveGraph();
+  }
+  getNodesByType(type) {
+    const nodeIds = this.graph.indexes.byType[type] || [];
+    return nodeIds.map((id) => this.graph.nodes[id]).filter((n) => n !== undefined);
+  }
+  getNodesByTag(tag) {
+    const nodeIds = this.graph.indexes.byTag[tag] || [];
+    return nodeIds.map((id) => this.graph.nodes[id]).filter((n) => n !== undefined);
+  }
+  getImportantNodes(limit = 10) {
+    const nodeIds = this.graph.indexes.byImportance.slice(0, limit);
+    return nodeIds.map((id) => this.graph.nodes[id]).filter((n) => n !== undefined);
+  }
+  getRelatedNodes(nodeId) {
+    const related = [];
+    for (const edge of this.graph.edges) {
+      if (edge.from === nodeId) {
+        const node = this.graph.nodes[edge.to];
+        if (node) {
+          related.push({ node, edge });
+        }
+      } else if (edge.to === nodeId) {
+        const node = this.graph.nodes[edge.from];
+        if (node) {
+          related.push({ node, edge });
+        }
+      }
+    }
+    return related;
+  }
+  findPath(fromId, toId) {
+    if (!this.graph.nodes[fromId] || !this.graph.nodes[toId]) {
+      return null;
+    }
+    if (fromId === toId) {
+      return [this.graph.nodes[fromId]];
+    }
+    const visited = new Set;
+    const queue = [{ id: fromId, path: [fromId] }];
+    while (queue.length > 0) {
+      const { id, path: path15 } = queue.shift();
+      if (id === toId) {
+        return path15.map((p) => this.graph.nodes[p]);
+      }
+      visited.add(id);
+      const neighbors = this.graph.edges.filter((e) => e.from === id || e.to === id).map((e) => e.from === id ? e.to : e.from);
+      for (const neighbor of neighbors) {
+        if (!visited.has(neighbor)) {
+          queue.push({ id: neighbor, path: [...path15, neighbor] });
+        }
+      }
+    }
+    return null;
+  }
+  async getRelevantContext(query) {
+    const queryLower = query.toLowerCase();
+    const keywords = this.extractKeywords(queryLower);
+    const relevantNodes = [];
+    for (const [id, node] of Object.entries(this.graph.nodes)) {
+      const nodeText = `${node.id} ${JSON.stringify(node.data)}`.toLowerCase();
+      const matchCount = keywords.filter((kw) => nodeText.includes(kw)).length;
+      if (matchCount > 0) {
+        relevantNodes.push(node);
+      }
+    }
+    relevantNodes.sort((a, b) => b.importance - a.importance);
+    const relevantNodeIds = new Set(relevantNodes.map((n) => n.id));
+    const relevantEdges = this.graph.edges.filter((e) => relevantNodeIds.has(e.from) && relevantNodeIds.has(e.to));
+    return {
+      nodes: relevantNodes.slice(0, 10),
+      relationships: relevantEdges
+    };
+  }
+  extractKeywords(query) {
+    const words = query.split(/\s+/);
+    const stopWords = new Set([
+      "the",
+      "a",
+      "an",
+      "is",
+      "are",
+      "was",
+      "were",
+      "be",
+      "been",
+      "being",
+      "have",
+      "has",
+      "had",
+      "do",
+      "does",
+      "did",
+      "will",
+      "would",
+      "should",
+      "can",
+      "could",
+      "may",
+      "might",
+      "must",
+      "to",
+      "of",
+      "in",
+      "for",
+      "on",
+      "at",
+      "by",
+      "with",
+      "from",
+      "as",
+      "into",
+      "through",
+      "during",
+      "before",
+      "after",
+      "above",
+      "below",
+      "between",
+      "under",
+      "again"
+    ]);
+    return words.filter((w) => w.length > 3 && !stopWords.has(w)).filter((w, i, arr) => arr.indexOf(w) === i);
+  }
+  updateIndexes(node) {
+    if (!this.graph.indexes.byType[node.type]) {
+      this.graph.indexes.byType[node.type] = [];
+    }
+    this.graph.indexes.byType[node.type].push(node.id);
+    this.graph.indexes.byImportance.push(node.id);
+    this.graph.indexes.byImportance.sort((a, b) => {
+      const aImp = this.graph.nodes[a]?.importance || 0;
+      const bImp = this.graph.nodes[b]?.importance || 0;
+      return bImp - aImp;
+    });
+    for (const tag of node.metadata.tags) {
+      if (!this.graph.indexes.byTag[tag]) {
+        this.graph.indexes.byTag[tag] = [];
+      }
+      this.graph.indexes.byTag[tag].push(node.id);
+    }
+    if (Object.keys(this.graph.nodes).length > this.maxNodes) {
+      this.pruneLeastImportant();
+    }
+  }
+  pruneLeastImportant() {
+    const nodeIds = this.graph.indexes.byImportance.slice(this.maxNodes);
+    for (const id of nodeIds) {
+      delete this.graph.nodes[id];
+      this.graph.edges = this.graph.edges.filter((e) => e.from !== id && e.to !== id);
+    }
+    this.graph.indexes.byImportance = this.graph.indexes.byImportance.slice(0, this.maxNodes);
+    console.log(`[KnowledgeGraph] Pruned ${nodeIds.length} nodes`);
+  }
+  getStats() {
+    const byType = {};
+    for (const node of Object.values(this.graph.nodes)) {
+      byType[node.type] = (byType[node.type] || 0) + 1;
+    }
+    const totalImportance = Object.values(this.graph.nodes).reduce((sum, n) => sum + n.importance, 0);
+    const totalStrength = Object.values(this.graph.nodes).reduce((sum, n) => sum + n.strength, 0);
+    return {
+      totalNodes: Object.keys(this.graph.nodes).length,
+      totalEdges: this.graph.edges.length,
+      byType,
+      avgImportance: totalImportance / Object.keys(this.graph.nodes).length || 0,
+      avgStrength: totalStrength / Object.keys(this.graph.nodes).length || 0
+    };
+  }
+  exportGraph() {
+    return JSON.parse(JSON.stringify(this.graph));
+  }
+  search(query, type) {
+    const queryLower = query.toLowerCase();
+    const keywords = this.extractKeywords(queryLower);
+    const results = [];
+    for (const node of Object.values(this.graph.nodes)) {
+      if (type && node.type !== type) {
+        continue;
+      }
+      const nodeText = `${node.id} ${JSON.stringify(node.data)}`.toLowerCase();
+      const matchCount = keywords.filter((kw) => nodeText.includes(kw)).length;
+      if (matchCount > 0) {
+        results.push(node);
+      }
+    }
+    results.sort((a, b) => {
+      const scoreA = a.importance * 10 + a.accessCount;
+      const scoreB = b.importance * 10 + b.accessCount;
+      return scoreB - scoreA;
+    });
+    return results;
+  }
+  getAllNodes() {
+    return Object.values(this.graph.nodes);
+  }
+  getAllEdges() {
+    return this.graph.edges;
+  }
+}
+
+// src/features/learning/pattern-detection.ts
+import * as fs14 from "fs";
+import * as path15 from "path";
+
+class PatternDetector {
+  patternsPath;
+  patterns;
+  minFrequency;
+  minConfidence;
+  constructor(storagePath, config2) {
+    const patternsDir = path15.join(storagePath, "patterns");
+    this.patternsPath = path15.join(patternsDir, "detection_patterns.json");
+    this.minFrequency = config2?.minFrequency || 3;
+    this.minConfidence = config2?.minConfidence || 0.7;
+    this.patterns = new Map;
+    this.ensureStorage();
+    this.loadPatterns();
+  }
+  ensureStorage() {
+    const dir = path15.dirname(this.patternsPath);
+    if (!fs14.existsSync(dir)) {
+      fs14.mkdirSync(dir, { recursive: true });
+    }
+  }
+  loadPatterns() {
+    if (fs14.existsSync(this.patternsPath)) {
+      try {
+        const data = fs14.readFileSync(this.patternsPath, "utf-8");
+        const patternsArray = JSON.parse(data);
+        for (const pattern of patternsArray) {
+          this.patterns.set(pattern.id, pattern);
+        }
+        console.log(`[PatternDetector] Loaded ${this.patterns.size} patterns`);
+      } catch (error) {
+        console.error(`[PatternDetector] Failed to load patterns from ${this.patternsPath}:`, error);
+        const archivePath = `${this.patternsPath}.corrupted-${Date.now()}`;
+        try {
+          fs14.renameSync(this.patternsPath, archivePath);
+          console.log(`[PatternDetector] Archived corrupted file to ${archivePath}`);
+        } catch (renameError) {
+          console.error(`[PatternDetector] Failed to archive corrupted file:`, renameError);
+        }
+        this.patterns = new Map;
+        console.log(`[PatternDetector] Starting with empty patterns map`);
+      }
+    }
+  }
+  savePatterns() {
+    const patternsArray = Array.from(this.patterns.values());
+    fs14.writeFileSync(this.patternsPath, JSON.stringify(patternsArray, null, 2), "utf-8");
+  }
+  async analyzeExperiences(experiences) {
+    const detectedPatterns = [];
+    const positivePatterns = this.detectPatternsByOutcome(experiences, "positive");
+    detectedPatterns.push(...positivePatterns);
+    const negativePatterns = this.detectPatternsByOutcome(experiences, "negative");
+    detectedPatterns.push(...negativePatterns);
+    for (const pattern of detectedPatterns) {
+      await this.updatePattern(pattern);
+    }
+    const avgConfidence = detectedPatterns.length > 0 ? detectedPatterns.reduce((sum, p) => sum + p.confidence, 0) / detectedPatterns.length : 0;
+    const suggestedBehavior = this.generateSuggestedBehavior(detectedPatterns);
+    return {
+      patterns: detectedPatterns,
+      confidence: avgConfidence,
+      suggestedBehavior,
+      contextMatches: {
+        similarExperiences: this.findSimilarExperiences(experiences, detectedPatterns),
+        relatedPatterns: this.findRelatedPatterns(detectedPatterns)
+      }
+    };
+  }
+  detectPatternsByOutcome(experiences, type) {
+    const patterns = [];
+    const filteredExperiences = experiences.filter((exp) => {
+      if (type === "positive") {
+        return exp.outcome === "success" && exp.reward > 0.5;
+      } else {
+        return exp.outcome === "failure" || exp.reward < -0.3;
+      }
+    });
+    if (filteredExperiences.length < this.minFrequency) {
+      return patterns;
+    }
+    const byState = new Map;
+    for (const exp of filteredExperiences) {
+      if (!byState.has(exp.state)) {
+        byState.set(exp.state, []);
+      }
+      byState.get(exp.state).push(exp);
+    }
+    for (const [state, stateExps] of byState.entries()) {
+      if (stateExps.length < this.minFrequency)
+        continue;
+      const actions = stateExps.map((e) => e.action);
+      const actionCounts = new Map;
+      for (const action of actions) {
+        actionCounts.set(action, (actionCounts.get(action) || 0) + 1);
+      }
+      for (const [action, count] of actionCounts.entries()) {
+        if (count >= this.minFrequency) {
+          const pattern = {
+            id: `pattern-${type}-${state}-${action}-${Date.now()}`,
+            type,
+            category: this.categorizePattern(state),
+            description: this.generatePatternDescription(type, state, action),
+            examples: stateExps.slice(0, 3).map((e) => `${e.action}: ${e.outcome}`),
+            frequency: count,
+            firstSeen: new Date(Math.min(...stateExps.map((e) => new Date(e.timestamp).getTime()))).toISOString(),
+            lastSeen: new Date(Math.max(...stateExps.map((e) => new Date(e.timestamp).getTime()))).toISOString(),
+            confidence: Math.min(1, count / stateExps.length),
+            triggers: [state, action],
+            consequences: type === "positive" ? ["High success rate"] : ["Frequent failures"],
+            suggestedActions: this.generateSuggestedActions(type, state, action),
+            impact: this.assessImpact(count, type),
+            status: "active"
+          };
+          patterns.push(pattern);
+        }
+      }
+    }
+    return patterns;
+  }
+  async updatePattern(pattern) {
+    const existingId = this.findSimilarPattern(pattern);
+    if (existingId) {
+      const existing = this.patterns.get(existingId);
+      existing.frequency += pattern.frequency;
+      existing.lastSeen = pattern.lastSeen;
+      existing.examples = [...existing.examples, ...pattern.examples].slice(0, 10);
+      existing.confidence = (existing.confidence + pattern.confidence) / 2;
+      this.patterns.set(existingId, existing);
+    } else {
+      this.patterns.set(pattern.id, pattern);
+    }
+    this.savePatterns();
+  }
+  findSimilarPattern(pattern) {
+    for (const [id, existing] of this.patterns.entries()) {
+      if (existing.type === pattern.type && existing.category === pattern.category && existing.description === pattern.description) {
+        return id;
+      }
+    }
+    return null;
+  }
+  categorizePattern(state) {
+    const lowerState = state.toLowerCase();
+    if (lowerState.includes("debug") || lowerState.includes("error") || lowerState.includes("fix")) {
+      return "debugging";
+    } else if (lowerState.includes("code") || lowerState.includes("implement") || lowerState.includes("build")) {
+      return "coding";
+    } else if (lowerState.includes("review") || lowerState.includes("test") || lowerState.includes("check")) {
+      return "testing";
+    } else if (lowerState.includes("design") || lowerState.includes("architect") || lowerState.includes("plan")) {
+      return "design";
+    } else {
+      return "general";
+    }
+  }
+  generatePatternDescription(type, state, action) {
+    if (type === "positive") {
+      return `When ${state}, using ${action} tends to succeed`;
+    } else {
+      return `When ${state}, using ${action} often fails`;
+    }
+  }
+  generateSuggestedActions(type, state, action) {
+    if (type === "positive") {
+      return [
+        `Continue using ${action} when ${state}`,
+        `Consider refining ${action} for even better results`
+      ];
+    } else {
+      return [
+        `Avoid ${action} when ${state}`,
+        `Try alternative approaches for ${state}`,
+        `Research better methods for ${state} scenarios`
+      ];
+    }
+  }
+  assessImpact(frequency, type) {
+    if (frequency < 5)
+      return "low";
+    if (frequency < 15)
+      return type === "negative" ? "high" : "medium";
+    if (frequency < 30)
+      return "high";
+    return "critical";
+  }
+  generateSuggestedBehavior(patterns) {
+    if (patterns.length === 0) {
+      return "No clear patterns detected. Continue working normally.";
+    }
+    const positives = patterns.filter((p) => p.type === "positive");
+    const negatives = patterns.filter((p) => p.type === "negative");
+    if (negatives.length > positives.length) {
+      const topNegative = negatives[0];
+      return `Warning: Detected negative pattern "${topNegative.description}". Consider alternative approaches.`;
+    } else if (positives.length > 0) {
+      const topPositive = positives[0];
+      return `Good pattern detected: "${topPositive.description}". Consider continuing this approach.`;
+    } else {
+      return "Mixed patterns detected. Evaluate context before proceeding.";
+    }
+  }
+  findSimilarExperiences(experiences, patterns) {
+    const similar = [];
+    for (const pattern of patterns) {
+      for (const exp of experiences) {
+        if (exp.state === pattern.triggers[0] && exp.action === pattern.triggers[1]) {
+          similar.push(exp.id);
+        }
+      }
+    }
+    return [...new Set(similar)].slice(0, 5);
+  }
+  findRelatedPatterns(patterns) {
+    return patterns.map((p) => p.id);
+  }
+  async listPatterns(filters) {
+    let patterns = Array.from(this.patterns.values());
+    if (filters?.type) {
+      patterns = patterns.filter((p) => p.type === filters.type);
+    }
+    if (filters?.status) {
+      patterns = patterns.filter((p) => p.status === filters.status);
+    }
+    if (filters?.impact) {
+      patterns = patterns.filter((p) => p.impact === filters.impact);
+    }
+    patterns.sort((a, b) => {
+      const impactOrder = { critical: 0, high: 1, medium: 2, low: 3 };
+      const impactDiff = impactOrder[a.impact] - impactOrder[b.impact];
+      if (impactDiff !== 0)
+        return impactDiff;
+      return b.frequency - a.frequency;
+    });
+    return patterns;
+  }
+  async updatePatternStatus(id, status) {
+    const pattern = this.patterns.get(id);
+    if (!pattern) {
+      throw new Error(`Pattern not found: ${id}`);
+    }
+    pattern.status = status;
+    this.savePatterns();
+  }
+  getStats() {
+    const patterns = Array.from(this.patterns.values());
+    const byCategory = {};
+    const byImpact = {};
+    for (const pattern of patterns) {
+      byCategory[pattern.category] = (byCategory[pattern.category] || 0) + 1;
+      byImpact[pattern.impact] = (byImpact[pattern.impact] || 0) + 1;
+    }
+    return {
+      totalPatterns: patterns.length,
+      positive: patterns.filter((p) => p.type === "positive").length,
+      negative: patterns.filter((p) => p.type === "negative").length,
+      active: patterns.filter((p) => p.status === "active").length,
+      byCategory,
+      byImpact
+    };
+  }
+  getAllPatterns() {
+    return Array.from(this.patterns.values());
+  }
+}
+
+// src/features/learning/state-machine.ts
+import * as fs15 from "fs";
+import * as path16 from "path";
+
+class StateMachineEngine {
+  stateMachinesPath;
+  stateMachines;
+  currentMachineId;
+  constructor(storagePath) {
+    const smDir = path16.join(storagePath, "state_machines");
+    this.stateMachinesPath = path16.join(smDir, "machines.json");
+    this.stateMachines = new Map;
+    this.ensureStorage();
+    this.loadStateMachines();
+  }
+  ensureStorage() {
+    const dir = path16.dirname(this.stateMachinesPath);
+    if (!fs15.existsSync(dir)) {
+      fs15.mkdirSync(dir, { recursive: true });
+    }
+  }
+  loadStateMachines() {
+    if (fs15.existsSync(this.stateMachinesPath)) {
+      const data = fs15.readFileSync(this.stateMachinesPath, "utf-8");
+      const machinesArray = JSON.parse(data);
+      for (const machine of machinesArray) {
+        this.stateMachines.set(machine.id, machine);
+      }
+      console.log(`[StateMachine] Loaded ${this.stateMachines.size} state machines`);
+    }
+  }
+  saveStateMachines() {
+    const machinesArray = Array.from(this.stateMachines.values());
+    fs15.writeFileSync(this.stateMachinesPath, JSON.stringify(machinesArray, null, 2), "utf-8");
+  }
+  createMachine(id, name, initialState, states) {
+    if (!states[initialState]) {
+      throw new Error(`Initial state '${initialState}' not found in states. Available states: ${Object.keys(states).join(", ")}`);
+    }
+    const machine = {
+      id,
+      name,
+      initialState,
+      states,
+      transitions: this.buildTransitionsMap(states),
+      currentState: initialState,
+      history: [],
+      metadata: {
+        created: new Date().toISOString(),
+        version: "1.0.0",
+        triggers: []
+      }
+    };
+    this.stateMachines.set(id, machine);
+    this.saveStateMachines();
+    return machine;
+  }
+  buildTransitionsMap(states) {
+    const transitions = {};
+    for (const [stateName, state] of Object.entries(states)) {
+      if (state.transitions && state.transitions.length > 0) {
+        transitions[stateName] = state.transitions;
+      } else {
+        transitions[stateName] = [];
+      }
+    }
+    return transitions;
+  }
+  getMachine(id) {
+    return this.stateMachines.get(id) || null;
+  }
+  setCurrentMachine(id) {
+    if (!this.stateMachines.has(id)) {
+      throw new Error(`State machine not found: ${id}`);
+    }
+    this.currentMachineId = id;
+    console.log(`[StateMachine] Set current machine: ${id}`);
+  }
+  getCurrentState() {
+    if (!this.currentMachineId) {
+      return null;
+    }
+    const machine = this.stateMachines.get(this.currentMachineId);
+    return machine?.currentState || null;
+  }
+  getCurrentMachine() {
+    if (!this.currentMachineId) {
+      return null;
+    }
+    return this.stateMachines.get(this.currentMachineId) || null;
+  }
+  async transition(trigger, context) {
+    if (!this.currentMachineId) {
+      console.warn("[StateMachine] No current machine set");
+      return false;
+    }
+    const machine = this.stateMachines.get(this.currentMachineId);
+    if (!machine) {
+      return false;
+    }
+    const currentState = machine.currentState;
+    const transitions = machine.transitions[currentState] || [];
+    let matchedTransition = null;
+    for (const transition of transitions) {
+      if (transition.condition) {
+        if (transition.condition(context)) {
+          matchedTransition = transition;
+          break;
+        }
+      } else {
+        if (this.triggerMatches(transition, trigger)) {
+          matchedTransition = transition;
+          break;
+        }
+      }
+    }
+    if (!matchedTransition) {
+      console.warn(`[StateMachine] No transition found from ${currentState} for trigger: ${trigger}`);
+      return false;
+    }
+    if (matchedTransition.probability !== undefined) {
+      const rand = Math.random();
+      if (rand > matchedTransition.probability) {
+        console.log(`[StateMachine] Stochastic transition not taken (prob: ${matchedTransition.probability})`);
+        return false;
+      }
+    }
+    if (!machine.states[matchedTransition.toState]) {
+      console.error(`[StateMachine] Target state '${matchedTransition.toState}' does not exist in machine. Cannot transition.`);
+      return false;
+    }
+    const currentStateDef = machine.states[currentState];
+    if (currentStateDef?.onExit) {
+      currentStateDef.onExit();
+    }
+    const transitionRecord = {
+      timestamp: new Date().toISOString(),
+      fromState: currentState,
+      toState: matchedTransition.toState,
+      trigger,
+      context
+    };
+    machine.currentState = matchedTransition.toState;
+    machine.history.push(transitionRecord);
+    if (matchedTransition.action) {
+      matchedTransition.action();
+    }
+    const newStateDef = machine.states[matchedTransition.toState];
+    if (newStateDef?.onEnter) {
+      newStateDef.onEnter();
+    }
+    this.saveStateMachines();
+    console.log(`[StateMachine] Transitioned: ${currentState} → ${matchedTransition.toState} (trigger: ${trigger})`);
+    return true;
+  }
+  triggerMatches(transition, trigger) {
+    if (transition.toolMethod) {
+      return trigger.toLowerCase().includes(transition.toolMethod.toLowerCase());
+    }
+    if (!transition.fromState || transition.fromState === "") {
+      return true;
+    }
+    return trigger === transition.fromState || trigger.includes(transition.fromState);
+  }
+  async detectStateTransition(context) {
+    if (!this.currentMachineId) {
+      return null;
+    }
+    const machine = this.stateMachines.get(this.currentMachineId);
+    if (!machine) {
+      return null;
+    }
+    const currentState = machine.currentState;
+    const detectedState = this.analyzeContextForState(context, currentState);
+    if (detectedState && detectedState !== currentState) {
+      try {
+        await this.transition(`auto-detect: ${detectedState}`, context);
+        return detectedState;
+      } catch (error) {
+        console.error(`[StateMachine] Auto-transition failed:`, error);
+        return null;
+      }
+    }
+    return null;
+  }
+  analyzeContextForState(context, currentState) {
+    let contextStr;
+    try {
+      contextStr = JSON.stringify(context).toLowerCase();
+    } catch (error) {
+      console.error(`[StateMachine] Failed to stringify context:`, error);
+      contextStr = String(context).toLowerCase();
+    }
+    const stateRules = {
+      analyzing: [/analyz/, /review/, /check/, /exam/],
+      debugging: [/debug/, /error/, /bug/, /fix/, /issue/],
+      implementing: [/implement/, /build/, /create/, /add/],
+      testing: [/test/, /verify/, /check/],
+      reviewing: [/review/, /inspect/, /audit/],
+      deploying: [/deploy/, /release/, /publish/],
+      learning: [/learn/, /study/, /research/],
+      planning: [/plan/, /design/, /architect/]
+    };
+    for (const [state, rules] of Object.entries(stateRules)) {
+      if (state === currentState)
+        continue;
+      for (const rule of rules) {
+        if (rule.test(contextStr)) {
+          return state;
+        }
+      }
+    }
+    return null;
+  }
+  addTransition(machineId, fromState, transition) {
+    const machine = this.stateMachines.get(machineId);
+    if (!machine) {
+      throw new Error(`State machine not found: ${machineId}`);
+    }
+    if (!machine.states[fromState]) {
+      throw new Error(`Source state '${fromState}' not found in machine states. Available states: ${Object.keys(machine.states).join(", ")}`);
+    }
+    if (!machine.transitions[fromState]) {
+      machine.transitions[fromState] = [];
+    }
+    machine.transitions[fromState].push(transition);
+    if (!machine.states[fromState].transitions) {
+      machine.states[fromState].transitions = [];
+    }
+    machine.states[fromState].transitions.push(transition);
+    this.saveStateMachines();
+  }
+  resetMachine(machineId) {
+    const machine = this.stateMachines.get(machineId);
+    if (!machine) {
+      throw new Error(`State machine not found: ${machineId}`);
+    }
+    machine.currentState = machine.initialState;
+    machine.history = [];
+    this.saveStateMachines();
+    console.log(`[StateMachine] Reset machine: ${machineId}`);
+  }
+  getHistory(machineId) {
+    const machine = this.stateMachines.get(machineId);
+    if (!machine) {
+      throw new Error(`State machine not found: ${machineId}`);
+    }
+    return machine.history;
+  }
+  getStats(machineId) {
+    const machine = this.stateMachines.get(machineId);
+    if (!machine) {
+      throw new Error(`State machine not found: ${machineId}`);
+    }
+    const transitionsByState = {};
+    for (const transition of machine.history) {
+      transitionsByState[transition.toState] = (transitionsByState[transition.toState] || 0) + 1;
+    }
+    let avgTimeBetweenTransitions;
+    if (machine.history.length > 1) {
+      let totalTime = 0;
+      for (let i = 1;i < machine.history.length; i++) {
+        const prev = new Date(machine.history[i - 1].timestamp).getTime();
+        const curr = new Date(machine.history[i].timestamp).getTime();
+        totalTime += curr - prev;
+      }
+      avgTimeBetweenTransitions = totalTime / (machine.history.length - 1);
+    }
+    return {
+      currentState: machine.currentState,
+      totalTransitions: machine.history.length,
+      transitionsByState,
+      avgTimeBetweenTransitions
+    };
+  }
+  exportMachine(machineId) {
+    const machine = this.stateMachines.get(machineId);
+    if (!machine) {
+      return null;
+    }
+    return JSON.parse(JSON.stringify(machine));
+  }
+  getAllMachines() {
+    return Array.from(this.stateMachines.values());
+  }
+}
+
+// src/features/learning/fsrs-scheduler.ts
+import * as fs16 from "fs";
+import * as path17 from "path";
+
+class FSRScheduler {
+  itemsPath;
+  items;
+  initialIntervals;
+  constructor(storagePath, config2) {
+    const fsrsDir = path17.join(storagePath, "fsrs");
+    this.itemsPath = path17.join(fsrsDir, "items.json");
+    this.items = new Map;
+    this.initialIntervals = config2?.initialIntervals || [1, 3, 7, 14, 30, 60, 120, 240, 480];
+    this.ensureStorage();
+    this.loadItems();
+  }
+  ensureStorage() {
+    const dir = path17.dirname(this.itemsPath);
+    if (!fs16.existsSync(dir)) {
+      fs16.mkdirSync(dir, { recursive: true });
+    }
+  }
+  loadItems() {
+    if (fs16.existsSync(this.itemsPath)) {
+      const data = fs16.readFileSync(this.itemsPath, "utf-8");
+      const itemsArray = JSON.parse(data);
+      for (const item of itemsArray) {
+        this.items.set(item.id, item);
+      }
+      console.log(`[FSRS] Loaded ${this.items.size} items`);
+    }
+  }
+  saveItems() {
+    const itemsArray = Array.from(this.items.values());
+    fs16.writeFileSync(this.itemsPath, JSON.stringify(itemsArray, null, 2), "utf-8");
+  }
+  createItem(id, ease = 5) {
+    const now = new Date;
+    const item = {
+      id,
+      ease,
+      intervalDays: [...this.initialIntervals],
+      nextReviewDate: this.addDays(now, this.initialIntervals[0]).toISOString(),
+      reviewCount: 0
+    };
+    this.items.set(id, item);
+    this.saveItems();
+    return item;
+  }
+  scheduleReviews(itemId) {
+    const item = this.items.get(itemId);
+    if (!item) {
+      this.createItem(itemId);
+      return this.scheduleReviews(itemId);
+    }
+    const schedules = [];
+    let currentDate = new Date;
+    for (let i = 0;i < item.intervalDays.length; i++) {
+      const intervalDays = item.intervalDays[i];
+      const nextReviewDate = this.addDays(currentDate, intervalDays);
+      schedules.push({
+        itemId,
+        nextReviewDate: nextReviewDate.toISOString(),
+        intervalDays
+      });
+      currentDate = nextReviewDate;
+    }
+    return schedules;
+  }
+  async updateEase(itemId, recalled) {
+    const item = this.items.get(itemId);
+    if (!item) {
+      throw new Error(`Item not found: ${itemId}`);
+    }
+    let newEase = item.ease;
+    if (!recalled) {
+      newEase = Math.min(10, item.ease + 1);
+    } else {
+      newEase = Math.max(1, item.ease - 1);
+    }
+    item.ease = newEase;
+    item.reviewCount++;
+    item.lastReviewDate = new Date().toISOString();
+    const nextInterval = this.calculateNextInterval(item);
+    item.nextReviewDate = this.addDays(new Date, nextInterval).toISOString();
+    this.items.set(itemId, item);
+    this.saveItems();
+    return newEase;
+  }
+  calculateNextInterval(item) {
+    const easeIndex = Math.min(item.ease - 1, this.initialIntervals.length - 1);
+    const baseInterval = this.initialIntervals[easeIndex];
+    const easeFactor = 1 - item.ease / 20;
+    return Math.max(1, Math.floor(baseInterval * easeFactor));
+  }
+  getDueItems() {
+    const now = new Date;
+    const due = [];
+    for (const item of this.items.values()) {
+      const nextReview = new Date(item.nextReviewDate);
+      if (nextReview <= now) {
+        due.push(item);
+      }
+    }
+    return due;
+  }
+  getItem(itemId) {
+    return this.items.get(itemId) || null;
+  }
+  deleteItem(itemId) {
+    this.items.delete(itemId);
+    this.saveItems();
+  }
+  getAllItems() {
+    return Array.from(this.items.values());
+  }
+  getStats() {
+    const items = Array.from(this.items.values());
+    const dueCount = this.getDueItems().length;
+    const totalEase = items.reduce((sum, item) => sum + item.ease, 0);
+    const avgEase = items.length > 0 ? totalEase / items.length : 0;
+    const totalReviews = items.reduce((sum, item) => sum + item.reviewCount, 0);
+    const avgReviewsPerItem = items.length > 0 ? totalReviews / items.length : 0;
+    const byEase = {};
+    for (const item of items) {
+      byEase[item.ease] = (byEase[item.ease] || 0) + 1;
+    }
+    return {
+      totalItems: items.length,
+      itemsDue: dueCount,
+      avgEase,
+      avgReviewsPerItem,
+      byEase
+    };
+  }
+  addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  }
+  resetItem(itemId) {
+    const item = this.items.get(itemId);
+    if (!item) {
+      throw new Error(`Item not found: ${itemId}`);
+    }
+    item.ease = 5;
+    item.intervalDays = [...this.initialIntervals];
+    item.nextReviewDate = this.addDays(new Date, this.initialIntervals[0]).toISOString();
+    item.reviewCount = 0;
+    item.lastReviewDate = undefined;
+    this.items.set(itemId, item);
+    this.saveItems();
+  }
+  exportItems() {
+    return Array.from(this.items.values());
+  }
+  importItems(items) {
+    for (const item of items) {
+      if (!this.items.has(item.id)) {
+        this.items.set(item.id, item);
+      }
+    }
+    this.saveItems();
+  }
+}
+
+// src/hooks/learning/experience-recorder-hook.ts
+function createExperienceRecorderHook(input, learningContext) {
+  const { experienceStore } = learningContext;
+  return {
+    "tool.execute.after": async (hookInput, hookOutput) => {
+      try {
+        const { tool: tool3, toolArgs } = hookInput;
+        const output = hookOutput.output || {};
+        const skipTools = [
+          "session_list",
+          "session_read",
+          "session_search",
+          "session_info",
+          "learning-experience",
+          "learning-knowledge",
+          "learning-pattern",
+          "learning-fsm",
+          "learning-stats",
+          "model-switcher"
+        ];
+        if (skipTools.includes(tool3)) {
+          return;
+        }
+        const state = JSON.stringify({
+          tool: tool3,
+          toolArgs: typeof toolArgs === "string" ? { args: toolArgs } : toolArgs,
+          timestamp: Date.now()
+        });
+        const context = JSON.stringify({
+          sessionId: hookInput.sessionID,
+          output: JSON.stringify(output).slice(0, 500),
+          errorMessage: output.error || output.errorMessage || undefined
+        });
+        const reward = output.error || output.errorMessage ? -0.5 : output.success === true || output.result?.success === true ? 0.5 : 0;
+        const confidence = output.confidence ?? 0.5;
+        const keywords = typeof toolArgs === "string" ? toolArgs.split(/\s+/).filter((w) => w.length > 3 && w.length < 30).slice(0, 10) : [];
+        await experienceStore.addExperience({
+          state,
+          action: tool3,
+          outcome: reward > 0 ? "success" : reward < 0 ? "failure" : "partial",
+          reward,
+          confidence,
+          context: {
+            sessionId: hookInput.sessionID,
+            tool: tool3
+          },
+          metadata: {
+            keywords,
+            toolName: tool3,
+            hasError: !!output.error
+          }
+        });
+        console.log(`[ExperienceRecorder] Recorded experience: ${tool3} (reward: ${reward}, confidence: ${confidence})`);
+      } catch (error) {
+        console.error("[ExperienceRecorder] Error recording experience:", error);
+      }
+    }
+  };
+}
+
+// src/hooks/learning/context-injector-hook.ts
+function formatContextInjection(experiences, knowledgeNodes, patterns, currentState) {
+  const parts = [];
+  parts.push("# Learning System Context");
+  parts.push("");
+  if (currentState) {
+    parts.push(`## Current State: ${currentState}`);
+    parts.push("");
+  }
+  if (experiences.length > 0) {
+    parts.push("## Relevant Past Experiences");
+    parts.push("");
+    experiences.slice(0, 3).forEach((exp, i) => {
+      const tool3 = exp.action;
+      const reward = exp.reward > 0 ? "✓" : exp.reward < 0 ? "✗" : "○";
+      parts.push(`${i + 1}. ${reward} ${tool3} (confidence: ${exp.confidence.toFixed(2)})`);
+      if (exp.metadata?.keywords?.length > 0) {
+        parts.push(`   Keywords: ${exp.metadata.keywords.join(", ")}`);
+      }
+    });
+    parts.push("");
+  }
+  if (knowledgeNodes.length > 0) {
+    parts.push("## Relevant Knowledge");
+    parts.push("");
+    knowledgeNodes.slice(0, 3).forEach((node, i) => {
+      parts.push(`${i + 1}. ${node.type}: ${node.id}`);
+      if (node.importance > 7) {
+        parts.push(`   [High Importance: ${node.importance}/10]`);
+      }
+    });
+    parts.push("");
+  }
+  if (patterns.length > 0) {
+    parts.push("## Relevant Patterns");
+    parts.push("");
+    patterns.slice(0, 3).forEach((pattern, i) => {
+      const type = pattern.type === "positive" ? "✓ Win" : "✗ Loss";
+      parts.push(`${i + 1}. ${type}: ${pattern.category}`);
+      parts.push(`   Frequency: ${pattern.frequency}, Confidence: ${pattern.confidence.toFixed(2)}`);
+      if (pattern.suggestedActions?.length > 0) {
+        parts.push(`   Suggested: ${pattern.suggestedActions[0]}`);
+      }
+    });
+    parts.push("");
+  }
+  return parts.join(`
+`);
+}
+function extractKeywordsFromPrompt(prompt) {
+  const words = prompt.toLowerCase().split(/\s+/).filter((w) => w.length > 3 && w.length < 30);
+  const stopWords = [
+    "the",
+    "and",
+    "for",
+    "are",
+    "but",
+    "not",
+    "you",
+    "all",
+    "can",
+    "had",
+    "her",
+    "was",
+    "one",
+    "our",
+    "out",
+    "has",
+    "have",
+    "been",
+    "will",
+    "with",
+    "this",
+    "that",
+    "from",
+    "they",
+    "would",
+    "there",
+    "their",
+    "what",
+    "which",
+    "when",
+    "make",
+    "like",
+    "into",
+    "year",
+    "your",
+    "just",
+    "over",
+    "also",
+    "such",
+    "because",
+    "these",
+    "first",
+    "being",
+    "most",
+    "some",
+    "those",
+    "through"
+  ];
+  return words.filter((w) => !stopWords.includes(w)).slice(0, 10);
+}
+function createContextInjectorHook(input, learningContext) {
+  const { experienceStore, knowledgeGraph, patternDetector, stateMachine } = learningContext;
+  return {
+    "chat.message": async (hookInput, hookOutput) => {
+      try {
+        const { sessionID, parts } = hookInput;
+        const messageText = parts?.[0]?.text || "";
+        if (!messageText || messageText.length < 10) {
+          return;
+        }
+        console.log(`[ContextInjector] Injecting context for session ${sessionID}`);
+        const keywords = extractKeywordsFromPrompt(messageText);
+        const allExperiences = await experienceStore.loadExperiences();
+        const experiences = allExperiences.filter((exp) => {
+          if (keywords.length === 0)
+            return true;
+          return exp.metadata?.keywords && exp.metadata.keywords.some((kw) => keywords.includes(kw.toLowerCase()));
+        }).slice(0, 5);
+        const knowledgeResult = await knowledgeGraph.getRelevantContext(messageText);
+        const knowledgeNodes = knowledgeResult.nodes.slice(0, 5);
+        const allPatterns = patternDetector.getAllPatterns();
+        const patterns = allPatterns.filter((p) => {
+          if (keywords.length === 0)
+            return true;
+          return p.triggers?.some((t) => keywords.includes(t.toLowerCase()));
+        }).slice(0, 5);
+        const currentState = stateMachine.getCurrentState();
+        if (experiences.length > 0 || knowledgeNodes.length > 0 || patterns.length > 0 || currentState) {
+          const contextMessage = formatContextInjection(experiences, knowledgeNodes, patterns, currentState ?? undefined);
+          hookOutput.parts = hookOutput.parts || [];
+          hookOutput.parts.push({
+            type: "text",
+            text: contextMessage,
+            id: `context-${Date.now()}`
+          });
+          console.log(`[ContextInjector] Injected ${experiences.length} experiences, ` + `${knowledgeNodes.length} knowledge nodes, ` + `${patterns.length} patterns`);
+        } else {
+          console.log("[ContextInjector] No relevant context to inject");
+        }
+      } catch (error) {
+        console.error("[ContextInjector] Error injecting context:", error);
+      }
+    }
+  };
+}
+
+// src/hooks/learning/synthesis-trigger-hook.ts
+function createSynthesisTriggerHook(input, learningContext) {
+  const { experienceStore } = learningContext;
+  return {
+    "tool.execute.after": async (hookInput, hookOutput) => {
+      try {
+        const { sessionID, tool: tool3 } = hookInput;
+        const synthesisTriggers = ["summary", "report", "done", "complete"];
+        const shouldSynthesize = synthesisTriggers.some((t) => tool3.toLowerCase().includes(t));
+        if (!shouldSynthesize) {
+          return;
+        }
+        console.log(`[SynthesisTrigger] Starting synthesis for session ${sessionID}`);
+        await experienceStore.flushBuffer();
+        console.log(`[SynthesisTrigger] Synthesis complete for session ${sessionID}`);
+      } catch (error) {
+        console.error("[SynthesisTrigger] Error during synthesis:", error);
+      }
+    }
+  };
+}
+
+// src/hooks/learning/index.ts
+function createLearningHooks(input, learningContext, config2) {
+  const hooks = {};
+  if (config2.experienceRecorder.enabled) {
+    const hook = createExperienceRecorderHook(input, learningContext);
+    Object.assign(hooks, hook);
+    console.log("[LearningHooks] Experience recorder hook enabled");
+  }
+  if (config2.contextInjector.enabled) {
+    const hook = createContextInjectorHook(input, learningContext);
+    Object.assign(hooks, hook);
+    console.log("[LearningHooks] Context injector hook enabled");
+  }
+  if (config2.synthesisTrigger.enabled) {
+    const hook = createSynthesisTriggerHook(input, learningContext);
+    Object.assign(hooks, hook);
+    console.log("[LearningHooks] Synthesis trigger hook enabled");
+  }
+  return hooks;
+}
+
+// src/tools/learning/learning-experience.ts
+import { z as z17 } from "zod";
+function createExperienceTool(experienceStore) {
+  return tool({
+    description: "Add or query experiences from the learning system. " + "Use this tool to record successful or unsuccessful actions for future reference, " + "or to query past experiences to find similar situations and their outcomes.",
+    args: {
+      action: z17.enum(["add", "query", "recent"]).describe("Action to perform: 'add' to record an experience, 'query' to find similar experiences, " + "'recent' to get recent experiences"),
+      actionName: z17.string().optional().describe("Action taken (for add action)"),
+      reward: z17.number().min(-1).max(1).optional().describe("Reward: -1 (failure) to 1 (success), 0 for neutral (for add action)"),
+      confidence: z17.number().min(0).max(1).optional().describe("Confidence in this experience: 0 (low) to 1 (high) (for add action)"),
+      keywords: z17.array(z17.string()).optional().describe("Keywords describing this experience (for add/query actions)"),
+      limit: z17.number().int().min(1).max(100).optional().describe("Maximum number of results (for query/recent actions, default: 10)")
+    },
+    async execute(args) {
+      const { action, actionName, reward, confidence, keywords, limit } = args;
+      try {
+        switch (action) {
+          case "add": {
+            if (!actionName || typeof reward === "undefined") {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required fields: actionName and reward are required for 'add' action"
+              }, null, 2);
+            }
+            const outcome = reward > 0.3 ? "success" : reward < -0.3 ? "failure" : "partial";
+            const experience = await experienceStore.addExperience({
+              state: JSON.stringify({ source: "manual" }),
+              action: actionName,
+              outcome,
+              reward,
+              confidence: confidence ?? 0.5,
+              context: {
+                sessionId: "manual"
+              },
+              metadata: {
+                keywords: keywords || []
+              }
+            });
+            return JSON.stringify({
+              success: true,
+              message: "Experience recorded successfully",
+              experienceId: experience.id,
+              reward,
+              confidence
+            }, null, 2);
+          }
+          case "query": {
+            const allExperiences = await experienceStore.loadExperiences();
+            let filtered = allExperiences;
+            if (keywords && keywords.length > 0) {
+              const keywordLower = keywords.map((k) => k.toLowerCase());
+              filtered = filtered.filter((exp) => exp.metadata?.keywords && exp.metadata.keywords.some((kw) => keywordLower.includes(kw.toLowerCase())));
+            }
+            const results = filtered.slice(0, limit || 10);
+            return JSON.stringify({
+              success: true,
+              count: results.length,
+              experiences: results.map((exp) => ({
+                id: exp.id,
+                action: exp.action,
+                outcome: exp.outcome,
+                reward: exp.reward,
+                confidence: exp.confidence,
+                timestamp: exp.timestamp
+              }))
+            }, null, 2);
+          }
+          case "recent": {
+            const allExperiences = await experienceStore.loadExperiences();
+            const recent = allExperiences.slice(-(limit || 10));
+            return JSON.stringify({
+              success: true,
+              count: recent.length,
+              experiences: recent.map((exp) => ({
+                id: exp.id,
+                action: exp.action,
+                outcome: exp.outcome,
+                reward: exp.reward,
+                confidence: exp.confidence,
+                timestamp: exp.timestamp
+              }))
+            }, null, 2);
+          }
+          default:
+            return JSON.stringify({
+              success: false,
+              error: `Unknown action: ${action}. Valid actions: add, query, recent`
+            }, null, 2);
+        }
+      } catch (error) {
+        return JSON.stringify({
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error"
+        }, null, 2);
+      }
+    }
+  });
+}
+
+// src/tools/learning/learning-knowledge.ts
+import { z as z18 } from "zod";
+function createKnowledgeTool(knowledgeGraph) {
+  return tool({
+    description: "Manage knowledge graph of entities and relationships. " + "Use this tool to store important concepts, their properties, and how they relate to each other.",
+    args: {
+      action: z18.enum(["addNode", "addEdge", "getNode", "search", "list"]).describe("Action to perform: 'addNode', 'addEdge', 'getNode', 'search', 'list'"),
+      nodeId: z18.string().optional().describe("Node ID (for addNode, getNode)"),
+      type: z18.string().optional().describe("Node type: person, concept, tool, pattern, file, api, error (for addNode)"),
+      data: z18.object({}).passthrough().optional().describe("Data to store with the node (for addNode)"),
+      source: z18.enum(["experience", "manual", "inference"]).optional().describe("Source of the node (for addNode)"),
+      fromNodeId: z18.string().optional().describe("Source node ID (for addEdge)"),
+      toNodeId: z18.string().optional().describe("Target node ID (for addEdge)"),
+      edgeType: z18.enum(["relatedTo", "conflictsWith", "dependsOn"]).optional().describe("Relationship type (for addEdge)"),
+      weight: z18.number().min(0).max(1).optional().describe("Relationship strength: 0-1 (for addEdge)"),
+      query: z18.string().optional().describe("Query text (for search action)"),
+      limit: z18.number().int().min(1).max(100).optional().describe("Maximum results (for search/list, default: 10)"),
+      byType: z18.string().optional().describe("Filter by node type (for list action)")
+    },
+    async execute(args) {
+      const {
+        action,
+        nodeId,
+        type,
+        data,
+        source,
+        fromNodeId,
+        toNodeId,
+        edgeType,
+        weight,
+        query,
+        limit,
+        byType
+      } = args;
+      try {
+        switch (action) {
+          case "addNode": {
+            if (!nodeId || !type) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required fields: nodeId and type are required"
+              }, null, 2);
+            }
+            const node = await knowledgeGraph.addNode(nodeId, type, data || {}, source || "manual");
+            return JSON.stringify({
+              success: true,
+              message: "Node added successfully",
+              node: {
+                id: node.id,
+                type: node.type,
+                importance: node.importance,
+                strength: node.strength
+              }
+            }, null, 2);
+          }
+          case "addEdge": {
+            if (!fromNodeId || !toNodeId || !edgeType) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required fields: fromNodeId, toNodeId, and edgeType are required"
+              }, null, 2);
+            }
+            await knowledgeGraph.addEdge(fromNodeId, toNodeId, edgeType, weight || 1);
+            return JSON.stringify({
+              success: true,
+              message: "Edge added successfully",
+              fromNodeId,
+              toNodeId,
+              edgeType
+            }, null, 2);
+          }
+          case "getNode": {
+            if (!nodeId) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: nodeId"
+              }, null, 2);
+            }
+            const node = knowledgeGraph.getNode(nodeId);
+            if (!node) {
+              return JSON.stringify({
+                success: false,
+                error: `Node not found: ${nodeId}`
+              }, null, 2);
+            }
+            return JSON.stringify({
+              success: true,
+              node: {
+                id: node.id,
+                type: node.type,
+                data: node.data,
+                relations: node.relations,
+                importance: node.importance,
+                strength: node.strength,
+                lastAccessed: node.lastAccessed,
+                accessCount: node.accessCount,
+                metadata: node.metadata
+              }
+            }, null, 2);
+          }
+          case "search": {
+            if (!query) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: query"
+              }, null, 2);
+            }
+            const results = knowledgeGraph.search(query, byType);
+            const limited = results.slice(0, limit || 10);
+            return JSON.stringify({
+              success: true,
+              count: limited.length,
+              nodes: limited.map((node) => ({
+                id: node.id,
+                type: node.type,
+                importance: node.importance,
+                strength: node.strength
+              }))
+            }, null, 2);
+          }
+          case "list": {
+            const allNodes = knowledgeGraph.getAllNodes();
+            let filtered = allNodes;
+            if (byType) {
+              filtered = filtered.filter((n) => n.type === byType);
+            }
+            const limited = filtered.slice(0, limit || 10);
+            return JSON.stringify({
+              success: true,
+              count: limited.length,
+              total: filtered.length,
+              nodes: limited.map((node) => ({
+                id: node.id,
+                type: node.type,
+                importance: node.importance,
+                strength: node.strength
+              }))
+            }, null, 2);
+          }
+          default:
+            return JSON.stringify({
+              success: false,
+              error: `Unknown action: ${action}. Valid actions: addNode, addEdge, getNode, search, list`
+            }, null, 2);
+        }
+      } catch (error) {
+        return JSON.stringify({
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error"
+        }, null, 2);
+      }
+    }
+  });
+}
+
+// src/tools/learning/learning-pattern.ts
+import { z as z19 } from "zod";
+function createPatternTool(patternDetector) {
+  return tool({
+    description: "Detect and manage behavioral patterns. " + "Use this tool to identify recurring wins and losses, " + "find successful strategies, and avoid mistakes.",
+    args: {
+      action: z19.enum(["get", "list", "update"]).describe("Action to perform: 'get', 'list', 'update'"),
+      patternId: z19.string().optional().describe("Pattern ID (for get, update actions)"),
+      status: z19.enum(["active", "resolved", "superseded"]).optional().describe("Pattern status (for update action)"),
+      minFrequency: z19.number().int().min(1).optional().describe("Minimum frequency threshold (for list action)"),
+      minConfidence: z19.number().min(0).max(1).optional().describe("Minimum confidence threshold (for list action)"),
+      limit: z19.number().int().min(1).max(100).optional().describe("Maximum results (for list action, default: 20)")
+    },
+    async execute(args) {
+      const {
+        action,
+        patternId,
+        status,
+        minFrequency,
+        minConfidence,
+        limit
+      } = args;
+      try {
+        switch (action) {
+          case "get": {
+            if (!patternId) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: patternId is required for 'get' action"
+              }, null, 2);
+            }
+            const allPatterns = patternDetector.getAllPatterns();
+            const pattern = allPatterns.find((p) => p.id === patternId);
+            if (!pattern) {
+              return JSON.stringify({
+                success: false,
+                error: `Pattern not found: ${patternId}`
+              }, null, 2);
+            }
+            return JSON.stringify({
+              success: true,
+              pattern: {
+                id: pattern.id,
+                name: pattern.category,
+                type: pattern.type,
+                triggers: pattern.triggers,
+                consequences: pattern.consequences,
+                suggestedActions: pattern.suggestedActions,
+                impact: pattern.impact,
+                confidence: pattern.confidence,
+                frequency: pattern.frequency,
+                status: pattern.status,
+                description: pattern.description,
+                exampleCount: pattern.examples?.length || 0
+              }
+            }, null, 2);
+          }
+          case "list": {
+            const filters = {};
+            if (minFrequency)
+              filters.minFrequency = minFrequency;
+            if (minConfidence)
+              filters.minConfidence = minConfidence;
+            const patterns = await patternDetector.listPatterns(filters);
+            return JSON.stringify({
+              success: true,
+              count: patterns.length,
+              patterns: patterns.map((p) => ({
+                id: p.id,
+                name: p.category,
+                type: p.type,
+                impact: p.impact,
+                confidence: p.confidence,
+                frequency: p.frequency,
+                status: p.status,
+                description: p.description
+              }))
+            }, null, 2);
+          }
+          case "update": {
+            if (!patternId) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: patternId is required for 'update' action"
+              }, null, 2);
+            }
+            await patternDetector.updatePatternStatus(patternId, status || "active");
+            return JSON.stringify({
+              success: true,
+              message: "Pattern status updated successfully",
+              patternId,
+              status: status || "active"
+            }, null, 2);
+          }
+          default:
+            return JSON.stringify({
+              success: false,
+              error: `Unknown action: ${action}. Valid actions: get, list, update`
+            }, null, 2);
+        }
+      } catch (error) {
+        return JSON.stringify({
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error"
+        }, null, 2);
+      }
+    }
+  });
+}
+
+// src/tools/learning/learning-fsm.ts
+import { z as z20 } from "zod";
+function createFsmTool(stateMachine) {
+  return tool({
+    description: "Manage state machines for behavioral control. " + "Use this tool to create state machines for workflows, track state transitions.",
+    args: {
+      action: z20.enum(["createMachine", "getMachine", "listMachines", "transition", "getCurrentState"]).describe("Action to perform: 'createMachine', 'getMachine', 'listMachines', 'transition', 'getCurrentState'"),
+      machineId: z20.string().optional().describe("Machine ID (for most actions)"),
+      name: z20.string().optional().describe("Machine name/description (for createMachine)"),
+      initialState: z20.string().optional().describe("Initial state name (for createMachine)"),
+      toState: z20.string().optional().describe("Target state (for transition action)"),
+      trigger: z20.string().optional().describe("Transition trigger (for transition action)")
+    },
+    async execute(args) {
+      const {
+        action,
+        machineId,
+        name,
+        initialState,
+        toState,
+        trigger
+      } = args;
+      try {
+        switch (action) {
+          case "createMachine": {
+            if (!machineId || !initialState) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required fields: machineId and initialState are required for 'createMachine' action"
+              }, null, 2);
+            }
+            stateMachine.createMachine(machineId, name || "", initialState, {
+              [initialState]: {
+                name: initialState,
+                description: "Initial state",
+                transitions: [],
+                metadata: {}
+              }
+            });
+            return JSON.stringify({
+              success: true,
+              message: "State machine created successfully",
+              machineId,
+              initialState
+            }, null, 2);
+          }
+          case "getMachine": {
+            if (!machineId) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: machineId is required for 'getMachine' action"
+              }, null, 2);
+            }
+            const machine = stateMachine.getMachine(machineId);
+            if (!machine) {
+              return JSON.stringify({
+                success: false,
+                error: `State machine not found: ${machineId}`
+              }, null, 2);
+            }
+            return JSON.stringify({
+              success: true,
+              machine: {
+                id: machine.id,
+                name: machine.name,
+                currentState: machine.currentState,
+                stateCount: Object.keys(machine.states).length,
+                states: Object.entries(machine.states).map(([stateName, state]) => ({
+                  name: stateName,
+                  description: state.description,
+                  transitionCount: state.transitions?.length || 0
+                }))
+              }
+            }, null, 2);
+          }
+          case "listMachines": {
+            const machines = stateMachine.getAllMachines();
+            return JSON.stringify({
+              success: true,
+              count: machines.length,
+              machines: machines.map((m) => ({
+                id: m.id,
+                name: m.name,
+                currentState: m.currentState,
+                stateCount: Object.keys(m.states).length
+              }))
+            }, null, 2);
+          }
+          case "transition": {
+            if (!machineId || !trigger) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required fields: machineId and trigger are required for 'transition' action"
+              }, null, 2);
+            }
+            stateMachine.setCurrentMachine(machineId);
+            const success = await stateMachine.transition(trigger, { toState });
+            if (!success) {
+              return JSON.stringify({
+                success: false,
+                error: "Transition failed - no valid transition path found"
+              }, null, 2);
+            }
+            return JSON.stringify({
+              success: true,
+              message: "State transition successful",
+              machineId,
+              currentState: stateMachine.getCurrentState()
+            }, null, 2);
+          }
+          case "getCurrentState": {
+            if (!machineId) {
+              return JSON.stringify({
+                success: false,
+                error: "Missing required field: machineId is required for 'getCurrentState' action"
+              }, null, 2);
+            }
+            stateMachine.setCurrentMachine(machineId);
+            const currentState = stateMachine.getCurrentState();
+            return JSON.stringify({
+              success: true,
+              currentState
+            }, null, 2);
+          }
+          default:
+            return JSON.stringify({
+              success: false,
+              error: `Unknown action: ${action}. Valid actions: createMachine, getMachine, listMachines, transition, getCurrentState`
+            }, null, 2);
+        }
+      } catch (error) {
+        return JSON.stringify({
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error"
+        }, null, 2);
+      }
+    }
+  });
+}
+
+// src/tools/learning/learning-stats.ts
+import { z as z21 } from "zod";
+function createStatsTool(config2) {
+  const { experienceStore, knowledgeGraph, patternDetector, stateMachine } = config2;
+  return tool({
+    description: "Get comprehensive statistics across the learning system. " + "Shows experience metrics, knowledge graph stats, patterns, and state machine status.",
+    args: {
+      section: z21.enum(["all", "experience", "knowledge", "patterns", "fsm"]).describe("Which section to show: 'all' for everything, or specific section")
+    },
+    async execute(args) {
+      const { section } = args;
+      try {
+        const result = {
+          success: true,
+          timestamp: Date.now(),
+          sections: []
+        };
+        if (section === "all" || section === "experience") {
+          const allExperiences = await experienceStore.loadExperiences();
+          const total = allExperiences.length;
+          const rewards = allExperiences.map((e) => e.reward);
+          const avgReward = rewards.length > 0 ? rewards.reduce((a, b) => a + b, 0) / rewards.length : 0;
+          const successRate = total > 0 ? allExperiences.filter((e) => e.outcome === "success").length / total : 0;
+          result.sections.push({
+            name: "Experience Store",
+            stats: {
+              totalExperiences: total,
+              averageReward: Number(avgReward.toFixed(3)),
+              successRate: Number((successRate * 100).toFixed(1)) + "%"
+            }
+          });
+        }
+        if (section === "all" || section === "knowledge") {
+          const nodes = await knowledgeGraph.getImportantNodes(1e5);
+          const byType = new Map;
+          const highImportance = nodes.filter((n) => n.importance >= 7).length;
+          const totalImportance = nodes.reduce((sum, n) => sum + n.importance, 0);
+          nodes.forEach((node) => {
+            byType.set(node.type, (byType.get(node.type) || 0) + 1);
+          });
+          result.sections.push({
+            name: "Knowledge Graph",
+            stats: {
+              totalNodes: nodes.length,
+              totalEdges: 0,
+              highImportanceNodes: highImportance,
+              averageImportance: nodes.length > 0 ? Number((totalImportance / nodes.length).toFixed(2)) : 0,
+              topTypes: Array.from(byType.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([type, count]) => `${type}: ${count}`)
+            }
+          });
+        }
+        if (section === "all" || section === "patterns") {
+          const patterns = patternDetector.getAllPatterns();
+          const positive = patterns.filter((p) => p.type === "positive").length;
+          const negative = patterns.filter((p) => p.type === "negative").length;
+          const active = patterns.filter((p) => p.status === "active").length;
+          const highImpact = patterns.filter((p) => p.impact === "high" || p.impact === "critical").length;
+          const avgConfidence = patterns.length > 0 ? Number((patterns.reduce((sum, p) => sum + p.confidence, 0) / patterns.length).toFixed(3)) : 0;
+          result.sections.push({
+            name: "Pattern Detection",
+            stats: {
+              totalPatterns: patterns.length,
+              positivePatterns: positive,
+              negativePatterns: negative,
+              activePatterns: active,
+              highImpactPatterns: highImpact,
+              averageConfidence: avgConfidence,
+              mostFrequent: patterns.sort((a, b) => b.frequency - a.frequency).slice(0, 3).map((p) => ({ name: p.category, frequency: p.frequency }))
+            }
+          });
+        }
+        if (section === "all" || section === "fsm") {
+          const machines = stateMachine.getAllMachines();
+          const totalStates = machines.reduce((sum, m) => sum + Object.keys(m.states).length, 0);
+          result.sections.push({
+            name: "State Machines",
+            stats: {
+              totalMachines: machines.length,
+              totalStates,
+              machines: machines.map((m) => ({
+                id: m.id,
+                description: m.name,
+                currentState: m.currentState,
+                stateCount: Object.keys(m.states).length
+              }))
+            }
+          });
+        }
+        return JSON.stringify(result, null, 2);
+      } catch (error) {
+        return JSON.stringify({
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error"
+        }, null, 2);
+      }
+    }
+  });
+}
+
+// src/tools/learning/index.ts
+function initializeLearningTools(config2) {
+  const {
+    experienceStore,
+    knowledgeGraph,
+    patternDetector,
+    stateMachine
+  } = config2;
+  return {
+    experienceTool: createExperienceTool(experienceStore),
+    knowledgeTool: createKnowledgeTool(knowledgeGraph),
+    patternTool: createPatternTool(patternDetector),
+    fsmTool: createFsmTool(stateMachine),
+    statsTool: createStatsTool({
+      experienceStore,
+      knowledgeGraph,
+      patternDetector,
+      stateMachine
+    })
+  };
+}
+
+// src/features/learning/integration.ts
+var learningSystemInstance = null;
+function initializeLearningSystem(input, config2) {
+  const mergedConfig = {
+    enabled: config2?.enabled ?? true,
+    storagePath: config2?.storagePath ?? path18.join(os11.homedir(), ".clawd", "learning"),
+    experienceStore: {
+      enabled: config2?.experienceStore?.enabled ?? true,
+      bufferSize: config2?.experienceStore?.bufferSize ?? 1000,
+      maxAgeDays: config2?.experienceStore?.maxAgeDays ?? 90
+    },
+    knowledgeGraph: {
+      enabled: config2?.knowledgeGraph?.enabled ?? true,
+      maxNodes: config2?.knowledgeGraph?.maxNodes ?? 1e4
+    },
+    patternDetection: {
+      enabled: config2?.patternDetection?.enabled ?? true,
+      minFrequency: config2?.patternDetection?.minFrequency ?? 3,
+      minConfidence: config2?.patternDetection?.minConfidence ?? 0.7
+    },
+    stateMachine: {
+      enabled: config2?.stateMachine?.enabled ?? true,
+      initialState: config2?.stateMachine?.initialState ?? "unknown"
+    },
+    fsrs: {
+      enabled: config2?.fsrs?.enabled ?? true,
+      initialIntervals: config2?.fsrs?.initialIntervals ?? [1, 3, 7, 14, 30, 60, 120, 240, 480]
+    },
+    hooks: {
+      recordOnToolExecute: config2?.hooks?.recordOnToolExecute ?? true,
+      recordOnSessionEnd: config2?.hooks?.recordOnSessionEnd ?? true,
+      injectOnSessionStart: config2?.hooks?.injectOnSessionStart ?? true
+    }
+  };
+  if (!mergedConfig.enabled) {
+    console.log("[LearningSystem] Learning system disabled");
+    return {
+      hooks: {},
+      tools: {},
+      shutdown: async () => {}
+    };
+  }
+  console.log("[LearningSystem] Initializing unified AI memory system...");
+  console.log(`[LearningSystem] Storage path: ${mergedConfig.storagePath}`);
+  const storagePath = mergedConfig.storagePath;
+  const experienceStore = new ExperienceStore(storagePath, {
+    maxBufferSize: mergedConfig.experienceStore?.bufferSize || 1000,
+    maxAgeDays: mergedConfig.experienceStore?.maxAgeDays || 90
+  });
+  const knowledgeGraph = new KnowledgeGraphStore(storagePath, {
+    maxNodes: mergedConfig.knowledgeGraph?.maxNodes || 1e4
+  });
+  const patternDetector = new PatternDetector(storagePath, {
+    minFrequency: mergedConfig.patternDetection?.minFrequency || 3,
+    minConfidence: mergedConfig.patternDetection?.minConfidence || 0.7
+  });
+  const stateMachine = new StateMachineEngine(storagePath);
+  if (mergedConfig.stateMachine.enabled) {
+    const defaultMachine = stateMachine.getMachine("default");
+    if (!defaultMachine) {
+      stateMachine.createMachine("default", "Default Workflow State Machine", mergedConfig.stateMachine?.initialState || "unknown", {
+        unknown: {
+          name: "Unknown",
+          description: "Initial state before any context",
+          transitions: [],
+          metadata: {}
+        },
+        analyzing: {
+          name: "Analyzing",
+          description: "Exploring and understanding the problem",
+          transitions: [
+            { fromState: "analyzing", toState: "implementing", condition: () => true }
+          ],
+          metadata: {}
+        },
+        implementing: {
+          name: "Implementing",
+          description: "Writing code and building solutions",
+          transitions: [
+            { fromState: "implementing", toState: "testing", condition: () => true },
+            { fromState: "implementing", toState: "debugging", condition: () => true }
+          ],
+          metadata: {}
+        },
+        testing: {
+          name: "Testing",
+          description: "Verifying correctness",
+          transitions: [
+            { fromState: "testing", toState: "documenting", condition: () => true },
+            { fromState: "testing", toState: "debugging", condition: () => true }
+          ],
+          metadata: {}
+        },
+        debugging: {
+          name: "Debugging",
+          description: "Finding and fixing errors",
+          transitions: [
+            { fromState: "debugging", toState: "testing", condition: () => true },
+            { fromState: "debugging", toState: "analyzing", condition: () => true }
+          ],
+          metadata: {}
+        },
+        documenting: {
+          name: "Documenting",
+          description: "Writing documentation and comments",
+          transitions: [],
+          metadata: {}
+        }
+      });
+      console.log("[LearningSystem] Created default state machine");
+    }
+  }
+  let fsrsScheduler;
+  if (mergedConfig.fsrs.enabled) {
+    fsrsScheduler = new FSRScheduler(storagePath, {
+      initialIntervals: mergedConfig.fsrs.initialIntervals
+    });
+  }
+  const learningContext = {
+    experienceStore,
+    knowledgeGraph,
+    patternDetector,
+    stateMachine,
+    fsrsScheduler
+  };
+  const hooks = createLearningHooks(input, learningContext, {
+    experienceRecorder: {
+      enabled: mergedConfig.hooks.recordOnToolExecute
+    },
+    contextInjector: {
+      enabled: mergedConfig.hooks.injectOnSessionStart
+    },
+    synthesisTrigger: {
+      enabled: mergedConfig.hooks.recordOnSessionEnd
+    }
+  });
+  const tools2 = initializeLearningTools({
+    experienceStore,
+    knowledgeGraph,
+    patternDetector,
+    stateMachine,
+    fsrsScheduler
+  });
+  console.log("[LearningSystem] Initialized successfully");
+  console.log(`[LearningSystem] ${Object.keys(hooks).length} hooks registered`);
+  console.log(`[LearningSystem] 5 tools registered`);
+  learningSystemInstance = {
+    hooks,
+    tools: {
+      "learning-experience": tools2.experienceTool,
+      "learning-knowledge": tools2.knowledgeTool,
+      "learning-pattern": tools2.patternTool,
+      "learning-fsm": tools2.fsmTool,
+      "learning-stats": tools2.statsTool
+    },
+    shutdown: async () => {
+      console.log("[LearningSystem] Shutting down...");
+      await experienceStore.flushBuffer();
+      console.log("[LearningSystem] Shutdown complete");
+    }
+  };
+  return learningSystemInstance;
+}
+async function shutdownLearningSystem() {
+  if (learningSystemInstance) {
+    await learningSystemInstance.shutdown();
+    learningSystemInstance = null;
   }
 }
 
@@ -17646,63 +19937,63 @@ function getLiteralValue(schema) {
 }
 
 // node_modules/@modelcontextprotocol/sdk/dist/esm/types.js
-import * as z16 from "zod/v4";
+import * as z22 from "zod/v4";
 var LATEST_PROTOCOL_VERSION = "2025-11-25";
 var SUPPORTED_PROTOCOL_VERSIONS = [LATEST_PROTOCOL_VERSION, "2025-06-18", "2025-03-26", "2024-11-05", "2024-10-07"];
 var RELATED_TASK_META_KEY = "io.modelcontextprotocol/related-task";
 var JSONRPC_VERSION = "2.0";
-var AssertObjectSchema = z16.custom((v) => v !== null && (typeof v === "object" || typeof v === "function"));
-var ProgressTokenSchema = z16.union([z16.string(), z16.number().int()]);
-var CursorSchema = z16.string();
-var TaskCreationParamsSchema = z16.looseObject({
-  ttl: z16.union([z16.number(), z16.null()]).optional(),
-  pollInterval: z16.number().optional()
+var AssertObjectSchema = z22.custom((v) => v !== null && (typeof v === "object" || typeof v === "function"));
+var ProgressTokenSchema = z22.union([z22.string(), z22.number().int()]);
+var CursorSchema = z22.string();
+var TaskCreationParamsSchema = z22.looseObject({
+  ttl: z22.union([z22.number(), z22.null()]).optional(),
+  pollInterval: z22.number().optional()
 });
-var TaskMetadataSchema = z16.object({
-  ttl: z16.number().optional()
+var TaskMetadataSchema = z22.object({
+  ttl: z22.number().optional()
 });
-var RelatedTaskMetadataSchema = z16.object({
-  taskId: z16.string()
+var RelatedTaskMetadataSchema = z22.object({
+  taskId: z22.string()
 });
-var RequestMetaSchema = z16.looseObject({
+var RequestMetaSchema = z22.looseObject({
   progressToken: ProgressTokenSchema.optional(),
   [RELATED_TASK_META_KEY]: RelatedTaskMetadataSchema.optional()
 });
-var BaseRequestParamsSchema = z16.object({
+var BaseRequestParamsSchema = z22.object({
   _meta: RequestMetaSchema.optional()
 });
 var TaskAugmentedRequestParamsSchema = BaseRequestParamsSchema.extend({
   task: TaskMetadataSchema.optional()
 });
 var isTaskAugmentedRequestParams = (value) => TaskAugmentedRequestParamsSchema.safeParse(value).success;
-var RequestSchema = z16.object({
-  method: z16.string(),
+var RequestSchema = z22.object({
+  method: z22.string(),
   params: BaseRequestParamsSchema.loose().optional()
 });
-var NotificationsParamsSchema = z16.object({
+var NotificationsParamsSchema = z22.object({
   _meta: RequestMetaSchema.optional()
 });
-var NotificationSchema = z16.object({
-  method: z16.string(),
+var NotificationSchema = z22.object({
+  method: z22.string(),
   params: NotificationsParamsSchema.loose().optional()
 });
-var ResultSchema = z16.looseObject({
+var ResultSchema = z22.looseObject({
   _meta: RequestMetaSchema.optional()
 });
-var RequestIdSchema = z16.union([z16.string(), z16.number().int()]);
-var JSONRPCRequestSchema = z16.object({
-  jsonrpc: z16.literal(JSONRPC_VERSION),
+var RequestIdSchema = z22.union([z22.string(), z22.number().int()]);
+var JSONRPCRequestSchema = z22.object({
+  jsonrpc: z22.literal(JSONRPC_VERSION),
   id: RequestIdSchema,
   ...RequestSchema.shape
 }).strict();
 var isJSONRPCRequest = (value) => JSONRPCRequestSchema.safeParse(value).success;
-var JSONRPCNotificationSchema = z16.object({
-  jsonrpc: z16.literal(JSONRPC_VERSION),
+var JSONRPCNotificationSchema = z22.object({
+  jsonrpc: z22.literal(JSONRPC_VERSION),
   ...NotificationSchema.shape
 }).strict();
 var isJSONRPCNotification = (value) => JSONRPCNotificationSchema.safeParse(value).success;
-var JSONRPCResultResponseSchema = z16.object({
-  jsonrpc: z16.literal(JSONRPC_VERSION),
+var JSONRPCResultResponseSchema = z22.object({
+  jsonrpc: z22.literal(JSONRPC_VERSION),
   id: RequestIdSchema,
   result: ResultSchema
 }).strict();
@@ -17718,150 +20009,150 @@ var ErrorCode;
   ErrorCode2[ErrorCode2["InternalError"] = -32603] = "InternalError";
   ErrorCode2[ErrorCode2["UrlElicitationRequired"] = -32042] = "UrlElicitationRequired";
 })(ErrorCode || (ErrorCode = {}));
-var JSONRPCErrorResponseSchema = z16.object({
-  jsonrpc: z16.literal(JSONRPC_VERSION),
+var JSONRPCErrorResponseSchema = z22.object({
+  jsonrpc: z22.literal(JSONRPC_VERSION),
   id: RequestIdSchema.optional(),
-  error: z16.object({
-    code: z16.number().int(),
-    message: z16.string(),
-    data: z16.unknown().optional()
+  error: z22.object({
+    code: z22.number().int(),
+    message: z22.string(),
+    data: z22.unknown().optional()
   })
 }).strict();
 var isJSONRPCErrorResponse = (value) => JSONRPCErrorResponseSchema.safeParse(value).success;
-var JSONRPCMessageSchema = z16.union([
+var JSONRPCMessageSchema = z22.union([
   JSONRPCRequestSchema,
   JSONRPCNotificationSchema,
   JSONRPCResultResponseSchema,
   JSONRPCErrorResponseSchema
 ]);
-var JSONRPCResponseSchema = z16.union([JSONRPCResultResponseSchema, JSONRPCErrorResponseSchema]);
+var JSONRPCResponseSchema = z22.union([JSONRPCResultResponseSchema, JSONRPCErrorResponseSchema]);
 var EmptyResultSchema = ResultSchema.strict();
 var CancelledNotificationParamsSchema = NotificationsParamsSchema.extend({
   requestId: RequestIdSchema.optional(),
-  reason: z16.string().optional()
+  reason: z22.string().optional()
 });
 var CancelledNotificationSchema = NotificationSchema.extend({
-  method: z16.literal("notifications/cancelled"),
+  method: z22.literal("notifications/cancelled"),
   params: CancelledNotificationParamsSchema
 });
-var IconSchema = z16.object({
-  src: z16.string(),
-  mimeType: z16.string().optional(),
-  sizes: z16.array(z16.string()).optional(),
-  theme: z16.enum(["light", "dark"]).optional()
+var IconSchema = z22.object({
+  src: z22.string(),
+  mimeType: z22.string().optional(),
+  sizes: z22.array(z22.string()).optional(),
+  theme: z22.enum(["light", "dark"]).optional()
 });
-var IconsSchema = z16.object({
-  icons: z16.array(IconSchema).optional()
+var IconsSchema = z22.object({
+  icons: z22.array(IconSchema).optional()
 });
-var BaseMetadataSchema = z16.object({
-  name: z16.string(),
-  title: z16.string().optional()
+var BaseMetadataSchema = z22.object({
+  name: z22.string(),
+  title: z22.string().optional()
 });
 var ImplementationSchema = BaseMetadataSchema.extend({
   ...BaseMetadataSchema.shape,
   ...IconsSchema.shape,
-  version: z16.string(),
-  websiteUrl: z16.string().optional(),
-  description: z16.string().optional()
+  version: z22.string(),
+  websiteUrl: z22.string().optional(),
+  description: z22.string().optional()
 });
-var FormElicitationCapabilitySchema = z16.intersection(z16.object({
-  applyDefaults: z16.boolean().optional()
-}), z16.record(z16.string(), z16.unknown()));
-var ElicitationCapabilitySchema = z16.preprocess((value) => {
+var FormElicitationCapabilitySchema = z22.intersection(z22.object({
+  applyDefaults: z22.boolean().optional()
+}), z22.record(z22.string(), z22.unknown()));
+var ElicitationCapabilitySchema = z22.preprocess((value) => {
   if (value && typeof value === "object" && !Array.isArray(value)) {
     if (Object.keys(value).length === 0) {
       return { form: {} };
     }
   }
   return value;
-}, z16.intersection(z16.object({
+}, z22.intersection(z22.object({
   form: FormElicitationCapabilitySchema.optional(),
   url: AssertObjectSchema.optional()
-}), z16.record(z16.string(), z16.unknown()).optional()));
-var ClientTasksCapabilitySchema = z16.looseObject({
+}), z22.record(z22.string(), z22.unknown()).optional()));
+var ClientTasksCapabilitySchema = z22.looseObject({
   list: AssertObjectSchema.optional(),
   cancel: AssertObjectSchema.optional(),
-  requests: z16.looseObject({
-    sampling: z16.looseObject({
+  requests: z22.looseObject({
+    sampling: z22.looseObject({
       createMessage: AssertObjectSchema.optional()
     }).optional(),
-    elicitation: z16.looseObject({
+    elicitation: z22.looseObject({
       create: AssertObjectSchema.optional()
     }).optional()
   }).optional()
 });
-var ServerTasksCapabilitySchema = z16.looseObject({
+var ServerTasksCapabilitySchema = z22.looseObject({
   list: AssertObjectSchema.optional(),
   cancel: AssertObjectSchema.optional(),
-  requests: z16.looseObject({
-    tools: z16.looseObject({
+  requests: z22.looseObject({
+    tools: z22.looseObject({
       call: AssertObjectSchema.optional()
     }).optional()
   }).optional()
 });
-var ClientCapabilitiesSchema = z16.object({
-  experimental: z16.record(z16.string(), AssertObjectSchema).optional(),
-  sampling: z16.object({
+var ClientCapabilitiesSchema = z22.object({
+  experimental: z22.record(z22.string(), AssertObjectSchema).optional(),
+  sampling: z22.object({
     context: AssertObjectSchema.optional(),
     tools: AssertObjectSchema.optional()
   }).optional(),
   elicitation: ElicitationCapabilitySchema.optional(),
-  roots: z16.object({
-    listChanged: z16.boolean().optional()
+  roots: z22.object({
+    listChanged: z22.boolean().optional()
   }).optional(),
   tasks: ClientTasksCapabilitySchema.optional()
 });
 var InitializeRequestParamsSchema = BaseRequestParamsSchema.extend({
-  protocolVersion: z16.string(),
+  protocolVersion: z22.string(),
   capabilities: ClientCapabilitiesSchema,
   clientInfo: ImplementationSchema
 });
 var InitializeRequestSchema = RequestSchema.extend({
-  method: z16.literal("initialize"),
+  method: z22.literal("initialize"),
   params: InitializeRequestParamsSchema
 });
-var ServerCapabilitiesSchema = z16.object({
-  experimental: z16.record(z16.string(), AssertObjectSchema).optional(),
+var ServerCapabilitiesSchema = z22.object({
+  experimental: z22.record(z22.string(), AssertObjectSchema).optional(),
   logging: AssertObjectSchema.optional(),
   completions: AssertObjectSchema.optional(),
-  prompts: z16.object({
-    listChanged: z16.boolean().optional()
+  prompts: z22.object({
+    listChanged: z22.boolean().optional()
   }).optional(),
-  resources: z16.object({
-    subscribe: z16.boolean().optional(),
-    listChanged: z16.boolean().optional()
+  resources: z22.object({
+    subscribe: z22.boolean().optional(),
+    listChanged: z22.boolean().optional()
   }).optional(),
-  tools: z16.object({
-    listChanged: z16.boolean().optional()
+  tools: z22.object({
+    listChanged: z22.boolean().optional()
   }).optional(),
   tasks: ServerTasksCapabilitySchema.optional()
 });
 var InitializeResultSchema = ResultSchema.extend({
-  protocolVersion: z16.string(),
+  protocolVersion: z22.string(),
   capabilities: ServerCapabilitiesSchema,
   serverInfo: ImplementationSchema,
-  instructions: z16.string().optional()
+  instructions: z22.string().optional()
 });
 var InitializedNotificationSchema = NotificationSchema.extend({
-  method: z16.literal("notifications/initialized"),
+  method: z22.literal("notifications/initialized"),
   params: NotificationsParamsSchema.optional()
 });
 var PingRequestSchema = RequestSchema.extend({
-  method: z16.literal("ping"),
+  method: z22.literal("ping"),
   params: BaseRequestParamsSchema.optional()
 });
-var ProgressSchema = z16.object({
-  progress: z16.number(),
-  total: z16.optional(z16.number()),
-  message: z16.optional(z16.string())
+var ProgressSchema = z22.object({
+  progress: z22.number(),
+  total: z22.optional(z22.number()),
+  message: z22.optional(z22.string())
 });
-var ProgressNotificationParamsSchema = z16.object({
+var ProgressNotificationParamsSchema = z22.object({
   ...NotificationsParamsSchema.shape,
   ...ProgressSchema.shape,
   progressToken: ProgressTokenSchema
 });
 var ProgressNotificationSchema = NotificationSchema.extend({
-  method: z16.literal("notifications/progress"),
+  method: z22.literal("notifications/progress"),
   params: ProgressNotificationParamsSchema
 });
 var PaginatedRequestParamsSchema = BaseRequestParamsSchema.extend({
@@ -17873,60 +20164,60 @@ var PaginatedRequestSchema = RequestSchema.extend({
 var PaginatedResultSchema = ResultSchema.extend({
   nextCursor: CursorSchema.optional()
 });
-var TaskStatusSchema = z16.enum(["working", "input_required", "completed", "failed", "cancelled"]);
-var TaskSchema = z16.object({
-  taskId: z16.string(),
+var TaskStatusSchema = z22.enum(["working", "input_required", "completed", "failed", "cancelled"]);
+var TaskSchema = z22.object({
+  taskId: z22.string(),
   status: TaskStatusSchema,
-  ttl: z16.union([z16.number(), z16.null()]),
-  createdAt: z16.string(),
-  lastUpdatedAt: z16.string(),
-  pollInterval: z16.optional(z16.number()),
-  statusMessage: z16.optional(z16.string())
+  ttl: z22.union([z22.number(), z22.null()]),
+  createdAt: z22.string(),
+  lastUpdatedAt: z22.string(),
+  pollInterval: z22.optional(z22.number()),
+  statusMessage: z22.optional(z22.string())
 });
 var CreateTaskResultSchema = ResultSchema.extend({
   task: TaskSchema
 });
 var TaskStatusNotificationParamsSchema = NotificationsParamsSchema.merge(TaskSchema);
 var TaskStatusNotificationSchema = NotificationSchema.extend({
-  method: z16.literal("notifications/tasks/status"),
+  method: z22.literal("notifications/tasks/status"),
   params: TaskStatusNotificationParamsSchema
 });
 var GetTaskRequestSchema = RequestSchema.extend({
-  method: z16.literal("tasks/get"),
+  method: z22.literal("tasks/get"),
   params: BaseRequestParamsSchema.extend({
-    taskId: z16.string()
+    taskId: z22.string()
   })
 });
 var GetTaskResultSchema = ResultSchema.merge(TaskSchema);
 var GetTaskPayloadRequestSchema = RequestSchema.extend({
-  method: z16.literal("tasks/result"),
+  method: z22.literal("tasks/result"),
   params: BaseRequestParamsSchema.extend({
-    taskId: z16.string()
+    taskId: z22.string()
   })
 });
 var GetTaskPayloadResultSchema = ResultSchema.loose();
 var ListTasksRequestSchema = PaginatedRequestSchema.extend({
-  method: z16.literal("tasks/list")
+  method: z22.literal("tasks/list")
 });
 var ListTasksResultSchema = PaginatedResultSchema.extend({
-  tasks: z16.array(TaskSchema)
+  tasks: z22.array(TaskSchema)
 });
 var CancelTaskRequestSchema = RequestSchema.extend({
-  method: z16.literal("tasks/cancel"),
+  method: z22.literal("tasks/cancel"),
   params: BaseRequestParamsSchema.extend({
-    taskId: z16.string()
+    taskId: z22.string()
   })
 });
 var CancelTaskResultSchema = ResultSchema.merge(TaskSchema);
-var ResourceContentsSchema = z16.object({
-  uri: z16.string(),
-  mimeType: z16.optional(z16.string()),
-  _meta: z16.record(z16.string(), z16.unknown()).optional()
+var ResourceContentsSchema = z22.object({
+  uri: z22.string(),
+  mimeType: z22.optional(z22.string()),
+  _meta: z22.record(z22.string(), z22.unknown()).optional()
 });
 var TextResourceContentsSchema = ResourceContentsSchema.extend({
-  text: z16.string()
+  text: z22.string()
 });
-var Base64Schema = z16.string().refine((val) => {
+var Base64Schema = z22.string().refine((val) => {
   try {
     atob(val);
     return true;
@@ -17937,446 +20228,446 @@ var Base64Schema = z16.string().refine((val) => {
 var BlobResourceContentsSchema = ResourceContentsSchema.extend({
   blob: Base64Schema
 });
-var RoleSchema = z16.enum(["user", "assistant"]);
-var AnnotationsSchema = z16.object({
-  audience: z16.array(RoleSchema).optional(),
-  priority: z16.number().min(0).max(1).optional(),
-  lastModified: z16.iso.datetime({ offset: true }).optional()
+var RoleSchema = z22.enum(["user", "assistant"]);
+var AnnotationsSchema = z22.object({
+  audience: z22.array(RoleSchema).optional(),
+  priority: z22.number().min(0).max(1).optional(),
+  lastModified: z22.iso.datetime({ offset: true }).optional()
 });
-var ResourceSchema = z16.object({
+var ResourceSchema = z22.object({
   ...BaseMetadataSchema.shape,
   ...IconsSchema.shape,
-  uri: z16.string(),
-  description: z16.optional(z16.string()),
-  mimeType: z16.optional(z16.string()),
+  uri: z22.string(),
+  description: z22.optional(z22.string()),
+  mimeType: z22.optional(z22.string()),
   annotations: AnnotationsSchema.optional(),
-  _meta: z16.optional(z16.looseObject({}))
+  _meta: z22.optional(z22.looseObject({}))
 });
-var ResourceTemplateSchema = z16.object({
+var ResourceTemplateSchema = z22.object({
   ...BaseMetadataSchema.shape,
   ...IconsSchema.shape,
-  uriTemplate: z16.string(),
-  description: z16.optional(z16.string()),
-  mimeType: z16.optional(z16.string()),
+  uriTemplate: z22.string(),
+  description: z22.optional(z22.string()),
+  mimeType: z22.optional(z22.string()),
   annotations: AnnotationsSchema.optional(),
-  _meta: z16.optional(z16.looseObject({}))
+  _meta: z22.optional(z22.looseObject({}))
 });
 var ListResourcesRequestSchema = PaginatedRequestSchema.extend({
-  method: z16.literal("resources/list")
+  method: z22.literal("resources/list")
 });
 var ListResourcesResultSchema = PaginatedResultSchema.extend({
-  resources: z16.array(ResourceSchema)
+  resources: z22.array(ResourceSchema)
 });
 var ListResourceTemplatesRequestSchema = PaginatedRequestSchema.extend({
-  method: z16.literal("resources/templates/list")
+  method: z22.literal("resources/templates/list")
 });
 var ListResourceTemplatesResultSchema = PaginatedResultSchema.extend({
-  resourceTemplates: z16.array(ResourceTemplateSchema)
+  resourceTemplates: z22.array(ResourceTemplateSchema)
 });
 var ResourceRequestParamsSchema = BaseRequestParamsSchema.extend({
-  uri: z16.string()
+  uri: z22.string()
 });
 var ReadResourceRequestParamsSchema = ResourceRequestParamsSchema;
 var ReadResourceRequestSchema = RequestSchema.extend({
-  method: z16.literal("resources/read"),
+  method: z22.literal("resources/read"),
   params: ReadResourceRequestParamsSchema
 });
 var ReadResourceResultSchema = ResultSchema.extend({
-  contents: z16.array(z16.union([TextResourceContentsSchema, BlobResourceContentsSchema]))
+  contents: z22.array(z22.union([TextResourceContentsSchema, BlobResourceContentsSchema]))
 });
 var ResourceListChangedNotificationSchema = NotificationSchema.extend({
-  method: z16.literal("notifications/resources/list_changed"),
+  method: z22.literal("notifications/resources/list_changed"),
   params: NotificationsParamsSchema.optional()
 });
 var SubscribeRequestParamsSchema = ResourceRequestParamsSchema;
 var SubscribeRequestSchema = RequestSchema.extend({
-  method: z16.literal("resources/subscribe"),
+  method: z22.literal("resources/subscribe"),
   params: SubscribeRequestParamsSchema
 });
 var UnsubscribeRequestParamsSchema = ResourceRequestParamsSchema;
 var UnsubscribeRequestSchema = RequestSchema.extend({
-  method: z16.literal("resources/unsubscribe"),
+  method: z22.literal("resources/unsubscribe"),
   params: UnsubscribeRequestParamsSchema
 });
 var ResourceUpdatedNotificationParamsSchema = NotificationsParamsSchema.extend({
-  uri: z16.string()
+  uri: z22.string()
 });
 var ResourceUpdatedNotificationSchema = NotificationSchema.extend({
-  method: z16.literal("notifications/resources/updated"),
+  method: z22.literal("notifications/resources/updated"),
   params: ResourceUpdatedNotificationParamsSchema
 });
-var PromptArgumentSchema = z16.object({
-  name: z16.string(),
-  description: z16.optional(z16.string()),
-  required: z16.optional(z16.boolean())
+var PromptArgumentSchema = z22.object({
+  name: z22.string(),
+  description: z22.optional(z22.string()),
+  required: z22.optional(z22.boolean())
 });
-var PromptSchema = z16.object({
+var PromptSchema = z22.object({
   ...BaseMetadataSchema.shape,
   ...IconsSchema.shape,
-  description: z16.optional(z16.string()),
-  arguments: z16.optional(z16.array(PromptArgumentSchema)),
-  _meta: z16.optional(z16.looseObject({}))
+  description: z22.optional(z22.string()),
+  arguments: z22.optional(z22.array(PromptArgumentSchema)),
+  _meta: z22.optional(z22.looseObject({}))
 });
 var ListPromptsRequestSchema = PaginatedRequestSchema.extend({
-  method: z16.literal("prompts/list")
+  method: z22.literal("prompts/list")
 });
 var ListPromptsResultSchema = PaginatedResultSchema.extend({
-  prompts: z16.array(PromptSchema)
+  prompts: z22.array(PromptSchema)
 });
 var GetPromptRequestParamsSchema = BaseRequestParamsSchema.extend({
-  name: z16.string(),
-  arguments: z16.record(z16.string(), z16.string()).optional()
+  name: z22.string(),
+  arguments: z22.record(z22.string(), z22.string()).optional()
 });
 var GetPromptRequestSchema = RequestSchema.extend({
-  method: z16.literal("prompts/get"),
+  method: z22.literal("prompts/get"),
   params: GetPromptRequestParamsSchema
 });
-var TextContentSchema = z16.object({
-  type: z16.literal("text"),
-  text: z16.string(),
+var TextContentSchema = z22.object({
+  type: z22.literal("text"),
+  text: z22.string(),
   annotations: AnnotationsSchema.optional(),
-  _meta: z16.record(z16.string(), z16.unknown()).optional()
+  _meta: z22.record(z22.string(), z22.unknown()).optional()
 });
-var ImageContentSchema = z16.object({
-  type: z16.literal("image"),
+var ImageContentSchema = z22.object({
+  type: z22.literal("image"),
   data: Base64Schema,
-  mimeType: z16.string(),
+  mimeType: z22.string(),
   annotations: AnnotationsSchema.optional(),
-  _meta: z16.record(z16.string(), z16.unknown()).optional()
+  _meta: z22.record(z22.string(), z22.unknown()).optional()
 });
-var AudioContentSchema = z16.object({
-  type: z16.literal("audio"),
+var AudioContentSchema = z22.object({
+  type: z22.literal("audio"),
   data: Base64Schema,
-  mimeType: z16.string(),
+  mimeType: z22.string(),
   annotations: AnnotationsSchema.optional(),
-  _meta: z16.record(z16.string(), z16.unknown()).optional()
+  _meta: z22.record(z22.string(), z22.unknown()).optional()
 });
-var ToolUseContentSchema = z16.object({
-  type: z16.literal("tool_use"),
-  name: z16.string(),
-  id: z16.string(),
-  input: z16.record(z16.string(), z16.unknown()),
-  _meta: z16.record(z16.string(), z16.unknown()).optional()
+var ToolUseContentSchema = z22.object({
+  type: z22.literal("tool_use"),
+  name: z22.string(),
+  id: z22.string(),
+  input: z22.record(z22.string(), z22.unknown()),
+  _meta: z22.record(z22.string(), z22.unknown()).optional()
 });
-var EmbeddedResourceSchema = z16.object({
-  type: z16.literal("resource"),
-  resource: z16.union([TextResourceContentsSchema, BlobResourceContentsSchema]),
+var EmbeddedResourceSchema = z22.object({
+  type: z22.literal("resource"),
+  resource: z22.union([TextResourceContentsSchema, BlobResourceContentsSchema]),
   annotations: AnnotationsSchema.optional(),
-  _meta: z16.record(z16.string(), z16.unknown()).optional()
+  _meta: z22.record(z22.string(), z22.unknown()).optional()
 });
 var ResourceLinkSchema = ResourceSchema.extend({
-  type: z16.literal("resource_link")
+  type: z22.literal("resource_link")
 });
-var ContentBlockSchema = z16.union([
+var ContentBlockSchema = z22.union([
   TextContentSchema,
   ImageContentSchema,
   AudioContentSchema,
   ResourceLinkSchema,
   EmbeddedResourceSchema
 ]);
-var PromptMessageSchema = z16.object({
+var PromptMessageSchema = z22.object({
   role: RoleSchema,
   content: ContentBlockSchema
 });
 var GetPromptResultSchema = ResultSchema.extend({
-  description: z16.string().optional(),
-  messages: z16.array(PromptMessageSchema)
+  description: z22.string().optional(),
+  messages: z22.array(PromptMessageSchema)
 });
 var PromptListChangedNotificationSchema = NotificationSchema.extend({
-  method: z16.literal("notifications/prompts/list_changed"),
+  method: z22.literal("notifications/prompts/list_changed"),
   params: NotificationsParamsSchema.optional()
 });
-var ToolAnnotationsSchema = z16.object({
-  title: z16.string().optional(),
-  readOnlyHint: z16.boolean().optional(),
-  destructiveHint: z16.boolean().optional(),
-  idempotentHint: z16.boolean().optional(),
-  openWorldHint: z16.boolean().optional()
+var ToolAnnotationsSchema = z22.object({
+  title: z22.string().optional(),
+  readOnlyHint: z22.boolean().optional(),
+  destructiveHint: z22.boolean().optional(),
+  idempotentHint: z22.boolean().optional(),
+  openWorldHint: z22.boolean().optional()
 });
-var ToolExecutionSchema = z16.object({
-  taskSupport: z16.enum(["required", "optional", "forbidden"]).optional()
+var ToolExecutionSchema = z22.object({
+  taskSupport: z22.enum(["required", "optional", "forbidden"]).optional()
 });
-var ToolSchema = z16.object({
+var ToolSchema = z22.object({
   ...BaseMetadataSchema.shape,
   ...IconsSchema.shape,
-  description: z16.string().optional(),
-  inputSchema: z16.object({
-    type: z16.literal("object"),
-    properties: z16.record(z16.string(), AssertObjectSchema).optional(),
-    required: z16.array(z16.string()).optional()
-  }).catchall(z16.unknown()),
-  outputSchema: z16.object({
-    type: z16.literal("object"),
-    properties: z16.record(z16.string(), AssertObjectSchema).optional(),
-    required: z16.array(z16.string()).optional()
-  }).catchall(z16.unknown()).optional(),
+  description: z22.string().optional(),
+  inputSchema: z22.object({
+    type: z22.literal("object"),
+    properties: z22.record(z22.string(), AssertObjectSchema).optional(),
+    required: z22.array(z22.string()).optional()
+  }).catchall(z22.unknown()),
+  outputSchema: z22.object({
+    type: z22.literal("object"),
+    properties: z22.record(z22.string(), AssertObjectSchema).optional(),
+    required: z22.array(z22.string()).optional()
+  }).catchall(z22.unknown()).optional(),
   annotations: ToolAnnotationsSchema.optional(),
   execution: ToolExecutionSchema.optional(),
-  _meta: z16.record(z16.string(), z16.unknown()).optional()
+  _meta: z22.record(z22.string(), z22.unknown()).optional()
 });
 var ListToolsRequestSchema = PaginatedRequestSchema.extend({
-  method: z16.literal("tools/list")
+  method: z22.literal("tools/list")
 });
 var ListToolsResultSchema = PaginatedResultSchema.extend({
-  tools: z16.array(ToolSchema)
+  tools: z22.array(ToolSchema)
 });
 var CallToolResultSchema = ResultSchema.extend({
-  content: z16.array(ContentBlockSchema).default([]),
-  structuredContent: z16.record(z16.string(), z16.unknown()).optional(),
-  isError: z16.boolean().optional()
+  content: z22.array(ContentBlockSchema).default([]),
+  structuredContent: z22.record(z22.string(), z22.unknown()).optional(),
+  isError: z22.boolean().optional()
 });
 var CompatibilityCallToolResultSchema = CallToolResultSchema.or(ResultSchema.extend({
-  toolResult: z16.unknown()
+  toolResult: z22.unknown()
 }));
 var CallToolRequestParamsSchema = TaskAugmentedRequestParamsSchema.extend({
-  name: z16.string(),
-  arguments: z16.record(z16.string(), z16.unknown()).optional()
+  name: z22.string(),
+  arguments: z22.record(z22.string(), z22.unknown()).optional()
 });
 var CallToolRequestSchema = RequestSchema.extend({
-  method: z16.literal("tools/call"),
+  method: z22.literal("tools/call"),
   params: CallToolRequestParamsSchema
 });
 var ToolListChangedNotificationSchema = NotificationSchema.extend({
-  method: z16.literal("notifications/tools/list_changed"),
+  method: z22.literal("notifications/tools/list_changed"),
   params: NotificationsParamsSchema.optional()
 });
-var ListChangedOptionsBaseSchema = z16.object({
-  autoRefresh: z16.boolean().default(true),
-  debounceMs: z16.number().int().nonnegative().default(300)
+var ListChangedOptionsBaseSchema = z22.object({
+  autoRefresh: z22.boolean().default(true),
+  debounceMs: z22.number().int().nonnegative().default(300)
 });
-var LoggingLevelSchema = z16.enum(["debug", "info", "notice", "warning", "error", "critical", "alert", "emergency"]);
+var LoggingLevelSchema = z22.enum(["debug", "info", "notice", "warning", "error", "critical", "alert", "emergency"]);
 var SetLevelRequestParamsSchema = BaseRequestParamsSchema.extend({
   level: LoggingLevelSchema
 });
 var SetLevelRequestSchema = RequestSchema.extend({
-  method: z16.literal("logging/setLevel"),
+  method: z22.literal("logging/setLevel"),
   params: SetLevelRequestParamsSchema
 });
 var LoggingMessageNotificationParamsSchema = NotificationsParamsSchema.extend({
   level: LoggingLevelSchema,
-  logger: z16.string().optional(),
-  data: z16.unknown()
+  logger: z22.string().optional(),
+  data: z22.unknown()
 });
 var LoggingMessageNotificationSchema = NotificationSchema.extend({
-  method: z16.literal("notifications/message"),
+  method: z22.literal("notifications/message"),
   params: LoggingMessageNotificationParamsSchema
 });
-var ModelHintSchema = z16.object({
-  name: z16.string().optional()
+var ModelHintSchema = z22.object({
+  name: z22.string().optional()
 });
-var ModelPreferencesSchema = z16.object({
-  hints: z16.array(ModelHintSchema).optional(),
-  costPriority: z16.number().min(0).max(1).optional(),
-  speedPriority: z16.number().min(0).max(1).optional(),
-  intelligencePriority: z16.number().min(0).max(1).optional()
+var ModelPreferencesSchema = z22.object({
+  hints: z22.array(ModelHintSchema).optional(),
+  costPriority: z22.number().min(0).max(1).optional(),
+  speedPriority: z22.number().min(0).max(1).optional(),
+  intelligencePriority: z22.number().min(0).max(1).optional()
 });
-var ToolChoiceSchema = z16.object({
-  mode: z16.enum(["auto", "required", "none"]).optional()
+var ToolChoiceSchema = z22.object({
+  mode: z22.enum(["auto", "required", "none"]).optional()
 });
-var ToolResultContentSchema = z16.object({
-  type: z16.literal("tool_result"),
-  toolUseId: z16.string().describe("The unique identifier for the corresponding tool call."),
-  content: z16.array(ContentBlockSchema).default([]),
-  structuredContent: z16.object({}).loose().optional(),
-  isError: z16.boolean().optional(),
-  _meta: z16.record(z16.string(), z16.unknown()).optional()
+var ToolResultContentSchema = z22.object({
+  type: z22.literal("tool_result"),
+  toolUseId: z22.string().describe("The unique identifier for the corresponding tool call."),
+  content: z22.array(ContentBlockSchema).default([]),
+  structuredContent: z22.object({}).loose().optional(),
+  isError: z22.boolean().optional(),
+  _meta: z22.record(z22.string(), z22.unknown()).optional()
 });
-var SamplingContentSchema = z16.discriminatedUnion("type", [TextContentSchema, ImageContentSchema, AudioContentSchema]);
-var SamplingMessageContentBlockSchema = z16.discriminatedUnion("type", [
+var SamplingContentSchema = z22.discriminatedUnion("type", [TextContentSchema, ImageContentSchema, AudioContentSchema]);
+var SamplingMessageContentBlockSchema = z22.discriminatedUnion("type", [
   TextContentSchema,
   ImageContentSchema,
   AudioContentSchema,
   ToolUseContentSchema,
   ToolResultContentSchema
 ]);
-var SamplingMessageSchema = z16.object({
+var SamplingMessageSchema = z22.object({
   role: RoleSchema,
-  content: z16.union([SamplingMessageContentBlockSchema, z16.array(SamplingMessageContentBlockSchema)]),
-  _meta: z16.record(z16.string(), z16.unknown()).optional()
+  content: z22.union([SamplingMessageContentBlockSchema, z22.array(SamplingMessageContentBlockSchema)]),
+  _meta: z22.record(z22.string(), z22.unknown()).optional()
 });
 var CreateMessageRequestParamsSchema = TaskAugmentedRequestParamsSchema.extend({
-  messages: z16.array(SamplingMessageSchema),
+  messages: z22.array(SamplingMessageSchema),
   modelPreferences: ModelPreferencesSchema.optional(),
-  systemPrompt: z16.string().optional(),
-  includeContext: z16.enum(["none", "thisServer", "allServers"]).optional(),
-  temperature: z16.number().optional(),
-  maxTokens: z16.number().int(),
-  stopSequences: z16.array(z16.string()).optional(),
+  systemPrompt: z22.string().optional(),
+  includeContext: z22.enum(["none", "thisServer", "allServers"]).optional(),
+  temperature: z22.number().optional(),
+  maxTokens: z22.number().int(),
+  stopSequences: z22.array(z22.string()).optional(),
   metadata: AssertObjectSchema.optional(),
-  tools: z16.array(ToolSchema).optional(),
+  tools: z22.array(ToolSchema).optional(),
   toolChoice: ToolChoiceSchema.optional()
 });
 var CreateMessageRequestSchema = RequestSchema.extend({
-  method: z16.literal("sampling/createMessage"),
+  method: z22.literal("sampling/createMessage"),
   params: CreateMessageRequestParamsSchema
 });
 var CreateMessageResultSchema = ResultSchema.extend({
-  model: z16.string(),
-  stopReason: z16.optional(z16.enum(["endTurn", "stopSequence", "maxTokens"]).or(z16.string())),
+  model: z22.string(),
+  stopReason: z22.optional(z22.enum(["endTurn", "stopSequence", "maxTokens"]).or(z22.string())),
   role: RoleSchema,
   content: SamplingContentSchema
 });
 var CreateMessageResultWithToolsSchema = ResultSchema.extend({
-  model: z16.string(),
-  stopReason: z16.optional(z16.enum(["endTurn", "stopSequence", "maxTokens", "toolUse"]).or(z16.string())),
+  model: z22.string(),
+  stopReason: z22.optional(z22.enum(["endTurn", "stopSequence", "maxTokens", "toolUse"]).or(z22.string())),
   role: RoleSchema,
-  content: z16.union([SamplingMessageContentBlockSchema, z16.array(SamplingMessageContentBlockSchema)])
+  content: z22.union([SamplingMessageContentBlockSchema, z22.array(SamplingMessageContentBlockSchema)])
 });
-var BooleanSchemaSchema = z16.object({
-  type: z16.literal("boolean"),
-  title: z16.string().optional(),
-  description: z16.string().optional(),
-  default: z16.boolean().optional()
+var BooleanSchemaSchema = z22.object({
+  type: z22.literal("boolean"),
+  title: z22.string().optional(),
+  description: z22.string().optional(),
+  default: z22.boolean().optional()
 });
-var StringSchemaSchema = z16.object({
-  type: z16.literal("string"),
-  title: z16.string().optional(),
-  description: z16.string().optional(),
-  minLength: z16.number().optional(),
-  maxLength: z16.number().optional(),
-  format: z16.enum(["email", "uri", "date", "date-time"]).optional(),
-  default: z16.string().optional()
+var StringSchemaSchema = z22.object({
+  type: z22.literal("string"),
+  title: z22.string().optional(),
+  description: z22.string().optional(),
+  minLength: z22.number().optional(),
+  maxLength: z22.number().optional(),
+  format: z22.enum(["email", "uri", "date", "date-time"]).optional(),
+  default: z22.string().optional()
 });
-var NumberSchemaSchema = z16.object({
-  type: z16.enum(["number", "integer"]),
-  title: z16.string().optional(),
-  description: z16.string().optional(),
-  minimum: z16.number().optional(),
-  maximum: z16.number().optional(),
-  default: z16.number().optional()
+var NumberSchemaSchema = z22.object({
+  type: z22.enum(["number", "integer"]),
+  title: z22.string().optional(),
+  description: z22.string().optional(),
+  minimum: z22.number().optional(),
+  maximum: z22.number().optional(),
+  default: z22.number().optional()
 });
-var UntitledSingleSelectEnumSchemaSchema = z16.object({
-  type: z16.literal("string"),
-  title: z16.string().optional(),
-  description: z16.string().optional(),
-  enum: z16.array(z16.string()),
-  default: z16.string().optional()
+var UntitledSingleSelectEnumSchemaSchema = z22.object({
+  type: z22.literal("string"),
+  title: z22.string().optional(),
+  description: z22.string().optional(),
+  enum: z22.array(z22.string()),
+  default: z22.string().optional()
 });
-var TitledSingleSelectEnumSchemaSchema = z16.object({
-  type: z16.literal("string"),
-  title: z16.string().optional(),
-  description: z16.string().optional(),
-  oneOf: z16.array(z16.object({
-    const: z16.string(),
-    title: z16.string()
+var TitledSingleSelectEnumSchemaSchema = z22.object({
+  type: z22.literal("string"),
+  title: z22.string().optional(),
+  description: z22.string().optional(),
+  oneOf: z22.array(z22.object({
+    const: z22.string(),
+    title: z22.string()
   })),
-  default: z16.string().optional()
+  default: z22.string().optional()
 });
-var LegacyTitledEnumSchemaSchema = z16.object({
-  type: z16.literal("string"),
-  title: z16.string().optional(),
-  description: z16.string().optional(),
-  enum: z16.array(z16.string()),
-  enumNames: z16.array(z16.string()).optional(),
-  default: z16.string().optional()
+var LegacyTitledEnumSchemaSchema = z22.object({
+  type: z22.literal("string"),
+  title: z22.string().optional(),
+  description: z22.string().optional(),
+  enum: z22.array(z22.string()),
+  enumNames: z22.array(z22.string()).optional(),
+  default: z22.string().optional()
 });
-var SingleSelectEnumSchemaSchema = z16.union([UntitledSingleSelectEnumSchemaSchema, TitledSingleSelectEnumSchemaSchema]);
-var UntitledMultiSelectEnumSchemaSchema = z16.object({
-  type: z16.literal("array"),
-  title: z16.string().optional(),
-  description: z16.string().optional(),
-  minItems: z16.number().optional(),
-  maxItems: z16.number().optional(),
-  items: z16.object({
-    type: z16.literal("string"),
-    enum: z16.array(z16.string())
+var SingleSelectEnumSchemaSchema = z22.union([UntitledSingleSelectEnumSchemaSchema, TitledSingleSelectEnumSchemaSchema]);
+var UntitledMultiSelectEnumSchemaSchema = z22.object({
+  type: z22.literal("array"),
+  title: z22.string().optional(),
+  description: z22.string().optional(),
+  minItems: z22.number().optional(),
+  maxItems: z22.number().optional(),
+  items: z22.object({
+    type: z22.literal("string"),
+    enum: z22.array(z22.string())
   }),
-  default: z16.array(z16.string()).optional()
+  default: z22.array(z22.string()).optional()
 });
-var TitledMultiSelectEnumSchemaSchema = z16.object({
-  type: z16.literal("array"),
-  title: z16.string().optional(),
-  description: z16.string().optional(),
-  minItems: z16.number().optional(),
-  maxItems: z16.number().optional(),
-  items: z16.object({
-    anyOf: z16.array(z16.object({
-      const: z16.string(),
-      title: z16.string()
+var TitledMultiSelectEnumSchemaSchema = z22.object({
+  type: z22.literal("array"),
+  title: z22.string().optional(),
+  description: z22.string().optional(),
+  minItems: z22.number().optional(),
+  maxItems: z22.number().optional(),
+  items: z22.object({
+    anyOf: z22.array(z22.object({
+      const: z22.string(),
+      title: z22.string()
     }))
   }),
-  default: z16.array(z16.string()).optional()
+  default: z22.array(z22.string()).optional()
 });
-var MultiSelectEnumSchemaSchema = z16.union([UntitledMultiSelectEnumSchemaSchema, TitledMultiSelectEnumSchemaSchema]);
-var EnumSchemaSchema = z16.union([LegacyTitledEnumSchemaSchema, SingleSelectEnumSchemaSchema, MultiSelectEnumSchemaSchema]);
-var PrimitiveSchemaDefinitionSchema = z16.union([EnumSchemaSchema, BooleanSchemaSchema, StringSchemaSchema, NumberSchemaSchema]);
+var MultiSelectEnumSchemaSchema = z22.union([UntitledMultiSelectEnumSchemaSchema, TitledMultiSelectEnumSchemaSchema]);
+var EnumSchemaSchema = z22.union([LegacyTitledEnumSchemaSchema, SingleSelectEnumSchemaSchema, MultiSelectEnumSchemaSchema]);
+var PrimitiveSchemaDefinitionSchema = z22.union([EnumSchemaSchema, BooleanSchemaSchema, StringSchemaSchema, NumberSchemaSchema]);
 var ElicitRequestFormParamsSchema = TaskAugmentedRequestParamsSchema.extend({
-  mode: z16.literal("form").optional(),
-  message: z16.string(),
-  requestedSchema: z16.object({
-    type: z16.literal("object"),
-    properties: z16.record(z16.string(), PrimitiveSchemaDefinitionSchema),
-    required: z16.array(z16.string()).optional()
+  mode: z22.literal("form").optional(),
+  message: z22.string(),
+  requestedSchema: z22.object({
+    type: z22.literal("object"),
+    properties: z22.record(z22.string(), PrimitiveSchemaDefinitionSchema),
+    required: z22.array(z22.string()).optional()
   })
 });
 var ElicitRequestURLParamsSchema = TaskAugmentedRequestParamsSchema.extend({
-  mode: z16.literal("url"),
-  message: z16.string(),
-  elicitationId: z16.string(),
-  url: z16.string().url()
+  mode: z22.literal("url"),
+  message: z22.string(),
+  elicitationId: z22.string(),
+  url: z22.string().url()
 });
-var ElicitRequestParamsSchema = z16.union([ElicitRequestFormParamsSchema, ElicitRequestURLParamsSchema]);
+var ElicitRequestParamsSchema = z22.union([ElicitRequestFormParamsSchema, ElicitRequestURLParamsSchema]);
 var ElicitRequestSchema = RequestSchema.extend({
-  method: z16.literal("elicitation/create"),
+  method: z22.literal("elicitation/create"),
   params: ElicitRequestParamsSchema
 });
 var ElicitationCompleteNotificationParamsSchema = NotificationsParamsSchema.extend({
-  elicitationId: z16.string()
+  elicitationId: z22.string()
 });
 var ElicitationCompleteNotificationSchema = NotificationSchema.extend({
-  method: z16.literal("notifications/elicitation/complete"),
+  method: z22.literal("notifications/elicitation/complete"),
   params: ElicitationCompleteNotificationParamsSchema
 });
 var ElicitResultSchema = ResultSchema.extend({
-  action: z16.enum(["accept", "decline", "cancel"]),
-  content: z16.preprocess((val) => val === null ? undefined : val, z16.record(z16.string(), z16.union([z16.string(), z16.number(), z16.boolean(), z16.array(z16.string())])).optional())
+  action: z22.enum(["accept", "decline", "cancel"]),
+  content: z22.preprocess((val) => val === null ? undefined : val, z22.record(z22.string(), z22.union([z22.string(), z22.number(), z22.boolean(), z22.array(z22.string())])).optional())
 });
-var ResourceTemplateReferenceSchema = z16.object({
-  type: z16.literal("ref/resource"),
-  uri: z16.string()
+var ResourceTemplateReferenceSchema = z22.object({
+  type: z22.literal("ref/resource"),
+  uri: z22.string()
 });
-var PromptReferenceSchema = z16.object({
-  type: z16.literal("ref/prompt"),
-  name: z16.string()
+var PromptReferenceSchema = z22.object({
+  type: z22.literal("ref/prompt"),
+  name: z22.string()
 });
 var CompleteRequestParamsSchema = BaseRequestParamsSchema.extend({
-  ref: z16.union([PromptReferenceSchema, ResourceTemplateReferenceSchema]),
-  argument: z16.object({
-    name: z16.string(),
-    value: z16.string()
+  ref: z22.union([PromptReferenceSchema, ResourceTemplateReferenceSchema]),
+  argument: z22.object({
+    name: z22.string(),
+    value: z22.string()
   }),
-  context: z16.object({
-    arguments: z16.record(z16.string(), z16.string()).optional()
+  context: z22.object({
+    arguments: z22.record(z22.string(), z22.string()).optional()
   }).optional()
 });
 var CompleteRequestSchema = RequestSchema.extend({
-  method: z16.literal("completion/complete"),
+  method: z22.literal("completion/complete"),
   params: CompleteRequestParamsSchema
 });
 var CompleteResultSchema = ResultSchema.extend({
-  completion: z16.looseObject({
-    values: z16.array(z16.string()).max(100),
-    total: z16.optional(z16.number().int()),
-    hasMore: z16.optional(z16.boolean())
+  completion: z22.looseObject({
+    values: z22.array(z22.string()).max(100),
+    total: z22.optional(z22.number().int()),
+    hasMore: z22.optional(z22.boolean())
   })
 });
-var RootSchema = z16.object({
-  uri: z16.string().startsWith("file://"),
-  name: z16.string().optional(),
-  _meta: z16.record(z16.string(), z16.unknown()).optional()
+var RootSchema = z22.object({
+  uri: z22.string().startsWith("file://"),
+  name: z22.string().optional(),
+  _meta: z22.record(z22.string(), z22.unknown()).optional()
 });
 var ListRootsRequestSchema = RequestSchema.extend({
-  method: z16.literal("roots/list"),
+  method: z22.literal("roots/list"),
   params: BaseRequestParamsSchema.optional()
 });
 var ListRootsResultSchema = ResultSchema.extend({
-  roots: z16.array(RootSchema)
+  roots: z22.array(RootSchema)
 });
 var RootsListChangedNotificationSchema = NotificationSchema.extend({
-  method: z16.literal("notifications/roots/list_changed"),
+  method: z22.literal("notifications/roots/list_changed"),
   params: NotificationsParamsSchema.optional()
 });
-var ClientRequestSchema = z16.union([
+var ClientRequestSchema = z22.union([
   PingRequestSchema,
   InitializeRequestSchema,
   CompleteRequestSchema,
@@ -18395,14 +20686,14 @@ var ClientRequestSchema = z16.union([
   ListTasksRequestSchema,
   CancelTaskRequestSchema
 ]);
-var ClientNotificationSchema = z16.union([
+var ClientNotificationSchema = z22.union([
   CancelledNotificationSchema,
   ProgressNotificationSchema,
   InitializedNotificationSchema,
   RootsListChangedNotificationSchema,
   TaskStatusNotificationSchema
 ]);
-var ClientResultSchema = z16.union([
+var ClientResultSchema = z22.union([
   EmptyResultSchema,
   CreateMessageResultSchema,
   CreateMessageResultWithToolsSchema,
@@ -18412,7 +20703,7 @@ var ClientResultSchema = z16.union([
   ListTasksResultSchema,
   CreateTaskResultSchema
 ]);
-var ServerRequestSchema = z16.union([
+var ServerRequestSchema = z22.union([
   PingRequestSchema,
   CreateMessageRequestSchema,
   ElicitRequestSchema,
@@ -18422,7 +20713,7 @@ var ServerRequestSchema = z16.union([
   ListTasksRequestSchema,
   CancelTaskRequestSchema
 ]);
-var ServerNotificationSchema = z16.union([
+var ServerNotificationSchema = z22.union([
   CancelledNotificationSchema,
   ProgressNotificationSchema,
   LoggingMessageNotificationSchema,
@@ -18433,7 +20724,7 @@ var ServerNotificationSchema = z16.union([
   TaskStatusNotificationSchema,
   ElicitationCompleteNotificationSchema
 ]);
-var ServerResultSchema = z16.union([
+var ServerResultSchema = z22.union([
   EmptyResultSchema,
   InitializeResultSchema,
   CompleteResultSchema,
@@ -19887,17 +22178,17 @@ class Client extends Protocol {
     this._cachedToolOutputValidators.clear();
     this._cachedKnownTaskTools.clear();
     this._cachedRequiredTaskTools.clear();
-    for (const tool16 of tools2) {
-      if (tool16.outputSchema) {
-        const toolValidator = this._jsonSchemaValidator.getValidator(tool16.outputSchema);
-        this._cachedToolOutputValidators.set(tool16.name, toolValidator);
+    for (const tool3 of tools2) {
+      if (tool3.outputSchema) {
+        const toolValidator = this._jsonSchemaValidator.getValidator(tool3.outputSchema);
+        this._cachedToolOutputValidators.set(tool3.name, toolValidator);
       }
-      const taskSupport = tool16.execution?.taskSupport;
+      const taskSupport = tool3.execution?.taskSupport;
       if (taskSupport === "required" || taskSupport === "optional") {
-        this._cachedKnownTaskTools.add(tool16.name);
+        this._cachedKnownTaskTools.add(tool3.name);
       }
       if (taskSupport === "required") {
-        this._cachedRequiredTaskTools.add(tool16.name);
+        this._cachedRequiredTaskTools.add(tool3.name);
       }
     }
   }
@@ -20384,11 +22675,18 @@ var createOpenCodeXPlugin = async (input) => {
   const config2 = input.config || {};
   const hooks = [];
   console.log("[kraken-code] Initializing plugin...");
-  const modeHooks = createModeHooks(input, config2.modes);
+  const modeHooks = createModeHooks(input, {
+    enabled: config2.modes?.ultrawork?.enabled ?? true,
+    autoActivate: true
+  });
   Object.assign(hooks, modeHooks);
-  const sessionStorageHooks = createSessionStorageHook(input, config2.claudeCodeCompatibility?.dataStorage);
+  const sessionStorageHooks = createSessionStorageHook(input, {
+    enabled: config2.claudeCodeCompatibility?.dataStorage ?? true
+  });
   Object.assign(hooks, sessionStorageHooks);
-  const claudeCodeHooks = createClaudeCodeHooks(input, config2.claudeCodeCompatibility);
+  const claudeCodeHooks = createClaudeCodeHooks(input, {
+    config: config2.claudeCodeCompatibility
+  });
   Object.assign(hooks, claudeCodeHooks);
   hooks.push({ tool: builtinTools });
   hooks.push({
@@ -20428,6 +22726,21 @@ var createOpenCodeXPlugin = async (input) => {
       } catch (e) {
         console.error("[kraken-code] Error initializing MCP servers:", e);
       }
+      try {
+        const learningSystem = initializeLearningSystem(input, newConfig.learning);
+        Object.assign(hooks, learningSystem.hooks);
+        const learningTools = {
+          "learning-experience": learningSystem.tools.experienceTool,
+          "learning-knowledge": learningSystem.tools.knowledgeTool,
+          "learning-pattern": learningSystem.tools.patternTool,
+          "learning-fsm": learningSystem.tools.fsmTool,
+          "learning-stats": learningSystem.tools.statsTool
+        };
+        hooks.push({ tool: learningTools });
+        console.log("[kraken-code] Learning system initialized");
+      } catch (e) {
+        console.error("[kraken-code] Error initializing learning system:", e);
+      }
     }
   });
   try {
@@ -20435,7 +22748,6 @@ var createOpenCodeXPlugin = async (input) => {
     hooks.push({ tool: createBackgroundAgentFeature(input).tools });
     hooks.push(createContextWindowMonitorHook(input));
     hooks.push(createRalphLoopHook(input));
-    hooks.push(createContextInjector(input));
     hooks.push(createKeywordDetector(input));
     hooks.push(createAutoSlashCommand(input));
     hooks.push(createRulesInjector(input));
@@ -20466,12 +22778,12 @@ var createOpenCodeXPlugin = async (input) => {
     "tool.execute.after": async (hookInput, hookOutput) => {
       if (!hookOutput.output)
         return;
-      const { tool: tool16, sessionID } = hookInput;
+      const { tool: tool3, sessionID } = hookInput;
       if (hookOutput.output && hookOutput.output.toolOutput) {
-        await recordToolUse2(sessionID, tool16, hookOutput.output.toolInput, hookOutput.output.toolOutput);
+        await recordToolUse2(sessionID, tool3, hookOutput.output.toolInput, hookOutput.output.toolOutput);
       }
       if (sessionID) {
-        console.log(`[storage-hooks] Tool ${tool16} completed for session ${sessionID}`);
+        console.log(`[storage-hooks] Tool ${tool3} completed for session ${sessionID}`);
       }
     }
   });
@@ -20479,6 +22791,7 @@ var createOpenCodeXPlugin = async (input) => {
     try {
       await shutdownAllMcpServers();
       await shutdownKratos();
+      await shutdownLearningSystem();
     } catch (e) {
       console.error("Kraken Code: Error shutting down services", e);
     }
