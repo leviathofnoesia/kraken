@@ -40,7 +40,7 @@ export function createKnowledgeTool(knowledgeGraph: KnowledgeGraphStore) {
         .min(1)
         .max(10)
         .optional()
-        .describe("Importance level: 1-10 (for addNode)"),
+        .describe("Importance level:1-10 (for addNode)"),
       tags: z
         .array(z.string())
         .optional()
@@ -186,10 +186,10 @@ export function createKnowledgeTool(knowledgeGraph: KnowledgeGraphStore) {
                 id: node.id,
                 type: node.type,
                 importance: node.importance,
-                tags: node.metadata?.tags || [],
                 strength: node.strength,
                 lastAccessed: node.lastAccessed,
-                accessCount: node.accessCount
+                accessCount: node.accessCount,
+                tags: node.metadata?.tags || []
               }
             }, null, 2)
           }
