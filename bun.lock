@@ -19,7 +19,6 @@
         "js-yaml": "^4.1.1",
         "jsonc-parser": "^3.3.1",
         "kraken-code": "^1.1.2",
-        "kratos-mcp": "4.0.0",
         "open": "^11.0.0",
         "picocolors": "^1.1.1",
         "picomatch": "^4.0.2",
