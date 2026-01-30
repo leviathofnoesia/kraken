@@ -3,9 +3,11 @@ import { grepAppMCP, initializeGrepAppMCP } from "./grep-app"
 import * as types from "./types"
 
 describe("grep-app MCP", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     // Clear environment variables for each test
     delete process.env.GITHUB_TOKEN
+    // Reset config
+    await initializeGrepAppMCP({ githubToken: undefined, timeout: undefined, maxResults: undefined })
   })
 
   describe("initialization", () => {
@@ -58,7 +60,7 @@ describe("grep-app MCP", () => {
       // #given
       // #then should have two tools
       expect(grepAppMCP.tools.length).toBe(2)
-      expect(grepAppMCP.tools.map(t => t.description)).toContain("GitHub")
+      expect(grepAppMCP.tools.some(t => t.description.includes("GitHub"))).toBe(true)
     })
 
     it("has configuration schema", () => {

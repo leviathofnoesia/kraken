@@ -3,9 +3,11 @@ import { websearchMCP, initializeWebsearchMCP } from "./websearch"
 import * as types from "./types"
 
 describe("websearch MCP", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     // Clear environment variables for each test
     delete process.env.EXA_API_KEY
+    // Reset config
+    await initializeWebsearchMCP({ apiKey: undefined, timeout: undefined, numResults: undefined })
   })
 
   describe("initialization", () => {
@@ -58,8 +60,8 @@ describe("websearch MCP", () => {
       // #given
       // #then should have two tools
       expect(websearchMCP.tools.length).toBe(2)
-      expect(websearchMCP.tools.map(t => t.description)).toContain("websearch")
-      expect(websearchMCP.tools.map(t => t.description)).toContain("webfetch")
+      expect(websearchMCP.tools.some(t => t.description.includes("Search the web"))).toBe(true)
+      expect(websearchMCP.tools.some(t => t.description.includes("Fetch and parse"))).toBe(true)
     })
 
     it("has configuration schema", () => {
