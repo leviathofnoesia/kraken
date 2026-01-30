@@ -314,6 +314,9 @@ async function generatePKCEChallenge() {
   };
 }
 async function buildAuthURL(projectId, clientId = ANTIGRAVITY_CLIENT_ID, port = ANTIGRAVITY_CALLBACK_PORT, usePKCE = true) {
+  if (!usePKCE) {
+    console.warn("[OAuth] PKCE is disabled. This weakens security and is not recommended. PKCE (RFC 7636) prevents authorization code interception attacks.");
+  }
   const state = crypto.randomUUID().replace(/-/g, "");
   const redirectUri = `http://localhost:${port}/oauth-callback`;
   const url = new URL(GOOGLE_AUTH_URL);
