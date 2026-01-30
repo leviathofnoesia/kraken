@@ -13,7 +13,7 @@ const EnvironmentSchema = z.object({
   OPENAI_CALLBACK_PORT: z.string().regex(/^\d+$/).optional(),
   HOME: z.string().optional(),
   XDG_CONFIG_HOME: z.string().optional(),
-}).strict()
+})
 
 export type Environment = z.infer<typeof EnvironmentSchema>
 

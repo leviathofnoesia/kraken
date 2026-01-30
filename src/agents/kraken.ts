@@ -167,9 +167,12 @@ export function createKrakenConfig(
     availableSkills?: AvailableSkill[]
   }
 ): AgentConfig {
-  const DEFAULT_PERMISSIONS = [
-    { permission: "*", action: "allow", pattern: "*" },
-  ];
+  const DEFAULT_PERMISSIONS = {
+    bash: 'allow',
+    edit: 'allow',
+    webfetch: 'allow',
+    external_directory: 'allow',
+  }
 
   let dynamicSections = ""
 

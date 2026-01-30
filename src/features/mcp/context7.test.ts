@@ -3,10 +3,12 @@ import { context7MCP, initializeContext7MCP, clearContext7Cache } from "./contex
 import * as types from "./types"
 
 describe("context7 MCP", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     // Clear environment variables and cache for each test
     delete process.env.CONTEXT7_API_KEY
     clearContext7Cache()
+    // Reset config
+    await initializeContext7MCP({ apiKey: undefined, timeout: undefined, numResults: undefined, cacheTTL: undefined })
   })
 
   afterEach(() => {
@@ -64,7 +66,7 @@ describe("context7 MCP", () => {
       // #given
       // #then should have two tools
       expect(context7MCP.tools.length).toBe(2)
-      expect(context7MCP.tools.map(t => t.description)).toContain("documentation")
+      expect(context7MCP.tools.some(t => t.description.includes("documentation"))).toBe(true)
     })
 
     it("has configuration schema", () => {
