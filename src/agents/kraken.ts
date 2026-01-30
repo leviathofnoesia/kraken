@@ -168,10 +168,10 @@ export function createKrakenConfig(
   }
 ): AgentConfig {
   const DEFAULT_PERMISSIONS = {
-    bash: "allow",
-    edit: "allow",
-    webfetch: "allow",
-    external_directory: "allow",
+    bash: 'allow',
+    edit: 'allow',
+    webfetch: 'allow',
+    external_directory: 'allow',
   }
 
   let dynamicSections = ""

@@ -23,9 +23,13 @@ export function createClaudeCodeHooks(
 
   return {
     config: async (cfg: any) => {
-      // Configuration hook
-      if (options?.config) {
-        Object.assign(config, options.config)
+      try {
+        // Apply runtime configuration updates
+        if (cfg) {
+          Object.assign(config, cfg)
+        }
+      } catch (error) {
+        console.error("[claude-code-hooks] Error applying config:", error)
       }
     },
     "tool.execute.before": async (input, output) => {
