@@ -83,8 +83,11 @@ export async function buildAuthURL(
   projectId?: string,
   clientId: string = ANTIGRAVITY_CLIENT_ID,
   port: number = ANTIGRAVITY_CALLBACK_PORT,
-  usePKCE: boolean = false,
+  usePKCE: boolean = true,
 ): Promise<AuthorizationResult> {
+  if (!usePKCE) {
+    console.warn("[OAuth] PKCE is disabled. This weakens security and is not recommended. PKCE (RFC 7636) prevents authorization code interception attacks.")
+  }
   const state = crypto.randomUUID().replace(/-/g, "")
   
   const redirectUri = `http://localhost:${port}/oauth-callback`
@@ -323,7 +326,7 @@ export async function performOAuthFlow(
   openBrowser?: (url: string) => Promise<void>,
   clientId: string = ANTIGRAVITY_CLIENT_ID,
   clientSecret: string = ANTIGRAVITY_CLIENT_SECRET,
-  usePKCE: boolean = false
+  usePKCE: boolean = true
 ): Promise<{
   tokens: AntigravityTokenExchangeResult
   userInfo: AntigravityUserInfo
