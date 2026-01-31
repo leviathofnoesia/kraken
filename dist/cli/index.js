@@ -1266,7 +1266,7 @@ import { writeFileSync as writeFileSync2, existsSync as existsSync6, mkdirSync, 
 import * as path4 from "path";
 import * as os4 from "os";
 import color4 from "picocolors";
-var __dirname = "/tmp/kraken-code/src/cli";
+var __dirname = "/home/ubuntu/kraken-code/src/cli";
 async function runInit(options) {
   console.log(color4.cyan("\uD83D\uDC19 Initializing Kraken Code..."));
   const configDir = path4.join(os4.homedir(), ".config", "opencode");
@@ -1355,6 +1355,7 @@ async function runInit(options) {
   }
   const mergedOpencodeConfig = {
     ...existingOpencodeConfig,
+    $schema: "https://opencode.ai/config.json",
     plugin: Array.from(new Set([
       ...existingOpencodeConfig.plugin || [],
       "kraken-code"
@@ -1477,7 +1478,7 @@ Active Modes:`));
   }
 }
 // package.json
-var version2 = "1.1.3";
+var version2 = "1.1.4";
 
 // src/cli/index.ts
 var program = new Command;
