@@ -48,11 +48,16 @@ For detailed installation options, run: `kraken-code --help`
 
 Don't do everything yourself. Kraken routes work to the right specialist automatically:
 
-- **Architecture decisions?** → Ask **Atlas** (merged Maelstrom + Leviathan expertise)
-- **Deep analysis needed?** → Deploy **Abyssal** for external research
-- **Building UI?** → Hand to **Coral** for visual precision
-- **Writing docs?** → Let **Siren** craft clear documentation
-- **Complex test failures?** → Consult **Scylla** for test strategy
+- **Need a generalist?** → **Kraken** orchestrates everything and keeps you on track
+- **Architecture decisions?** → Ask **Atlas** to break down complex tasks systematically
+- **Exploring codebase?** → **Nautilus** finds patterns automatically across large projects
+- **Deep analysis needed?** → Deploy **Abyssal** for external research and docs
+- **Building UI?** → Hand to **Coral** for visual precision and design sensibility
+- **Writing docs?** → Let **Siren** craft clear, structured documentation
+- **Complex test failures?** → Consult **Scylla** for comprehensive test strategy
+- **Refactoring needed?** → **Pearl** optimizes code for performance and readability
+- **Hard problems?** → **Maelstrom** applies first-principles reasoning
+- **Large-scale changes?** → **Leviathan** manages complex refactors and architecture
 - **Infrastructure work?** → **Poseidon** handles data pipelines and CI/CD
 
 ### ⚡ **Production Modes**
