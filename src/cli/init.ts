@@ -105,6 +105,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean }) {
 
   const mergedOpencodeConfig = {
     ...existingOpencodeConfig,
+    $schema: "https://opencode.ai/config.json",
     plugin: Array.from(new Set([
       ...(existingOpencodeConfig.plugin || []),
       "kraken-code"

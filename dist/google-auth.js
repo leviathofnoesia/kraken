@@ -28,7 +28,7 @@ var __export = (target, all) => {
 var __esm = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
 var __require = /* @__PURE__ */ createRequire(import.meta.url);
 
-// node_modules/picocolors/picocolors.js
+// ../node_modules/picocolors/picocolors.js
 var require_picocolors = __commonJS((exports, module) => {
   var p = process || {};
   var argv = p.argv || [];
@@ -98,7 +98,7 @@ var require_picocolors = __commonJS((exports, module) => {
   module.exports.createColors = createColors;
 });
 
-// node_modules/sisteransi/src/index.js
+// ../node_modules/sisteransi/src/index.js
 var require_src = __commonJS((exports, module) => {
   var ESC = "\x1B";
   var CSI = `${ESC}[`;
@@ -2719,7 +2719,7 @@ function createAntigravityFetch(getAuth, client, providerId, clientId, clientSec
   };
   return fetchFn;
 }
-// node_modules/@clack/prompts/node_modules/@clack/core/dist/index.mjs
+// ../node_modules/@clack/prompts/node_modules/@clack/core/dist/index.mjs
 var import_picocolors = __toESM(require_picocolors(), 1);
 import { stdout as R, stdin as q } from "node:process";
 var import_sisteransi = __toESM(require_src(), 1);
@@ -2733,76 +2733,76 @@ var M = /\t{1,1000}/y;
 var P = /[\u{1F1E6}-\u{1F1FF}]{2}|\u{1F3F4}[\u{E0061}-\u{E007A}]{2}[\u{E0030}-\u{E0039}\u{E0061}-\u{E007A}]{1,3}\u{E007F}|(?:\p{Emoji}\uFE0F\u20E3?|\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation})(?:\u200D(?:\p{Emoji_Modifier_Base}\p{Emoji_Modifier}?|\p{Emoji_Presentation}|\p{Emoji}\uFE0F\u20E3?))*/yu;
 var L = /(?:[\x20-\x7E\xA0-\xFF](?!\uFE0F)){1,1000}/y;
 var ct = /\p{M}+/gu;
-var Ft = { limit: 1 / 0, ellipsis: "" };
+var pt = { limit: 1 / 0, ellipsis: "" };
 var X = (t, e = {}, s = {}) => {
-  const i = e.limit ?? 1 / 0, r = e.ellipsis ?? "", n = e?.ellipsisWidth ?? (r ? X(r, Ft, s).width : 0), o = s.ansiWidth ?? 0, a = s.controlWidth ?? 0, l = s.tabWidth ?? 8, E = s.ambiguousWidth ?? 1, g = s.emojiWidth ?? 2, m = s.fullWidthWidth ?? 2, A = s.regularWidth ?? 1, V = s.wideWidth ?? 2;
-  let h = 0, u = 0, f = t.length, v = 0, p = false, d = f, b = Math.max(0, i - n), C = 0, B = 0, c = 0, F = 0;
+  const i = e.limit ?? 1 / 0, r = e.ellipsis ?? "", n = e?.ellipsisWidth ?? (r ? X(r, pt, s).width : 0), u = s.ansiWidth ?? 0, a = s.controlWidth ?? 0, l = s.tabWidth ?? 8, E = s.ambiguousWidth ?? 1, g = s.emojiWidth ?? 2, m = s.fullWidthWidth ?? 2, A = s.regularWidth ?? 1, V = s.wideWidth ?? 2;
+  let h = 0, o = 0, f = t.length, v = 0, F = false, d = f, b = Math.max(0, i - n), C = 0, B = 0, c = 0, p = 0;
   t:
     for (;; ) {
-      if (B > C || u >= f && u > h) {
-        const ut = t.slice(C, B) || t.slice(h, u);
+      if (B > C || o >= f && o > h) {
+        const ut = t.slice(C, B) || t.slice(h, o);
         v = 0;
         for (const Y of ut.replaceAll(ct, "")) {
           const $ = Y.codePointAt(0) || 0;
-          if (lt($) ? F = m : ht($) ? F = V : E !== A && at($) ? F = E : F = A, c + F > b && (d = Math.min(d, Math.max(C, h) + v)), c + F > i) {
-            p = true;
+          if (lt($) ? p = m : ht($) ? p = V : E !== A && at($) ? p = E : p = A, c + p > b && (d = Math.min(d, Math.max(C, h) + v)), c + p > i) {
+            F = true;
             break t;
           }
-          v += Y.length, c += F;
+          v += Y.length, c += p;
         }
         C = B = 0;
       }
-      if (u >= f)
+      if (o >= f)
         break;
-      if (L.lastIndex = u, L.test(t)) {
-        if (v = L.lastIndex - u, F = v * A, c + F > b && (d = Math.min(d, u + Math.floor((b - c) / A))), c + F > i) {
-          p = true;
+      if (L.lastIndex = o, L.test(t)) {
+        if (v = L.lastIndex - o, p = v * A, c + p > b && (d = Math.min(d, o + Math.floor((b - c) / A))), c + p > i) {
+          F = true;
           break;
         }
-        c += F, C = h, B = u, u = h = L.lastIndex;
+        c += p, C = h, B = o, o = h = L.lastIndex;
         continue;
       }
-      if (O.lastIndex = u, O.test(t)) {
-        if (c + o > b && (d = Math.min(d, u)), c + o > i) {
-          p = true;
+      if (O.lastIndex = o, O.test(t)) {
+        if (c + u > b && (d = Math.min(d, o)), c + u > i) {
+          F = true;
           break;
         }
-        c += o, C = h, B = u, u = h = O.lastIndex;
+        c += u, C = h, B = o, o = h = O.lastIndex;
         continue;
       }
-      if (y.lastIndex = u, y.test(t)) {
-        if (v = y.lastIndex - u, F = v * a, c + F > b && (d = Math.min(d, u + Math.floor((b - c) / a))), c + F > i) {
-          p = true;
+      if (y.lastIndex = o, y.test(t)) {
+        if (v = y.lastIndex - o, p = v * a, c + p > b && (d = Math.min(d, o + Math.floor((b - c) / a))), c + p > i) {
+          F = true;
           break;
         }
-        c += F, C = h, B = u, u = h = y.lastIndex;
+        c += p, C = h, B = o, o = h = y.lastIndex;
         continue;
       }
-      if (M.lastIndex = u, M.test(t)) {
-        if (v = M.lastIndex - u, F = v * l, c + F > b && (d = Math.min(d, u + Math.floor((b - c) / l))), c + F > i) {
-          p = true;
+      if (M.lastIndex = o, M.test(t)) {
+        if (v = M.lastIndex - o, p = v * l, c + p > b && (d = Math.min(d, o + Math.floor((b - c) / l))), c + p > i) {
+          F = true;
           break;
         }
-        c += F, C = h, B = u, u = h = M.lastIndex;
+        c += p, C = h, B = o, o = h = M.lastIndex;
         continue;
       }
-      if (P.lastIndex = u, P.test(t)) {
-        if (c + g > b && (d = Math.min(d, u)), c + g > i) {
-          p = true;
+      if (P.lastIndex = o, P.test(t)) {
+        if (c + g > b && (d = Math.min(d, o)), c + g > i) {
+          F = true;
           break;
         }
-        c += g, C = h, B = u, u = h = P.lastIndex;
+        c += g, C = h, B = o, o = h = P.lastIndex;
         continue;
       }
-      u += 1;
+      o += 1;
     }
-  return { width: p ? b : c, index: p ? d : f, truncated: p, ellipsed: p && i >= n };
+  return { width: F ? b : c, index: F ? d : f, truncated: F, ellipsed: F && i >= n };
 };
 var ft = { limit: 1 / 0, ellipsis: "", ellipsisWidth: 0 };
 var S = (t, e = {}) => X(t, ft, e).width;
 var W = "\x1B";
 var Z = "";
-var pt = 39;
+var Ft = 39;
 var j = "\x07";
 var Q = "[";
 var dt = "]";
@@ -2834,12 +2834,12 @@ var it = (t) => `${W}${U}${t}${j}`;
 var gt = (t) => t.map((e) => S(e));
 var G = (t, e, s) => {
   const i = e[Symbol.iterator]();
-  let r = false, n = false, o = t.at(-1), a = o === undefined ? 0 : S(o), l = i.next(), E = i.next(), g = 0;
+  let r = false, n = false, u = t.at(-1), a = u === undefined ? 0 : S(u), l = i.next(), E = i.next(), g = 0;
   for (;!l.done; ) {
     const m = l.value, A = S(m);
     a + A <= s ? t[t.length - 1] += m : (t.push(m), a = 0), (m === W || m === Z) && (r = true, n = e.startsWith(U, g + 1)), r ? n ? m === j && (r = false, n = false) : m === tt && (r = false) : (a += A, a === s && !E.done && (t.push(""), a = 0)), l = E, E = i.next(), g += m.length;
   }
-  o = t.at(-1), !a && o !== undefined && o.length > 0 && t.length > 1 && (t[t.length - 2] += t.pop());
+  u = t.at(-1), !a && u !== undefined && u.length > 0 && t.length > 1 && (t[t.length - 2] += t.pop());
 };
 var vt = (t) => {
   const e = t.split(" ");
@@ -2852,46 +2852,46 @@ var Et = (t, e, s = {}) => {
   if (s.trim !== false && t.trim() === "")
     return "";
   let i = "", r, n;
-  const o = t.split(" "), a = gt(o);
+  const u = t.split(" "), a = gt(u);
   let l = [""];
-  for (const [h, u] of o.entries()) {
+  for (const [h, o] of u.entries()) {
     s.trim !== false && (l[l.length - 1] = (l.at(-1) ?? "").trimStart());
     let f = S(l.at(-1) ?? "");
     if (h !== 0 && (f >= e && (s.wordWrap === false || s.trim === false) && (l.push(""), f = 0), (f > 0 || s.trim === false) && (l[l.length - 1] += " ", f++)), s.hard && a[h] > e) {
-      const v = e - f, p = 1 + Math.floor((a[h] - v - 1) / e);
-      Math.floor((a[h] - 1) / e) < p && l.push(""), G(l, u, e);
+      const v = e - f, F = 1 + Math.floor((a[h] - v - 1) / e);
+      Math.floor((a[h] - 1) / e) < F && l.push(""), G(l, o, e);
       continue;
     }
     if (f + a[h] > e && f > 0 && a[h] > 0) {
       if (s.wordWrap === false && f < e) {
-        G(l, u, e);
+        G(l, o, e);
         continue;
       }
       l.push("");
     }
     if (f + a[h] > e && s.wordWrap === false) {
-      G(l, u, e);
+      G(l, o, e);
       continue;
     }
-    l[l.length - 1] += u;
+    l[l.length - 1] += o;
   }
   s.trim !== false && (l = l.map((h) => vt(h)));
   const E = l.join(`
 `), g = E[Symbol.iterator]();
   let m = g.next(), A = g.next(), V = 0;
   for (;!m.done; ) {
-    const h = m.value, u = A.value;
+    const h = m.value, o = A.value;
     if (i += h, h === W || h === Z) {
       et.lastIndex = V + 1;
-      const p = et.exec(E)?.groups;
-      if (p?.code !== undefined) {
-        const d = Number.parseFloat(p.code);
-        r = d === pt ? undefined : d;
+      const F = et.exec(E)?.groups;
+      if (F?.code !== undefined) {
+        const d = Number.parseFloat(F.code);
+        r = d === Ft ? undefined : d;
       } else
-        p?.uri !== undefined && (n = p.uri.length === 0 ? undefined : p.uri);
+        F?.uri !== undefined && (n = F.uri.length === 0 ? undefined : F.uri);
     }
     const f = r ? mt(r) : undefined;
-    u === `
+    o === `
 ` ? (n && (i += it("")), r && f && (i += st(f))) : h === `
 ` && (r && f && (i += st(r)), n && (i += it(n))), V += h.length, m = A, A = g.next();
   }
@@ -2920,8 +2920,8 @@ function _t(t, e) {
   const s = t.split(`
 `), i = e.split(`
 `), r = Math.max(s.length, i.length), n = [];
-  for (let o = 0;o < r; o++)
-    s[o] !== i[o] && n.push(o);
+  for (let u = 0;u < r; u++)
+    s[u] !== i[u] && n.push(u);
   return { lines: n, numLinesBefore: s.length, numLinesAfter: i.length, numLines: r };
 }
 var bt = globalThis.process.platform.startsWith("win");
@@ -2938,7 +2938,7 @@ var nt = (t) => ("rows" in t) && typeof t.rows == "number" ? t.rows : 20;
 function Bt(t, e, s, i = s) {
   const r = rt(t ?? R);
   return K(e, r - s.length, { hard: true, trim: false }).split(`
-`).map((n, o) => `${o === 0 ? i : s}${n}`).join(`
+`).map((n, u) => `${u === 0 ? i : s}${n}`).join(`
 `);
 }
 
@@ -2958,8 +2958,8 @@ class x {
   value;
   userInput = "";
   constructor(e, s = true) {
-    const { input: i = q, output: r = R, render: n, signal: o, ...a } = e;
-    this.opts = a, this.onKeypress = this.onKeypress.bind(this), this.close = this.close.bind(this), this.render = this.render.bind(this), this._render = n.bind(this), this._track = s, this._abortSignal = o, this.input = i, this.output = r;
+    const { input: i = q, output: r = R, render: n, signal: u, ...a } = e;
+    this.opts = a, this.onKeypress = this.onKeypress.bind(this), this.close = this.close.bind(this), this.render = this.render.bind(this), this._render = n.bind(this), this._track = s, this._abortSignal = u, this.input = i, this.output = r;
   }
   unsubscribe() {
     this._subscribers.clear();
@@ -3037,27 +3037,27 @@ class x {
         const s = _t(this._prevFrame, e), i = nt(this.output);
         if (this.restoreCursor(), s) {
           const r = Math.max(0, s.numLinesAfter - i), n = Math.max(0, s.numLinesBefore - i);
-          let o = s.lines.find((a) => a >= r);
-          if (o === undefined) {
+          let u = s.lines.find((a) => a >= r);
+          if (u === undefined) {
             this._prevFrame = e;
             return;
           }
           if (s.lines.length === 1) {
-            this.output.write(import_sisteransi.cursor.move(0, o - n)), this.output.write(import_sisteransi.erase.lines(1));
+            this.output.write(import_sisteransi.cursor.move(0, u - n)), this.output.write(import_sisteransi.erase.lines(1));
             const a = e.split(`
 `);
-            this.output.write(a[o]), this._prevFrame = e, this.output.write(import_sisteransi.cursor.move(0, a.length - o - 1));
+            this.output.write(a[u]), this._prevFrame = e, this.output.write(import_sisteransi.cursor.move(0, a.length - u - 1));
             return;
           } else if (s.lines.length > 1) {
             if (r < n)
-              o = r;
+              u = r;
             else {
-              const l = o - n;
+              const l = u - n;
               l > 0 && this.output.write(import_sisteransi.cursor.move(0, l));
             }
             this.output.write(import_sisteransi.erase.down());
             const a = e.split(`
-`).slice(o);
+`).slice(u);
             this.output.write(a.join(`
 `)), this._prevFrame = e;
             return;
@@ -3114,7 +3114,7 @@ class Vt extends x {
     let i;
     if (e.initialValue && Array.isArray(e.initialValue) ? this.multiple ? i = e.initialValue : i = e.initialValue.slice(0, 1) : !this.multiple && this.options.length > 0 && (i = [this.options[0].value]), i)
       for (const r of i) {
-        const n = s.findIndex((o) => o.value === r);
+        const n = s.findIndex((u) => u.value === r);
         n !== -1 && (this.toggleSelected(r), this.#t = n);
       }
     this.focusedValue = this.options[this.#t]?.value, this.on("key", (r, n) => this.#r(r, n)), this.on("userInput", (r) => this.#n(r));
@@ -3140,7 +3140,8 @@ class Vt extends x {
     }
   }
 }
-var kt = class extends x {
+
+class kt extends x {
   get cursor() {
     return this.value ? 0 : 1;
   }
@@ -3156,7 +3157,7 @@ var kt = class extends x {
       this.value = !this.value;
     });
   }
-};
+}
 
 class yt extends x {
   options;
@@ -3237,7 +3238,7 @@ class Wt extends x {
   }
 }
 
-// node_modules/@clack/prompts/dist/index.mjs
+// ../node_modules/@clack/prompts/dist/index.mjs
 var import_picocolors2 = __toESM(require_picocolors(), 1);
 import P2 from "node:process";
 var import_sisteransi2 = __toESM(require_src(), 1);
@@ -3249,7 +3250,7 @@ var w2 = (e, r) => ee ? e : r;
 var Me = w2("◆", "*");
 var ce = w2("■", "x");
 var de = w2("▲", "x");
-var V = w2("◇", "o");
+var k = w2("◇", "o");
 var $e = w2("┌", "T");
 var h = w2("│", "|");
 var x2 = w2("└", "—");
@@ -3258,7 +3259,7 @@ var Oe = w2("┘", "—");
 var Y = w2("●", ">");
 var K2 = w2("○", " ");
 var te = w2("◻", "[•]");
-var k = w2("◼", "[+]");
+var G2 = w2("◼", "[+]");
 var z2 = w2("◻", "[ ]");
 var Pe = w2("▪", "•");
 var se = w2("─", "-");
@@ -3281,7 +3282,7 @@ var N2 = (e) => {
     case "error":
       return import_picocolors2.default.yellow(de);
     case "submit":
-      return import_picocolors2.default.green(V);
+      return import_picocolors2.default.green(k);
   }
 };
 var Ee = (e) => {
@@ -3308,68 +3309,68 @@ var ne = /(?:[\x20-\x7E\xA0-\xFF](?!\uFE0F)){1,1000}/y;
 var ft2 = /\p{M}+/gu;
 var Ft2 = { limit: 1 / 0, ellipsis: "" };
 var Le = (e, r = {}, s = {}) => {
-  const i = r.limit ?? 1 / 0, n = r.ellipsis ?? "", l = r?.ellipsisWidth ?? (n ? Le(n, Ft2, s).width : 0), u = s.ansiWidth ?? 0, o = s.controlWidth ?? 0, a = s.tabWidth ?? 8, c = s.ambiguousWidth ?? 1, g = s.emojiWidth ?? 2, E = s.fullWidthWidth ?? 2, p = s.regularWidth ?? 1, y2 = s.wideWidth ?? 2;
-  let $ = 0, m = 0, d = e.length, F = 0, f = false, v = d, I2 = Math.max(0, i - l), B = 0, b = 0, A = 0, C = 0;
+  const i = r.limit ?? 1 / 0, n = r.ellipsis ?? "", o = r?.ellipsisWidth ?? (n ? Le(n, Ft2, s).width : 0), u = s.ansiWidth ?? 0, l = s.controlWidth ?? 0, a = s.tabWidth ?? 8, d = s.ambiguousWidth ?? 1, g = s.emojiWidth ?? 2, E = s.fullWidthWidth ?? 2, p = s.regularWidth ?? 1, y2 = s.wideWidth ?? 2;
+  let $ = 0, c = 0, m = e.length, f = 0, F = false, v = m, S2 = Math.max(0, i - o), B = 0, b = 0, A = 0, C = 0;
   e:
     for (;; ) {
-      if (b > B || m >= d && m > $) {
-        const _2 = e.slice(B, b) || e.slice($, m);
-        F = 0;
+      if (b > B || c >= m && c > $) {
+        const _2 = e.slice(B, b) || e.slice($, c);
+        f = 0;
         for (const D2 of _2.replaceAll(ft2, "")) {
           const T2 = D2.codePointAt(0) || 0;
-          if (pt2(T2) ? C = E : gt2(T2) ? C = y2 : c !== p && mt2(T2) ? C = c : C = p, A + C > I2 && (v = Math.min(v, Math.max(B, $) + F)), A + C > i) {
-            f = true;
+          if (pt2(T2) ? C = E : gt2(T2) ? C = y2 : d !== p && mt2(T2) ? C = d : C = p, A + C > S2 && (v = Math.min(v, Math.max(B, $) + f)), A + C > i) {
+            F = true;
             break e;
           }
-          F += D2.length, A += C;
+          f += D2.length, A += C;
         }
         B = b = 0;
       }
-      if (m >= d)
+      if (c >= m)
         break;
-      if (ne.lastIndex = m, ne.test(e)) {
-        if (F = ne.lastIndex - m, C = F * p, A + C > I2 && (v = Math.min(v, m + Math.floor((I2 - A) / p))), A + C > i) {
-          f = true;
+      if (ne.lastIndex = c, ne.test(e)) {
+        if (f = ne.lastIndex - c, C = f * p, A + C > S2 && (v = Math.min(v, c + Math.floor((S2 - A) / p))), A + C > i) {
+          F = true;
           break;
         }
-        A += C, B = $, b = m, m = $ = ne.lastIndex;
+        A += C, B = $, b = c, c = $ = ne.lastIndex;
         continue;
       }
-      if (ve.lastIndex = m, ve.test(e)) {
-        if (A + u > I2 && (v = Math.min(v, m)), A + u > i) {
-          f = true;
+      if (ve.lastIndex = c, ve.test(e)) {
+        if (A + u > S2 && (v = Math.min(v, c)), A + u > i) {
+          F = true;
           break;
         }
-        A += u, B = $, b = m, m = $ = ve.lastIndex;
+        A += u, B = $, b = c, c = $ = ve.lastIndex;
         continue;
       }
-      if (re.lastIndex = m, re.test(e)) {
-        if (F = re.lastIndex - m, C = F * o, A + C > I2 && (v = Math.min(v, m + Math.floor((I2 - A) / o))), A + C > i) {
-          f = true;
+      if (re.lastIndex = c, re.test(e)) {
+        if (f = re.lastIndex - c, C = f * l, A + C > S2 && (v = Math.min(v, c + Math.floor((S2 - A) / l))), A + C > i) {
+          F = true;
           break;
         }
-        A += C, B = $, b = m, m = $ = re.lastIndex;
+        A += C, B = $, b = c, c = $ = re.lastIndex;
         continue;
       }
-      if (ie.lastIndex = m, ie.test(e)) {
-        if (F = ie.lastIndex - m, C = F * a, A + C > I2 && (v = Math.min(v, m + Math.floor((I2 - A) / a))), A + C > i) {
-          f = true;
+      if (ie.lastIndex = c, ie.test(e)) {
+        if (f = ie.lastIndex - c, C = f * a, A + C > S2 && (v = Math.min(v, c + Math.floor((S2 - A) / a))), A + C > i) {
+          F = true;
           break;
         }
-        A += C, B = $, b = m, m = $ = ie.lastIndex;
+        A += C, B = $, b = c, c = $ = ie.lastIndex;
         continue;
       }
-      if (Ae.lastIndex = m, Ae.test(e)) {
-        if (A + g > I2 && (v = Math.min(v, m)), A + g > i) {
-          f = true;
+      if (Ae.lastIndex = c, Ae.test(e)) {
+        if (A + g > S2 && (v = Math.min(v, c)), A + g > i) {
+          F = true;
           break;
         }
-        A += g, B = $, b = m, m = $ = Ae.lastIndex;
+        A += g, B = $, b = c, c = $ = Ae.lastIndex;
         continue;
       }
-      m += 1;
+      c += 1;
     }
-  return { width: f ? I2 : A, index: f ? v : d, truncated: f, ellipsed: f && i >= l };
+  return { width: F ? S2 : A, index: F ? v : m, truncated: F, ellipsed: F && i >= o };
 };
 var yt2 = { limit: 1 / 0, ellipsis: "", ellipsisWidth: 0 };
 var M2 = (e, r = {}) => Le(e, yt2, r).width;
@@ -3405,14 +3406,14 @@ var At2 = (e) => {
 var He = (e) => `${ae}${Ve}${e}${ke}`;
 var Ue = (e) => `${ae}${we}${e}${Ce}`;
 var Ct2 = (e) => e.map((r) => M2(r));
-var Ie = (e, r, s) => {
+var Se = (e, r, s) => {
   const i = r[Symbol.iterator]();
-  let n = false, l = false, u = e.at(-1), o = u === undefined ? 0 : M2(u), a = i.next(), c = i.next(), g = 0;
+  let n = false, o = false, u = e.at(-1), l = u === undefined ? 0 : M2(u), a = i.next(), d = i.next(), g = 0;
   for (;!a.done; ) {
     const E = a.value, p = M2(E);
-    o + p <= s ? e[e.length - 1] += E : (e.push(E), o = 0), (E === ae || E === je) && (n = true, l = r.startsWith(we, g + 1)), n ? l ? E === Ce && (n = false, l = false) : E === ke && (n = false) : (o += p, o === s && !c.done && (e.push(""), o = 0)), a = c, c = i.next(), g += E.length;
+    l + p <= s ? e[e.length - 1] += E : (e.push(E), l = 0), (E === ae || E === je) && (n = true, o = r.startsWith(we, g + 1)), n ? o ? E === Ce && (n = false, o = false) : E === ke && (n = false) : (l += p, l === s && !d.done && (e.push(""), l = 0)), a = d, d = i.next(), g += E.length;
   }
-  u = e.at(-1), !o && u !== undefined && u.length > 0 && e.length > 1 && (e[e.length - 2] += e.pop());
+  u = e.at(-1), !l && u !== undefined && u.length > 0 && e.length > 1 && (e[e.length - 2] += e.pop());
 };
 var wt2 = (e) => {
   const r = e.split(" ");
@@ -3421,52 +3422,52 @@ var wt2 = (e) => {
     s--;
   return s === r.length ? e : r.slice(0, s).join(" ") + r.slice(s).join("");
 };
-var It2 = (e, r, s = {}) => {
+var St2 = (e, r, s = {}) => {
   if (s.trim !== false && e.trim() === "")
     return "";
-  let i = "", n, l;
-  const u = e.split(" "), o = Ct2(u);
+  let i = "", n, o;
+  const u = e.split(" "), l = Ct2(u);
   let a = [""];
-  for (const [$, m] of u.entries()) {
+  for (const [$, c] of u.entries()) {
     s.trim !== false && (a[a.length - 1] = (a.at(-1) ?? "").trimStart());
-    let d = M2(a.at(-1) ?? "");
-    if ($ !== 0 && (d >= r && (s.wordWrap === false || s.trim === false) && (a.push(""), d = 0), (d > 0 || s.trim === false) && (a[a.length - 1] += " ", d++)), s.hard && o[$] > r) {
-      const F = r - d, f = 1 + Math.floor((o[$] - F - 1) / r);
-      Math.floor((o[$] - 1) / r) < f && a.push(""), Ie(a, m, r);
+    let m = M2(a.at(-1) ?? "");
+    if ($ !== 0 && (m >= r && (s.wordWrap === false || s.trim === false) && (a.push(""), m = 0), (m > 0 || s.trim === false) && (a[a.length - 1] += " ", m++)), s.hard && l[$] > r) {
+      const f = r - m, F = 1 + Math.floor((l[$] - f - 1) / r);
+      Math.floor((l[$] - 1) / r) < F && a.push(""), Se(a, c, r);
       continue;
     }
-    if (d + o[$] > r && d > 0 && o[$] > 0) {
-      if (s.wordWrap === false && d < r) {
-        Ie(a, m, r);
+    if (m + l[$] > r && m > 0 && l[$] > 0) {
+      if (s.wordWrap === false && m < r) {
+        Se(a, c, r);
         continue;
       }
       a.push("");
     }
-    if (d + o[$] > r && s.wordWrap === false) {
-      Ie(a, m, r);
+    if (m + l[$] > r && s.wordWrap === false) {
+      Se(a, c, r);
       continue;
     }
-    a[a.length - 1] += m;
+    a[a.length - 1] += c;
   }
   s.trim !== false && (a = a.map(($) => wt2($)));
-  const c = a.join(`
-`), g = c[Symbol.iterator]();
+  const d = a.join(`
+`), g = d[Symbol.iterator]();
   let E = g.next(), p = g.next(), y2 = 0;
   for (;!E.done; ) {
-    const $ = E.value, m = p.value;
+    const $ = E.value, c = p.value;
     if (i += $, $ === ae || $ === je) {
       Ge.lastIndex = y2 + 1;
-      const f = Ge.exec(c)?.groups;
-      if (f?.code !== undefined) {
-        const v = Number.parseFloat(f.code);
+      const F = Ge.exec(d)?.groups;
+      if (F?.code !== undefined) {
+        const v = Number.parseFloat(F.code);
         n = v === Et2 ? undefined : v;
       } else
-        f?.uri !== undefined && (l = f.uri.length === 0 ? undefined : f.uri);
+        F?.uri !== undefined && (o = F.uri.length === 0 ? undefined : F.uri);
     }
-    const d = n ? At2(n) : undefined;
-    m === `
-` ? (l && (i += Ue("")), n && d && (i += He(d))) : $ === `
-` && (n && d && (i += He(n)), l && (i += Ue(l))), y2 += $.length, E = p, p = g.next();
+    const m = n ? At2(n) : undefined;
+    c === `
+` ? (o && (i += Ue("")), n && m && (i += He(m))) : $ === `
+` && (n && m && (i += He(n)), o && (i += Ue(o))), y2 += $.length, E = p, p = g.next();
   }
   return i;
 };
@@ -3474,43 +3475,43 @@ function q2(e, r, s) {
   return String(e).normalize().replaceAll(`\r
 `, `
 `).split(`
-`).map((i) => It2(i, r, s)).join(`
+`).map((i) => St2(i, r, s)).join(`
 `);
 }
-var St2 = (e, r, s, i, n) => {
-  let l = r, u = 0;
-  for (let o = s;o < i; o++) {
-    const a = e[o];
-    if (l = l - a.length, u++, l <= n)
+var It2 = (e, r, s, i, n) => {
+  let o = r, u = 0;
+  for (let l = s;l < i; l++) {
+    const a = e[l];
+    if (o = o - a.length, u++, o <= n)
       break;
   }
-  return { lineCount: l, removals: u };
+  return { lineCount: o, removals: u };
 };
 var J = (e) => {
-  const { cursor: r, options: s, style: i } = e, n = e.output ?? process.stdout, l = rt(n), u = e.columnPadding ?? 0, o = e.rowPadding ?? 4, a = l - u, c = nt(n), g = import_picocolors2.default.dim("..."), E = e.maxItems ?? Number.POSITIVE_INFINITY, p = Math.max(c - o, 0), y2 = Math.max(Math.min(E, p), 5);
+  const { cursor: r, options: s, style: i } = e, n = e.output ?? process.stdout, o = rt(n), u = e.columnPadding ?? 0, l = e.rowPadding ?? 4, a = o - u, d = nt(n), g = import_picocolors2.default.dim("..."), E = e.maxItems ?? Number.POSITIVE_INFINITY, p = Math.max(d - l, 0), y2 = Math.max(Math.min(E, p), 5);
   let $ = 0;
   r >= y2 - 3 && ($ = Math.max(Math.min(r - y2 + 3, s.length - y2), 0));
-  let m = y2 < s.length && $ > 0, d = y2 < s.length && $ + y2 < s.length;
-  const F = Math.min($ + y2, s.length), f = [];
+  let c = y2 < s.length && $ > 0, m = y2 < s.length && $ + y2 < s.length;
+  const f = Math.min($ + y2, s.length), F = [];
   let v = 0;
-  m && v++, d && v++;
-  const I2 = $ + (m ? 1 : 0), B = F - (d ? 1 : 0);
-  for (let A = I2;A < B; A++) {
+  c && v++, m && v++;
+  const S2 = $ + (c ? 1 : 0), B = f - (m ? 1 : 0);
+  for (let A = S2;A < B; A++) {
     const C = q2(i(s[A], A === r), a, { hard: true, trim: false }).split(`
 `);
-    f.push(C), v += C.length;
+    F.push(C), v += C.length;
   }
   if (v > p) {
     let A = 0, C = 0, _2 = v;
-    const D2 = r - I2, T2 = (W2, S2) => St2(f, _2, W2, S2, p);
-    m ? ({ lineCount: _2, removals: A } = T2(0, D2), _2 > p && ({ lineCount: _2, removals: C } = T2(D2 + 1, f.length))) : ({ lineCount: _2, removals: C } = T2(D2 + 1, f.length), _2 > p && ({ lineCount: _2, removals: A } = T2(0, D2))), A > 0 && (m = true, f.splice(0, A)), C > 0 && (d = true, f.splice(f.length - C, C));
+    const D2 = r - S2, T2 = (W2, I2) => It2(F, _2, W2, I2, p);
+    c ? ({ lineCount: _2, removals: A } = T2(0, D2), _2 > p && ({ lineCount: _2, removals: C } = T2(D2 + 1, F.length))) : ({ lineCount: _2, removals: C } = T2(D2 + 1, F.length), _2 > p && ({ lineCount: _2, removals: A } = T2(0, D2))), A > 0 && (c = true, F.splice(0, A)), C > 0 && (m = true, F.splice(F.length - C, C));
   }
   const b = [];
-  m && b.push(g);
-  for (const A of f)
+  c && b.push(g);
+  for (const A of F)
     for (const C of A)
       b.push(C);
-  return d && b.push(g), b;
+  return m && b.push(g), b;
 };
 var Mt2 = (e) => {
   const r = e.active ?? "Yes", s = e.inactive ?? "No";
@@ -3548,29 +3549,29 @@ var qt = (e) => {
       case "active":
         return `${import_picocolors2.default.green(Y)} ${n}${s.hint ? ` ${import_picocolors2.default.dim(`(${s.hint})`)}` : ""}`;
       case "cancelled":
-        return `${oe(n, (l) => import_picocolors2.default.strikethrough(import_picocolors2.default.dim(l)))}`;
+        return `${oe(n, (o) => import_picocolors2.default.strikethrough(import_picocolors2.default.dim(o)))}`;
       default:
         return `${import_picocolors2.default.dim(K2)} ${oe(n, import_picocolors2.default.dim)}`;
     }
   };
   return new Wt({ options: e.options, signal: e.signal, input: e.input, output: e.output, initialValue: e.initialValue, render() {
-    const s = `${N2(this.state)}  `, i = `${Ee(this.state)}  `, n = Bt(e.output, e.message, i, s), l = `${import_picocolors2.default.gray(h)}
+    const s = `${N2(this.state)}  `, i = `${Ee(this.state)}  `, n = Bt(e.output, e.message, i, s), o = `${import_picocolors2.default.gray(h)}
 ${n}
 `;
     switch (this.state) {
       case "submit": {
-        const u = `${import_picocolors2.default.gray(h)}  `, o = Bt(e.output, r(this.options[this.cursor], "selected"), u);
-        return `${l}${o}`;
+        const u = `${import_picocolors2.default.gray(h)}  `, l = Bt(e.output, r(this.options[this.cursor], "selected"), u);
+        return `${o}${l}`;
       }
       case "cancel": {
-        const u = `${import_picocolors2.default.gray(h)}  `, o = Bt(e.output, r(this.options[this.cursor], "cancelled"), u);
-        return `${l}${o}
+        const u = `${import_picocolors2.default.gray(h)}  `, l = Bt(e.output, r(this.options[this.cursor], "cancelled"), u);
+        return `${o}${l}
 ${import_picocolors2.default.gray(h)}`;
       }
       default: {
-        const u = `${import_picocolors2.default.cyan(h)}  `, o = l.split(`
+        const u = `${import_picocolors2.default.cyan(h)}  `, l = o.split(`
 `).length;
-        return `${l}${u}${J({ output: e.output, cursor: this.cursor, options: this.options, maxItems: e.maxItems, columnPadding: u.length, rowPadding: o + 2, style: (a, c) => r(a, a.disabled ? "disabled" : c ? "active" : "inactive") }).join(`
+        return `${o}${u}${J({ output: e.output, cursor: this.cursor, options: this.options, maxItems: e.maxItems, columnPadding: u.length, rowPadding: l + 2, style: (a, d) => r(a, a.disabled ? "disabled" : d ? "active" : "inactive") }).join(`
 ${u}`)}
 ${import_picocolors2.default.cyan(x2)}
 `;
@@ -3611,27 +3612,27 @@ async function promptAccountTier() {
   return tier;
 }
 
-// node_modules/open/index.js
+// ../node_modules/open/index.js
 import process8 from "node:process";
 import path2 from "node:path";
 import { fileURLToPath } from "node:url";
 import childProcess3 from "node:child_process";
 import fs6, { constants as fsConstants2 } from "node:fs/promises";
 
-// node_modules/wsl-utils/index.js
+// ../node_modules/wsl-utils/index.js
 import { promisify as promisify2 } from "node:util";
 import childProcess2 from "node:child_process";
 import fs5, { constants as fsConstants } from "node:fs/promises";
 
-// node_modules/is-wsl/index.js
+// ../node_modules/is-wsl/index.js
 import process2 from "node:process";
 import os2 from "node:os";
 import fs4 from "node:fs";
 
-// node_modules/is-inside-container/index.js
+// ../node_modules/is-inside-container/index.js
 import fs3 from "node:fs";
 
-// node_modules/is-docker/index.js
+// ../node_modules/is-docker/index.js
 import fs2 from "node:fs";
 var isDockerCached;
 function hasDockerEnv() {
@@ -3656,7 +3657,7 @@ function isDocker() {
   return isDockerCached;
 }
 
-// node_modules/is-inside-container/index.js
+// ../node_modules/is-inside-container/index.js
 var cachedResult;
 var hasContainerEnv = () => {
   try {
@@ -3673,7 +3674,7 @@ function isInsideContainer() {
   return cachedResult;
 }
 
-// node_modules/is-wsl/index.js
+// ../node_modules/is-wsl/index.js
 var isWsl = () => {
   if (process2.platform !== "linux") {
     return false;
@@ -3692,7 +3693,7 @@ var isWsl = () => {
 };
 var is_wsl_default = process2.env.__IS_WSL_TEST__ ? isWsl : isWsl();
 
-// node_modules/powershell-utils/index.js
+// ../node_modules/powershell-utils/index.js
 import process3 from "node:process";
 import { Buffer } from "node:buffer";
 import { promisify } from "node:util";
@@ -3723,7 +3724,7 @@ executePowerShell.argumentsPrefix = [
 executePowerShell.encodeCommand = (command) => Buffer.from(command, "utf16le").toString("base64");
 executePowerShell.escapeArgument = (value) => `'${String(value).replaceAll("'", "''")}'`;
 
-// node_modules/wsl-utils/utilities.js
+// ../node_modules/wsl-utils/utilities.js
 function parseMountPointFromConfig(content) {
   for (const line of content.split(`
 `)) {
@@ -3738,7 +3739,7 @@ function parseMountPointFromConfig(content) {
   }
 }
 
-// node_modules/wsl-utils/index.js
+// ../node_modules/wsl-utils/index.js
 var execFile2 = promisify2(childProcess2.execFile);
 var wslDrivesMountPoint = (() => {
   const defaultMountPoint = "/mnt/";
@@ -3802,7 +3803,7 @@ var convertWslPathToWindows = async (path2) => {
   }
 };
 
-// node_modules/define-lazy-prop/index.js
+// ../node_modules/define-lazy-prop/index.js
 function defineLazyProperty(object, propertyName, valueGetter) {
   const define = (value) => Object.defineProperty(object, propertyName, { value, enumerable: true, writable: true });
   Object.defineProperty(object, propertyName, {
@@ -3820,12 +3821,12 @@ function defineLazyProperty(object, propertyName, valueGetter) {
   return object;
 }
 
-// node_modules/default-browser/index.js
+// ../node_modules/default-browser/index.js
 import { promisify as promisify6 } from "node:util";
 import process6 from "node:process";
 import { execFile as execFile6 } from "node:child_process";
 
-// node_modules/default-browser-id/index.js
+// ../node_modules/default-browser-id/index.js
 import { promisify as promisify3 } from "node:util";
 import process4 from "node:process";
 import { execFile as execFile3 } from "node:child_process";
@@ -3843,7 +3844,7 @@ async function defaultBrowserId() {
   return browserId;
 }
 
-// node_modules/run-applescript/index.js
+// ../node_modules/run-applescript/index.js
 import process5 from "node:process";
 import { promisify as promisify4 } from "node:util";
 import { execFile as execFile4, execFileSync } from "node:child_process";
@@ -3861,13 +3862,13 @@ async function runAppleScript(script, { humanReadableOutput = true, signal } = {
   return stdout.trim();
 }
 
-// node_modules/bundle-name/index.js
+// ../node_modules/bundle-name/index.js
 async function bundleName(bundleId) {
   return runAppleScript(`tell application "Finder" to set app_path to application file id "${bundleId}" as string
 tell application "System Events" to get value of property list item "CFBundleName" of property list file (app_path & ":Contents:Info.plist")`);
 }
 
-// node_modules/default-browser/windows.js
+// ../node_modules/default-browser/windows.js
 import { promisify as promisify5 } from "node:util";
 import { execFile as execFile5 } from "node:child_process";
 var execFileAsync3 = promisify5(execFile5);
@@ -3912,7 +3913,7 @@ async function defaultBrowser(_execFileAsync = execFileAsync3) {
   return browser;
 }
 
-// node_modules/default-browser/index.js
+// ../node_modules/default-browser/index.js
 var execFileAsync4 = promisify6(execFile6);
 var titleize = (string) => string.toLowerCase().replaceAll(/(?:^|\s|-)\S/g, (x3) => x3.toUpperCase());
 async function defaultBrowser2() {
@@ -3933,12 +3934,12 @@ async function defaultBrowser2() {
   throw new Error("Only macOS, Linux, and Windows are supported");
 }
 
-// node_modules/is-in-ssh/index.js
+// ../node_modules/is-in-ssh/index.js
 import process7 from "node:process";
 var isInSsh = Boolean(process7.env.SSH_CONNECTION || process7.env.SSH_CLIENT || process7.env.SSH_TTY);
 var is_in_ssh_default = isInSsh;
 
-// node_modules/open/index.js
+// ../node_modules/open/index.js
 var fallbackAttemptSymbol = Symbol("fallbackAttempt");
 var __dirname2 = import.meta.url ? path2.dirname(fileURLToPath(import.meta.url)) : "";
 var localXdgOpenPath = path2.join(__dirname2, "xdg-open");
