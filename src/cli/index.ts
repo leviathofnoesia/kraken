@@ -4,6 +4,7 @@ import { runDoctor } from "./doctor/runner"
 import { runInstall } from "./install"
 import { runInit } from "./init"
 import { runStatus } from "./status"
+import { runUninstall } from "./uninstall"
 import { version } from "../../package.json"
 
 const program = new Command()
@@ -27,6 +28,15 @@ program
   .option("--full", "Full setup (all features)")
   .action(async (options) => {
     await runInit(options)
+  })
+
+program
+  .command("uninstall")
+  .description("Uninstall Kraken Code plugin from OpenCode")
+  .option("--config", "Also remove Kraken Code config file")
+  .option("-v, --verbose", "Show detailed output")
+  .action(async (options) => {
+    await runUninstall(options)
   })
 
 program
