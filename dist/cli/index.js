@@ -1477,6 +1477,159 @@ Active Modes:`));
     }
   }
 }
+
+// src/cli/uninstall.ts
+import { existsSync as existsSync8, readFileSync as readFileSync8, writeFileSync as writeFileSync3, unlinkSync } from "fs";
+import * as jsoncParser5 from "jsonc-parser";
+import path6 from "path";
+import os6 from "os";
+import color6 from "picocolors";
+function getOpenCodeConfigPaths4() {
+  const crossPlatformDir = path6.join(os6.homedir(), ".config", "opencode");
+  return {
+    configJson: path6.join(crossPlatformDir, "opencode.json"),
+    configJsonc: path6.join(crossPlatformDir, "opencode.jsonc")
+  };
+}
+function detectConfigPath3() {
+  const paths = getOpenCodeConfigPaths4();
+  if (existsSync8(paths.configJsonc)) {
+    return { path: paths.configJsonc, format: "jsonc" };
+  }
+  if (existsSync8(paths.configJson)) {
+    return { path: paths.configJson, format: "json" };
+  }
+  return null;
+}
+function removePluginFromConfig(content, format) {
+  const errors = [];
+  const root = jsoncParser5.parse(content, errors, { allowTrailingComma: true });
+  if (errors.length > 0) {
+    throw new Error(`Failed to parse config: ${errors[0].error}`);
+  }
+  const plugins = Array.isArray(root.plugin) ? [...root.plugin] : [];
+  const filteredPlugins = plugins.filter((p) => p !== PACKAGE_NAME && !p.startsWith(`${PACKAGE_NAME}@`));
+  if (root.plugin === undefined) {
+    return content;
+  }
+  const editOptions = {
+    formattingOptions: {
+      insertSpaces: true,
+      tabSize: 2,
+      insertFinalNewline: true
+    }
+  };
+  const edits = jsoncParser5.modify(content, ["plugin"], filteredPlugins, editOptions);
+  return jsoncParser5.applyEdits(content, edits);
+}
+async function runUninstall(options) {
+  console.log(color6.cyan("\uD83D\uDDD1\uFE0F  Uninstalling Kraken Code plugin..."));
+  const configInfo = detectConfigPath3();
+  if (!configInfo) {
+    return {
+      success: false,
+      message: "OpenCode config not found"
+    };
+  }
+  let content;
+  let format;
+  try {
+    content = readFileSync8(configInfo.path, "utf-8");
+    format = configInfo.format;
+  } catch (error) {
+    return {
+      success: false,
+      message: `Failed to read config: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
+  const errors = [];
+  const root = jsoncParser5.parse(content, errors, { allowTrailingComma: true });
+  if (errors.length > 0) {
+    return {
+      success: false,
+      message: `Failed to parse config: ${errors[0].error}`
+    };
+  }
+  const plugins = Array.isArray(root.plugin) ? [...root.plugin] : [];
+  const isRegistered = plugins.some((p) => p === PACKAGE_NAME || p.startsWith(`${PACKAGE_NAME}@`));
+  if (!isRegistered) {
+    if (options.verbose) {
+      console.log(color6.dim(`  Plugin "${PACKAGE_NAME}" not found in config`));
+    }
+    return {
+      success: true,
+      message: `Plugin "${PACKAGE_NAME}" not registered`,
+      configPath: configInfo.path
+    };
+  }
+  try {
+    const updatedContent = removePluginFromConfig(content, format);
+    writeFileSync3(configInfo.path, updatedContent, "utf-8");
+    console.log(color6.green(`
+\u2713 Removed "${PACKAGE_NAME}" from OpenCode plugin list`));
+  } catch (error) {
+    return {
+      success: false,
+      message: `Failed to update config: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
+  let krakenConfigRemoved = false;
+  if (options.config !== false) {
+    const krakenConfigPath = path6.join(os6.homedir(), ".config", "opencode", "kraken-code.json");
+    if (existsSync8(krakenConfigPath)) {
+      try {
+        unlinkSync(krakenConfigPath);
+        krakenConfigRemoved = true;
+        console.log(color6.green(`\u2713 Removed Kraken Code config at ${krakenConfigPath}`));
+      } catch (error) {
+        console.log(color6.yellow(`  Warning: Failed to remove ${krakenConfigPath}: ${error instanceof Error ? error.message : String(error)}`));
+      }
+    } else {
+      if (options.verbose) {
+        console.log(color6.dim(`  Kraken Code config not found at ${krakenConfigPath}`));
+      }
+    }
+  }
+  if (options.config !== false) {
+    const skillDir = path6.join(os6.homedir(), ".config", "opencode", "skill");
+    if (existsSync8(skillDir)) {
+      try {
+        const { readdir, unlink, rmdir } = await import("fs/promises");
+        const skillCategories = ["kraken-code"];
+        for (const category of skillCategories) {
+          const categoryPath = path6.join(skillDir, category);
+          if (existsSync8(categoryPath)) {
+            const categoryFiles = await readdir(categoryPath);
+            for (const skillFile of categoryFiles) {
+              const filePath = path6.join(categoryPath, skillFile);
+              await unlink(filePath);
+            }
+            const remainingFiles = await readdir(categoryPath);
+            if (remainingFiles.length === 0) {
+              await rmdir(categoryPath);
+            }
+            if (options.verbose) {
+              console.log(color6.dim(`  Removed skill templates from ${categoryPath}`));
+            }
+          }
+        }
+      } catch (error) {
+        console.log(color6.yellow(`  Warning: Failed to remove skill templates: ${error instanceof Error ? error.message : String(error)}`));
+      }
+    }
+  }
+  console.log(color6.green(`
+\uD83C\uDF89 Kraken Code plugin uninstalled successfully!`));
+  console.log(color6.dim(`
+Note: OpenCode may still be running. If so, restart it to complete uninstallation.`));
+  return {
+    success: true,
+    message: "Kraken Code plugin uninstalled",
+    configPath: configInfo.path,
+    krakenConfigRemoved
+  };
+}
+if (false) {}
 // package.json
 var version2 = "1.1.4";
 
@@ -1488,6 +1641,9 @@ program.command("install").description("Install and register Kraken Code plugin"
 });
 program.command("init").description("Initialize Kraken Code with recommended configuration").option("--minimal", "Minimal setup (agents only)").option("--full", "Full setup (all features)").action(async (options) => {
   await runInit(options);
+});
+program.command("uninstall").description("Uninstall Kraken Code plugin from OpenCode").option("--config", "Also remove Kraken Code config file").option("-v, --verbose", "Show detailed output").action(async (options) => {
+  await runUninstall(options);
 });
 program.command("status").description("Show Kraken Code installation status").action(async () => {
   await runStatus();
