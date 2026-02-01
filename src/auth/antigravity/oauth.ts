@@ -83,7 +83,7 @@ export async function buildAuthURL(
   projectId?: string,
   clientId: string = ANTIGRAVITY_CLIENT_ID,
   port: number = ANTIGRAVITY_CALLBACK_PORT,
-  usePKCE: boolean = true,
+  usePKCE: boolean = false,
 ): Promise<AuthorizationResult> {
   if (!usePKCE) {
     console.warn("[OAuth] PKCE is disabled. This weakens security and is not recommended. PKCE (RFC 7636) prevents authorization code interception attacks.")

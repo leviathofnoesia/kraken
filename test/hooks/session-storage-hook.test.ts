@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test"
-import { createSessionStorageHook, sessionStorageHooks } from "../../src/hooks/session-storage-hook"
+import { createSessionStorageHook } from "../../src/hooks/session-storage-hook"
 
 describe("Session Storage Hook", () => {
   describe("createSessionStorageHook", () => {
@@ -12,11 +12,10 @@ describe("Session Storage Hook", () => {
       const hook = createSessionStorageHook({})
       expect(hook["tool.execute.after"]).toBeDefined()
     })
-  })
-
-  describe("sessionStorageHooks", () => {
-    it("should export sessionStorageHooks", () => {
-      expect(sessionStorageHooks).toBeDefined()
+    
+    it("should have message tracking", () => {
+      const hook = createSessionStorageHook({})
+      expect(hook["chat.message"]).toBeDefined()
     })
   })
 })

@@ -85,7 +85,7 @@ describe("grep-app MCP", () => {
 
     it("has search tool", () => {
       // #given
-      const searchTool = grepAppMCP.tools.find(t => t.description.includes("search code"))
+      const searchTool = grepAppMCP.tools.find(t => t.description.includes("Search code across public GitHub repositories"))
 
       // #then search tool should exist
       expect(searchTool).toBeDefined()
