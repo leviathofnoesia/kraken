@@ -25,10 +25,10 @@ describe("MCP integration index", () => {
   })
 
   describe("builtinMCPs", () => {
-    it("contains all three MCP servers", () => {
+    it("contains all four MCP servers", () => {
       // #given
-      // #then should have 3 servers
-      expect(builtinMCPs.length).toBe(3)
+      // #then should have 4 servers
+      expect(builtinMCPs.length).toBe(4)
     })
 
     it("contains websearch MCP", () => {
@@ -48,6 +48,12 @@ describe("MCP integration index", () => {
       // #then should include grep_app
       expect(builtinMCPs.some(mcp => mcp.name === "grep_app")).toBe(true)
     })
+
+    it("contains kratos MCP", () => {
+      // #given
+      // #then should include kratos
+      expect(builtinMCPs.some(mcp => mcp.name === "kratos")).toBe(true)
+    })
   })
 
   describe("getBuiltinMcpNames", () => {
@@ -57,7 +63,11 @@ describe("MCP integration index", () => {
       const names = getBuiltinMcpNames()
 
       // #then should return all names
-      expect(names).toEqual(["websearch", "context7", "grep_app"])
+      expect(names).toContain("websearch")
+      expect(names).toContain("context7")
+      expect(names).toContain("grep_app")
+      expect(names).toContain("kratos")
+      expect(names.length).toBe(4)
     })
   })
 
@@ -149,8 +159,8 @@ describe("MCP integration index", () => {
       // #when getting all tools
       const tools = getAllBuiltinMcpTools()
 
-      // #then should return 6 tools total (2 per MCP)
-      expect(tools.length).toBe(6)
+      // #then should return 10 tools total (2 websearch + 2 context7 + 2 grep + 4 kratos)
+      expect(tools.length).toBe(10)
     })
   })
 
@@ -160,8 +170,8 @@ describe("MCP integration index", () => {
       // #when getting enabled servers
       const enabled = getEnabledMcpServers()
 
-      // #then should return all 3
-      expect(enabled.length).toBe(3)
+      // #then should return all 4
+      expect(enabled.length).toBe(4)
     })
   })
 
@@ -213,8 +223,13 @@ describe("MCP integration index", () => {
       // #when checking health
       const health = await checkAllMcpHealth()
 
-      // #then should return status for all 3
-      expect(Object.keys(health)).toEqual(["websearch", "context7", "grep_app"])
+      // #then should return status for all 4
+      const keys = Object.keys(health)
+      expect(keys).toContain("websearch")
+      expect(keys).toContain("context7")
+      expect(keys).toContain("grep_app")
+      expect(keys).toContain("kratos")
+      expect(keys.length).toBe(4)
     })
 
     it("returns false for MCPs without API keys", async () => {

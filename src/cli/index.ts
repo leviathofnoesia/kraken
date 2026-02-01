@@ -4,6 +4,7 @@ import { runDoctor } from "./doctor/runner"
 import { runInstall } from "./install"
 import { runInit } from "./init"
 import { runStatus } from "./status"
+import { runUninstall, addUninstallCommand } from "./uninstall"
 import { version } from "../../package.json"
 
 const program = new Command()
@@ -25,6 +26,7 @@ program
   .description("Initialize Kraken Code with recommended configuration")
   .option("--minimal", "Minimal setup (agents only)")
   .option("--full", "Full setup (all features)")
+  .option("-v, --verbose", "Show detailed output")
   .action(async (options) => {
     await runInit(options)
   })
@@ -35,6 +37,8 @@ program
   .action(async () => {
     await runStatus()
   })
+
+addUninstallCommand(program)
 
 program
   .command("doctor")

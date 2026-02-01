@@ -195,7 +195,7 @@ kraken-code status
 
 ```
 src/
-├── agents/           # 11 sea-themed agents
+├── agents/           # 10 sea-themed agents
 ├── features/
 │   ├── skills/      # Skills system with discovery & hot-reload
 │   ├── mcp/        # Built-in MCP servers

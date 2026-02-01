@@ -362,7 +362,7 @@ export const lsp_code_actions = tool({
 export const lsp_code_action_resolve = tool({
   description: "Resolve a code action to get its full details (including edits).",
   args: {
-    action: z.any().describe("Code action object from lsp_code_actions"),
+    action: z.object({}).passthrough().describe("Code action object from lsp_code_actions"),
   },
   async execute({ action }) {
     try {
