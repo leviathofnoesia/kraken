@@ -23,8 +23,8 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
         console.log(color.dim(`ℹ️  Created config directory: ${configDir}`))
       }
       console.log(color.green(`✓ Created config directory: ${configDir}`))
-    } catch (error) {
-      console.error(color.red(`❌ Failed to create config directory: ${error.message}`))
+    } catch (error: unknown) {
+      console.error(color.red(`❌ Failed to create config directory: ${error instanceof Error ? error.message : String(error)}`))
       console.error(color.dim("Try running with elevated permissions or check permissions for ~/.config/opencode"))
       process.exit(1)
     }
@@ -99,8 +99,8 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
       if (options.verbose) {
         console.log(color.dim(`ℹ️  Found existing Kraken configuration at ${krakenConfigPath}, merging with new settings`))
       }
-    } catch (error) {
-      console.error(color.red(`❌ Failed to read existing Kraken configuration: ${error.message}`))
+    } catch (error: unknown) {
+      console.error(color.red(`❌ Failed to read existing Kraken configuration: ${error instanceof Error ? error.message : String(error)}`))
       console.error(color.dim("This might be a corrupted config file. Try removing it manually and re-running init."))
       existingKrakenConfig = {}
     }
@@ -121,7 +121,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
     }
     console.log(color.green(`✓ Kraken Code configuration written to ${krakenConfigPath}`))
   } catch (error) {
-    console.error(color.red(`❌ Failed to write Kraken configuration: ${error.message}`))
+    console.error(color.red(`❌ Failed to write Kraken configuration: ${error instanceof Error ? error.message : String(error)}`))
     console.error(color.dim("Check permissions for the config file and try again."))
     process.exit(1)
   }
@@ -134,8 +134,8 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
       if (options.verbose) {
         console.log(color.dim(`ℹ️  Found existing OpenCode configuration at ${opencodeConfigPath}`))
       }
-    } catch (error) {
-      console.error(color.red(`❌ Failed to read OpenCode configuration: ${error.message}`))
+    } catch (error: unknown) {
+      console.error(color.red(`❌ Failed to read OpenCode configuration: ${error instanceof Error ? error.message : String(error)}`))
       console.error(color.dim("This might be a corrupted opencode.json file. Try removing it manually and re-running init."))
       existingOpencodeConfig = {}
     }
@@ -161,8 +161,8 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
       console.log(color.dim(`ℹ️  Updated OpenCode configuration with ${mergedOpencodeConfig.plugin.length} plugins`))
     }
     console.log(color.green(`✓ OpenCode configuration updated at ${opencodeConfigPath}`))
-  } catch (error) {
-    console.error(color.red(`❌ Failed to update OpenCode configuration: ${error.message}`))
+  } catch (error: unknown) {
+    console.error(color.red(`❌ Failed to update OpenCode configuration: ${error instanceof Error ? error.message : String(error)}`))
     console.error(color.dim("Check permissions for the config file and try again."))
     process.exit(1)
   }
@@ -174,8 +174,8 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
       console.log(color.dim(`ℹ️  Skill templates installation completed successfully`))
     }
     console.log(color.green("✓ Skill templates installed successfully"))
-  } catch (error) {
-    console.error(color.yellow(`⚠️  Failed to install skill templates: ${error.message}`))
+  } catch (error: unknown) {
+    console.error(color.yellow(`⚠️  Failed to install skill templates: ${error instanceof Error ? error.message : String(error)}`))
     console.error(color.dim("You can install them manually later by copying templates/skills to ~/.config/opencode/skill"))
   }
 
@@ -215,7 +215,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
       })
     })
     
-    if (result.includes("kraken-code")) {
+    if ((result as string).includes("kraken-code")) {
       console.log(color.green("✓ Kraken Code appears in plugin list"))
     } else {
       console.log(color.yellow("⚠️  Kraken Code not found in plugin list - run 'opencode --plugins' to verify"))

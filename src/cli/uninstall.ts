@@ -3,6 +3,7 @@ import { Command } from "commander"
 import * as path from "path"
 import * as os from "os"
 import color from "picocolors"
+import { existsSync, readFileSync, unlinkSync, rmSync, writeFileSync } from "fs"
 
 export async function runUninstall(options: { dryRun?: boolean; verbose?: boolean }) {
   const isDryRun = options.dryRun || false
@@ -31,7 +32,7 @@ export async function runUninstall(options: { dryRun?: boolean; verbose?: boolea
   }
 
   // Check if kraken-code is in opencode.json plugin list
-  let opencodeConfig = {}
+  let opencodeConfig: { plugin?: string[] } = {}
   if (existsSync(opencodeConfigPath)) {
     try {
       opencodeConfig = JSON.parse(readFileSync(opencodeConfigPath, "utf-8"))
@@ -92,8 +93,8 @@ export async function runUninstall(options: { dryRun?: boolean; verbose?: boolea
         console.log(color.dim(`ℹ️  Removed ${file}`))
       }
       console.log(color.green(`✓ Removed ${file}`))
-    } catch (error) {
-      console.log(color.yellow(`⚠️  Could not remove ${file}: ${error.message}`))
+    } catch (error: unknown) {
+      console.log(color.yellow(`⚠️  Could not remove ${file}: ${error instanceof Error ? error.message : String(error)}`))
     }
   })
 
@@ -110,8 +111,8 @@ export async function runUninstall(options: { dryRun?: boolean; verbose?: boolea
         console.log(color.dim(`ℹ️  Removed ${dir}`))
       }
       console.log(color.green(`✓ Removed ${dir}`))
-    } catch (error) {
-      console.log(color.yellow(`⚠️  Could not remove ${dir}: ${error.message}`))
+    } catch (error: unknown) {
+      console.log(color.yellow(`⚠️  Could not remove ${dir}: ${error instanceof Error ? error.message : String(error)}`))
     }
   })
 
@@ -132,8 +133,8 @@ export async function runUninstall(options: { dryRun?: boolean; verbose?: boolea
           console.log(color.dim(`ℹ️  kraken-code was not in opencode.json plugin list`))
         }
       }
-    } catch (error) {
-      console.log(color.yellow(`⚠️  Could not update opencode.json: ${error.message}`))
+    } catch (error: unknown) {
+      console.log(color.yellow(`⚠️  Could not update opencode.json: ${error instanceof Error ? error.message : String(error)}`))
     }
   } else if (options.verbose) {
     console.log(color.dim(`ℹ️  opencode.json not found, skipping plugin list update`))
