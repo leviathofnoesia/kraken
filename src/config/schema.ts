@@ -182,6 +182,12 @@ export const KratosConfigSchema = z.object({
   storagePath: z.string().default('~/.kratos'),
 })
 
+export const MemoryConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  autoSave: z.boolean().default(true),
+  storagePath: z.string().default('~/.kraken/memory'),
+})
+
 export const LSPConfigSchema = z.object({
   enabled: z.boolean().default(true),
   workspacePath: z.string().optional(),
@@ -300,6 +306,7 @@ export const OpenCodeXConfigSchema = z.object({
   blitzkrieg: BlitzkriegConfigSchema.optional(),
   mcp: MCPConfigSchema.optional(),
   kratos: KratosConfigSchema.optional(),
+  memory: MemoryConfigSchema.optional(),
   lsp: LSPConfigSchema.optional(),
   notifications: NotificationsConfigSchema.optional(),
   enhanced: z
@@ -333,6 +340,7 @@ export type Context7MCPConfig = z.infer<typeof Context7MCPConfigSchema>
 export type GrepAppMCPConfig = z.infer<typeof GrepAppMCPConfigSchema>
 export type MCPConfig = z.infer<typeof MCPConfigSchema>
 export type KratosConfig = z.infer<typeof KratosConfigSchema>
+export type MemoryConfig = z.infer<typeof MemoryConfigSchema>
 export type LSPConfig = z.infer<typeof LSPConfigSchema>
 export type ModesConfig = z.infer<typeof ModesConfigSchema>
 export type SkillMcpConfig = z.infer<typeof SkillMcpConfigSchema>

@@ -40,6 +40,10 @@ export function getKratosConfig() {
   return getConfigValue('kratos')
 }
 
+export function getMemoryConfig() {
+  return getConfigValue('memory')
+}
+
 export function getModesConfig() {
   return getConfigValue('modes')
 }

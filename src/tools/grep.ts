@@ -1,7 +1,6 @@
 import { tool } from "@opencode-ai/plugin"
 import { z } from "zod"
 import { execFile } from "node:child_process"
-import { existsSync } from "node:fs"
 import { promisify } from "node:util"
 
 const execFileAsync = promisify(execFile)
@@ -40,8 +39,7 @@ async function runGrep(
   }
 
   args.push(pattern)
-  const defaultPath = existsSync("src") ? "src" : process.cwd()
-  args.push(options?.path ?? defaultPath)
+  args.push(options?.path ?? process.cwd())
 
   try {
     const { stdout, stderr } = await execFileAsync("rg", args, {
