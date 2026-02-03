@@ -23,7 +23,7 @@ async function runGrep(
     }
   }
 
-  const args = ["--line-number", "--color=never"]
+  const args = ["--line-number", "--column", "--color=never"]
   args.push("--max-count", "200")
   args.push("--max-filesize", "1M")
   args.push("--max-depth", "4")

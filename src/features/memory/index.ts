@@ -91,6 +91,10 @@ export async function saveMemory(input: MemoryEntryInput): Promise<MemoryEntry> 
     paths: input.paths ?? [],
   }
 
+  if (config.enabled === false) {
+    return entry
+  }
+
   memoryEntries.push(entry)
 
   if (config.autoSave !== false) {
