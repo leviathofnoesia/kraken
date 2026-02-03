@@ -124,15 +124,14 @@ export function listMemories(): MemoryEntry[] {
 }
 
 function getResolvedMemoryConfig(): MemoryConfig {
-  const memoryConfig = getMemoryConfig() ?? {}
-  if (Object.keys(memoryConfig).length > 0) {
-    return memoryConfig
-  }
+  const memoryConfig = getMemoryConfig()
   const kratosConfig = getKratosConfig()
+
   return {
-    enabled: kratosConfig?.enabled,
-    autoSave: kratosConfig?.autoSave,
-    storagePath: kratosConfig?.storagePath,
+    enabled: memoryConfig?.enabled ?? kratosConfig?.enabled ?? true,
+    autoSave: memoryConfig?.autoSave ?? kratosConfig?.autoSave ?? true,
+    storagePath:
+      memoryConfig?.storagePath ?? kratosConfig?.storagePath ?? DEFAULT_STORAGE_PATH,
   }
 }
 
@@ -200,12 +199,16 @@ function parseQmd(content: string): MemoryEntry | null {
     return null
   }
 
+  const importance = isValidImportance(frontmatter.importance)
+    ? frontmatter.importance
+    : "medium"
+
   return {
     id: String(frontmatter.id),
     summary: String(frontmatter.summary),
     content: body,
     tags: Array.isArray(frontmatter.tags) ? frontmatter.tags.map(String) : [],
-    importance: (frontmatter.importance as MemoryImportance) ?? "medium",
+    importance,
     paths: Array.isArray(frontmatter.paths) ? frontmatter.paths.map(String) : [],
     createdAt: frontmatter.createdAt ? String(frontmatter.createdAt) : new Date().toISOString(),
     updatedAt: frontmatter.updatedAt ? String(frontmatter.updatedAt) : new Date().toISOString(),
@@ -224,4 +227,8 @@ function serializeQmd(entry: MemoryEntry): string {
   }).trim()
 
   return `---\n${frontmatter}\n---\n\n${entry.content}\n`
+}
+
+function isValidImportance(value: unknown): value is MemoryImportance {
+  return value === "low" || value === "medium" || value === "high"
 }
