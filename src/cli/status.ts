@@ -67,12 +67,12 @@ export async function runStatus() {
     console.log(color.dim("  Activate with: 'blitz' or 'blz'"))
   }
 
-  // Kratos Memory Status
-  if (config.kratos) {
-    const status = config.kratos.enabled ? color.green("✓ Enabled") : color.red("✗ Disabled")
-    console.log(color.bold("\nMemory (Kratos):"))
+  // Memory Status
+  if (config.memory) {
+    const status = config.memory.enabled ? color.green("✓ Enabled") : color.red("✗ Disabled")
+    console.log(color.bold("\nMemory:"))
     console.log(`  Status: ${status}`)
-    console.log(`  Storage: ${config.kratos.storagePath || config.kratos.storagePath || "~/.kratos"}`)
+    console.log(`  Storage: ${config.memory.storagePath || "~/.kraken/memory"}`)
   }
 
   // Modes Status

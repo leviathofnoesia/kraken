@@ -161,6 +161,7 @@ All configuration lives in `~/.config/opencode/opencode.json`:
     "Kraken": { "enabled": true, "model": "..." }
   },
   "blitzkrieg": { "enabled": true, "enforcement": "strict" },
+  "memory": { "enabled": true, "storagePath": "~/.kraken/memory" },
   "modes": {
     "blitzkrieg": { "enabled": true },
     "ultrathink": { "enabled": true, "thinkingBudget": 32000 }

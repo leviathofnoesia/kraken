@@ -1525,6 +1525,23 @@
         }
       }
     },
+    "memory": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "autoSave": {
+          "default": true,
+          "type": "boolean"
+        },
+        "storagePath": {
+          "default": "~/.kraken/memory",
+          "type": "string"
+        }
+      }
+    },
     "lsp": {
       "type": "object",
       "properties": {

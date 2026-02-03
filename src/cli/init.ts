@@ -45,10 +45,10 @@ export async function runInit(options: { minimal?: boolean; full?: boolean }) {
         maxImplementationStepComplexity: 3
       }
     },
-    kratos: {
+    memory: {
       enabled: true,
       autoSave: true,
-      storagePath: "~/.kratos"
+      storagePath: "~/.kraken/memory"
     },
     modes: {
       blitzkrieg: {
