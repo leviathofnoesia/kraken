@@ -170,7 +170,7 @@ async function isServerInstalled(command: string[]): Promise<boolean> {
   }
 }
 
-function getInstallHint(serverId: string): string {
+export function getInstallHint(serverId: string): string {
   const hints: Record<string, string> = {
     "typescript-language-server": "npm install -g typescript-language-server typescript",
     pyright: "npm install -g pyright",
