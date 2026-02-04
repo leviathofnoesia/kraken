@@ -38,12 +38,14 @@ describe("grep-app MCP", () => {
     it("warns when no GitHub token provided", async () => {
       // #given no GitHub token
       // #when initializing without token
+      process.env.KRAKEN_LOG = "1"
       const consoleWarnSpy = spyOn(console, "warn").mockImplementation(() => {})
       await initializeGrepAppMCP({})
 
       // #then should warn about rate limits
       expect(consoleWarnSpy).toHaveBeenCalled()
       consoleWarnSpy.mockRestore()
+      delete process.env.KRAKEN_LOG
     })
   })
 

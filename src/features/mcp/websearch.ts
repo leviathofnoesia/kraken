@@ -13,6 +13,7 @@ import type {
   WebsearchResult,
 } from './types';
 import { RateLimiter, MCPTimeoutError } from './types';
+import { createLogger } from '../../utils/logger';
 
 const z = tool.schema;
 
@@ -21,6 +22,11 @@ const EXA_API_BASE_URL = 'https://api.exa.ai';
 const DEFAULT_NUM_RESULTS = 8;
 const DEFAULT_TIMEOUT = 30000; // 30 seconds
 const MAX_RETRIES = 2;
+const shouldLog = (): boolean =>
+  process.env.ANTIGRAVITY_DEBUG === "1" ||
+  process.env.DEBUG === "1" ||
+  process.env.KRAKEN_LOG === "1";
+const logger = createLogger("mcp-websearch");
 
 // Rate limiter for Exa API (60 requests per minute)
 const exaRateLimiter = new RateLimiter(60, 60000);
@@ -46,7 +52,11 @@ export async function initializeWebsearchMCP(config: Record<string, unknown> = {
 
   // Validate API key
   if (!currentConfig.apiKey && !process.env.EXA_API_KEY) {
-    console.warn('Websearch MCP: No API key provided. Set EXA_API_KEY environment variable or provide apiKey in config.');
+    if (shouldLog()) {
+      logger.warn(
+        "No API key provided. Set EXA_API_KEY environment variable or provide apiKey in config."
+      );
+    }
   }
 }
 

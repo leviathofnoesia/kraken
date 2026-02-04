@@ -1,5 +1,6 @@
 import type { LoadedCommand, CommandScope, CommandLoaderOptions } from "./types"
 import { loadCommandsFromDir, getDefaultCommandPaths } from "./discovery"
+import { createLogger } from "../../utils/logger"
 
 const SCOPE_PRIORITY: CommandScope[] = [
   "builtin",
@@ -9,6 +10,11 @@ const SCOPE_PRIORITY: CommandScope[] = [
   "project",
   "skill",
 ]
+const SHOULD_LOG =
+  process.env.ANTIGRAVITY_DEBUG === "1" ||
+  process.env.DEBUG === "1" ||
+  process.env.KRAKEN_LOG === "1"
+const logger = createLogger("command-loader")
 
 export class CommandLoader {
   private commands: Map<string, LoadedCommand> = new Map()
@@ -52,9 +58,11 @@ export class CommandLoader {
       this.registerCommand(command)
     }
 
-    console.log(
-      `[command-loader] Loaded ${this.commands.size} commands from ${allCommands.length} sources`
-    )
+    if (SHOULD_LOG) {
+      logger.debug(
+        `Loaded ${this.commands.size} commands from ${allCommands.length} sources`
+      )
+    }
 
     return this.commands
   }
@@ -68,9 +76,11 @@ export class CommandLoader {
 
       if (currentPriority > existingPriority) {
         this.commands.set(command.name, command)
-        console.log(
-          `[command-loader] Overriding ${command.name} from ${existing.scope} with ${command.scope}`
-        )
+        if (SHOULD_LOG) {
+          logger.debug(
+            `Overriding ${command.name} from ${existing.scope} with ${command.scope}`
+          )
+        }
       }
     } else {
       this.commands.set(command.name, command)

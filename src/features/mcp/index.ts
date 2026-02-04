@@ -5,11 +5,18 @@
  */
 
 import type { MCPServerDefinition } from './types';
+import { createLogger } from '../../utils/logger';
 
 // Import all built-in MCP servers
 import { websearchMCP } from './websearch';
 import { context7MCP } from './context7';
 import { grepAppMCP } from './grep-app';
+
+const SHOULD_LOG =
+  process.env.ANTIGRAVITY_DEBUG === "1" ||
+  process.env.DEBUG === "1" ||
+  process.env.KRAKEN_LOG === "1";
+const logger = createLogger("mcp-index");
 
 /**
  * Built-in MCP Servers
@@ -98,7 +105,9 @@ export async function initializeAllMcpServers(
       try {
         await mcp.initialize(config);
       } catch (error) {
-        console.error(`Failed to initialize MCP server '${mcp.name}':`, error);
+        if (SHOULD_LOG) {
+          logger.warn(`Failed to initialize MCP server '${mcp.name}':`, error);
+        }
         throw error;
       }
     }
@@ -116,7 +125,9 @@ export async function shutdownAllMcpServers(): Promise<void> {
       try {
         await mcp.shutdown();
       } catch (error) {
-        console.error(`Failed to shutdown MCP server '${mcp.name}':`, error);
+        if (SHOULD_LOG) {
+          logger.warn(`Failed to shutdown MCP server '${mcp.name}':`, error);
+        }
       }
     }
   }
@@ -140,7 +151,9 @@ export async function checkAllMcpHealth(): Promise<Record<string, boolean>> {
         healthStatus[mcp.name] = true; // Assume healthy if no health check
       }
     } catch (error) {
-      console.error(`Health check failed for MCP server '${mcp.name}':`, error);
+      if (SHOULD_LOG) {
+        logger.warn(`Health check failed for MCP server '${mcp.name}':`, error);
+      }
       healthStatus[mcp.name] = false;
     }
   }

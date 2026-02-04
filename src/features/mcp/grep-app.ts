@@ -13,6 +13,7 @@ import type {
   GrepResult,
 } from './types';
 import { RateLimiter, MCPTimeoutError } from './types';
+import { createLogger } from '../../utils/logger';
 
 const z = tool.schema;
 
@@ -21,6 +22,11 @@ const GITHUB_API_BASE_URL = 'https://api.github.com';
 const DEFAULT_MAX_RESULTS = 10;
 const DEFAULT_TIMEOUT = 30000; // 30 seconds
 const DEFAULT_RATE_LIMIT_DELAY = 1000; // 1 second between requests (GitHub rate limit)
+const shouldLog = (): boolean =>
+  process.env.ANTIGRAVITY_DEBUG === "1" ||
+  process.env.DEBUG === "1" ||
+  process.env.KRAKEN_LOG === "1";
+const logger = createLogger("mcp-grep-app");
 
 // Rate limiter for GitHub API
 const githubRateLimiter = new RateLimiter(60, 60000); // 60 requests per minute (authenticated)
@@ -46,7 +52,12 @@ export async function initializeGrepAppMCP(config: Record<string, unknown> = {})
 
   // Validate API key
   if (!currentConfig.githubToken && !process.env.GITHUB_TOKEN) {
-    console.warn('Grep App MCP: No GitHub token provided. Rate limits will be unauthenticated (60 requests/hour). Set GITHUB_TOKEN environment variable or provide githubToken in config.');
+    if (shouldLog()) {
+      logger.warn(
+        "No GitHub token provided. Rate limits will be unauthenticated (60 requests/hour). " +
+          "Set GITHUB_TOKEN environment variable or provide githubToken in config."
+      );
+    }
   }
 }
 

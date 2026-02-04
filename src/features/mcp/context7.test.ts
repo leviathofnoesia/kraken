@@ -44,12 +44,14 @@ describe("context7 MCP", () => {
     it("warns when no API key provided", async () => {
       // #given no API key
       // #when initializing without API key
+      process.env.KRAKEN_LOG = "1"
       const consoleWarnSpy = spyOn(console, "warn").mockImplementation(() => {})
       await initializeContext7MCP({})
 
       // #then should warn
       expect(consoleWarnSpy).toHaveBeenCalled()
       consoleWarnSpy.mockRestore()
+      delete process.env.KRAKEN_LOG
     })
   })
 
