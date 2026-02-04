@@ -13,6 +13,7 @@ import type {
   DocumentationResult,
 } from './types';
 import { RateLimiter, MCPTimeoutError } from './types';
+import { createLogger } from '../../utils/logger';
 
 const z = tool.schema;
 
@@ -22,6 +23,11 @@ const DEFAULT_NUM_RESULTS = 5;
 const DEFAULT_TIMEOUT = 30000; // 30 seconds
 const DEFAULT_CACHE_TTL = 300; // 5 minutes
 const DEFAULT_MAX_TOKENS = 5000;
+const shouldLog = (): boolean =>
+  process.env.ANTIGRAVITY_DEBUG === "1" ||
+  process.env.DEBUG === "1" ||
+  process.env.KRAKEN_LOG === "1";
+const logger = createLogger("mcp-context7");
 
 // Rate limiter for Context7 API (30 requests per minute)
 const context7RateLimiter = new RateLimiter(30, 60000);
@@ -93,7 +99,11 @@ export async function initializeContext7MCP(config: Record<string, unknown> = {}
 
   // Validate API key
   if (!currentConfig.apiKey && !process.env.CONTEXT7_API_KEY) {
-    console.warn('Context7 MCP: No API key provided. Set CONTEXT7_API_KEY environment variable or provide apiKey in config.');
+    if (shouldLog()) {
+      logger.warn(
+        "No API key provided. Set CONTEXT7_API_KEY environment variable or provide apiKey in config."
+      );
+    }
   }
 }
 

@@ -122,14 +122,67 @@ describe("dependencies check", () => {
     })
   })
 
+  describe("checkDependencyPython3", () => {
+    let checkSpy: ReturnType<typeof spyOn>
+
+    afterEach(() => {
+      checkSpy?.mockRestore()
+    })
+
+    it("returns pass when installed", async () => {
+      // #given python installed
+      checkSpy = spyOn(deps, "checkPython3").mockResolvedValue({
+        name: "Python 3",
+        required: false,
+        installed: true,
+        version: "Python 3.12.0",
+        path: "/usr/bin/python3",
+      })
+
+      // #when checking
+      const result = await deps.checkDependencyPython3()
+
+      // #then should pass
+      expect(result.status).toBe("pass")
+      expect(result.message).toContain("Python 3.12.0")
+    })
+  })
+
+  describe("checkDependencyRipgrep", () => {
+    let checkSpy: ReturnType<typeof spyOn>
+
+    afterEach(() => {
+      checkSpy?.mockRestore()
+    })
+
+    it("returns warn when not installed", async () => {
+      // #given ripgrep not installed
+      checkSpy = spyOn(deps, "checkRipgrep").mockResolvedValue({
+        name: "ripgrep (rg)",
+        required: false,
+        installed: false,
+        version: null,
+        path: null,
+        installHint: "Install: apt install ripgrep or brew install ripgrep",
+      })
+
+      // #when checking
+      const result = await deps.checkDependencyRipgrep()
+
+      // #then should warn (optional)
+      expect(result.status).toBe("warn")
+      expect(result.message).toContain("optional")
+    })
+  })
+
   describe("getDependencyCheckDefinitions", () => {
     it("returns definitions for all dependencies", () => {
       // #given
       // #when getting definitions
       const defs = deps.getDependencyCheckDefinitions()
 
-      // #then should have 3 definitions
-      expect(defs.length).toBe(3)
+      // #then should have 5 definitions
+      expect(defs.length).toBe(5)
       expect(defs.every((d) => d.category === "dependencies")).toBe(true)
       expect(defs.every((d) => d.critical === false)).toBe(true)
     })

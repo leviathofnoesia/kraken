@@ -1,6 +1,7 @@
 import type { Hooks } from "@opencode-ai/plugin"
 import type { PluginInput } from "@opencode-ai/plugin"
 import type { Part } from "@opencode-ai/sdk"
+import { createLogger } from "../../utils/logger"
 
 export interface KeywordDetectorConfig {
   enabled?: boolean
@@ -17,6 +18,12 @@ export function createKeywordDetector(
   _input: PluginInput,
   options?: { config?: KeywordDetectorConfig }
 ): Hooks {
+  const shouldLog =
+    process.env.ANTIGRAVITY_DEBUG === "1" ||
+    process.env.DEBUG === "1" ||
+    process.env.KRAKEN_LOG === "1"
+  const logger = createLogger("keyword-detector")
+
   const config = options?.config ?? {
     enabled: true,
     keywords: {
@@ -307,7 +314,11 @@ export function createKeywordDetector(
         const mode = config.keywords?.[word]
         if (mode) {
           const detected = detectLanguageAndMode(word)
-          console.log(`[keyword-detector] Detected "${word}" (${detected.language}), activating: ${detected.mode} mode`)
+          if (shouldLog) {
+            logger.debug(
+              `Detected "${word}" (${detected.language}), activating: ${detected.mode} mode`
+            )
+          }
 
           const pluginConfig = (input as any).config as any
 
@@ -316,13 +327,21 @@ export function createKeywordDetector(
               pluginConfig.enhanced = { ...pluginConfig.enhanced, enabled: true }
             }
           } else if (detected.mode === "search") {
-            console.log(`[keyword-detector] Activating search mode for ${detected.language}`)
+            if (shouldLog) {
+              logger.debug(`Activating search mode for ${detected.language}`)
+            }
           } else if (detected.mode === "analyze") {
-            console.log(`[keyword-detector] Activating analyze mode for ${detected.language}`)
+            if (shouldLog) {
+              logger.debug(`Activating analyze mode for ${detected.language}`)
+            }
           } else if (detected.mode === "think") {
-            console.log(`[keyword-detector] Activating think mode for ${detected.language}`)
+            if (shouldLog) {
+              logger.debug(`Activating think mode for ${detected.language}`)
+            }
           } else if (detected.mode === "enhanced") {
-            console.log(`[keyword-detector] Activating enhanced mode`)
+            if (shouldLog) {
+              logger.debug("Activating enhanced mode")
+            }
           }
         }
       }

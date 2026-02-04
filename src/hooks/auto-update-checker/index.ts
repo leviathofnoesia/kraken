@@ -5,6 +5,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
+import { createLogger } from '../../utils/logger';
 
 export interface AutoUpdateCheckerConfig {
   enabled?: boolean;
@@ -26,6 +27,11 @@ const PACKAGE_NAME = 'kraken-code';
 const DEFAULT_CACHE_TTL = 86400000;
 const DEFAULT_CACHE_DIR = join(homedir(), '.config', 'kraken-code', 'cache');
 const CACHE_FILE = 'update-check.json';
+const SHOULD_LOG =
+  process.env.ANTIGRAVITY_DEBUG === "1" ||
+  process.env.DEBUG === "1" ||
+  process.env.KRAKEN_LOG === "1";
+const logger = createLogger('auto-update-checker');
 
 let currentVersion: string = '';
 let updateCache: UpdateCache | null = null;
@@ -72,7 +78,9 @@ async function saveCache(config: AutoUpdateCheckerConfig, cache: UpdateCache): P
     const cachePath = getCachePath(config);
     await writeFile(cachePath, JSON.stringify(cache, null, 2), 'utf-8');
   } catch (e) {
-    console.error('[auto-update-checker] Failed to save cache:', e);
+    if (SHOULD_LOG) {
+      logger.warn('Failed to save cache:', e);
+    }
   }
 }
 
@@ -82,13 +90,17 @@ async function checkNpmRegistry(): Promise<string | null> {
       `npm view ${PACKAGE_NAME} version`,
       (error, stdout, stderr) => {
         if (error) {
-          console.error('[auto-update-checker] Failed to check npm registry:', error);
+          if (SHOULD_LOG) {
+            logger.warn('Failed to check npm registry:', error);
+          }
           resolve(null);
           return;
         }
 
         if (stderr) {
-          console.error('[auto-update-checker] npm error:', stderr);
+          if (SHOULD_LOG) {
+            logger.warn('npm error:', stderr);
+          }
           resolve(null);
           return;
         }
@@ -130,20 +142,26 @@ async function checkForUpdates(
   updateCache = cache;
 
   if (cache && (now - cache.lastChecked) < cacheTTL) {
-    console.log(
-      `[auto-update-checker] Using cached update check from ${new Date(cache.lastChecked).toISOString()}`
-    );
+    if (SHOULD_LOG) {
+      logger.debug(
+        `Using cached update check from ${new Date(cache.lastChecked).toISOString()}`
+      );
+    }
     return {
       updateAvailable: cache.updateAvailable,
       latestVersion: cache.latestVersion,
     };
   }
 
-  console.log('[auto-update-checker] Checking npm registry for updates...');
+  if (SHOULD_LOG) {
+    logger.debug('Checking npm registry for updates...');
+  }
   const latestVersion = await checkNpmRegistry();
 
   if (!latestVersion) {
-    console.log('[auto-update-checker] Could not determine latest version');
+    if (SHOULD_LOG) {
+      logger.debug('Could not determine latest version');
+    }
     return {
       updateAvailable: false,
       latestVersion: null,
@@ -186,31 +204,22 @@ export function createAutoUpdateChecker(
       if (!config.enabled) return;
 
       if (config.checkOnLoad) {
-        console.log('[auto-update-checker] Checking for updates on load...');
+        if (SHOULD_LOG) {
+          logger.debug('Checking for updates on load...');
+        }
         const { updateAvailable, latestVersion } = await checkForUpdates(config);
 
         if (updateAvailable && config.notify) {
-          console.log('');
-          console.log('='.repeat(60));
-          console.log('UPDATE AVAILABLE');
-          console.log('='.repeat(60));
-          console.log(
-            `Current version: ${getCurrentVersion()}`
-          );
-          console.log(
-            `Latest version:  ${latestVersion}`
-          );
-          console.log('');
-          console.log('To update, run:');
-          console.log('  npm update kraken-code');
-          console.log('  # or');
-          console.log('  bun update kraken-code');
-          console.log('='.repeat(60));
-          console.log('');
+          if (SHOULD_LOG) {
+            logger.info('UPDATE AVAILABLE');
+            logger.info(`Current version: ${getCurrentVersion()}`);
+            logger.info(`Latest version:  ${latestVersion}`);
+            logger.info('To update, run: npm update kraken-code (or bun update kraken-code)');
+          }
         } else if (!updateAvailable) {
-          console.log(
-            `[auto-update-checker] You are using the latest version: ${getCurrentVersion()}`
-          );
+          if (SHOULD_LOG) {
+            logger.debug(`You are using the latest version: ${getCurrentVersion()}`);
+          }
         }
       }
     },
@@ -219,22 +228,30 @@ export function createAutoUpdateChecker(
       if (!config.enabled) return;
 
       if (input.event?.type === 'installation.updated') {
-        console.log('[auto-update-checker] Installation was updated');
+        if (SHOULD_LOG) {
+          logger.debug('Installation was updated');
+        }
         const cacheDir = config.cacheDir ?? DEFAULT_CACHE_DIR;
         const cachePath = join(cacheDir, CACHE_FILE);
         try {
           const { unlink } = await import('node:fs/promises');
           await unlink(cachePath);
-          console.log('[auto-update-checker] Cleared update cache');
+          if (SHOULD_LOG) {
+            logger.debug('Cleared update cache');
+          }
         } catch (e) {
         }
       }
 
       if (input.event?.type === 'installation.update-available') {
-        console.log('[auto-update-checker] New update available');
+        if (SHOULD_LOG) {
+          logger.debug('New update available');
+        }
         const { latestVersion } = await checkForUpdates(config);
         if (latestVersion) {
-          console.log(`[auto-update-checker] Latest version: ${latestVersion}`);
+          if (SHOULD_LOG) {
+            logger.debug(`Latest version: ${latestVersion}`);
+          }
         }
       }
     },

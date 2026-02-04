@@ -11,6 +11,7 @@ export interface BackgroundTask {
   agent: string
   status: "pending" | "running" | "completed" | "failed"
   createdAt: number
+  sessionId?: string
   startedAt?: number
   completedAt?: number
   result?: string
@@ -191,7 +192,10 @@ export function createBackgroundAgentFeature(_input: PluginInput): {
   return {
     manager,
     tools: {
-      call_agent: createCallAgentTool(manager),
+      call_agent: createCallAgentTool(manager, {
+        client: _input.client,
+        directory: _input.directory,
+      }),
       background_task_status: createBackgroundTaskStatusTool(manager),
       background_task_list: createBackgroundTaskListTool(manager),
       background_task_cancel: createBackgroundTaskCancelTool(manager),

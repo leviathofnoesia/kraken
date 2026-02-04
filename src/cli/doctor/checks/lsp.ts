@@ -1,5 +1,6 @@
 import type { CheckResult, CheckDefinition, LspServerInfo } from "../types"
 import { CHECK_IDS, CHECK_NAMES } from "../constants"
+import { getInstallHint } from "../../../tools/lsp/config"
 
 const DEFAULT_LSP_SERVERS: Array<{
   id: string
@@ -12,9 +13,13 @@ const DEFAULT_LSP_SERVERS: Array<{
   { id: "gopls", binary: "gopls", extensions: [".go"] },
 ]
 
+function getLocatorCommand(): string[] {
+  return process.platform === "win32" ? ["where"] : ["which"]
+}
+
 async function checkBinaryExists(binary: string): Promise<boolean> {
   try {
-    const proc = Bun.spawn(["which", binary], { stdout: "pipe", stderr: "pipe" })
+    const proc = Bun.spawn([...getLocatorCommand(), binary], { stdout: "pipe", stderr: "pipe" })
     await proc.exited
     return proc.exitCode === 0
   } catch {
@@ -56,14 +61,14 @@ export async function checkLspServers(): Promise<CheckResult> {
       message: "No LSP servers detected",
       details: [
         "LSP tools will have limited functionality",
-        ...missingServers.map((s) => `Missing: ${s.id}`),
+        ...missingServers.map((s) => `Missing: ${s.id} (install: ${getInstallHint(s.id)})`),
       ],
     }
   }
 
   const details = [
     ...installedServers.map((s) => `Installed: ${s.id}`),
-    ...missingServers.map((s) => `Not found: ${s.id} (optional)`),
+    ...missingServers.map((s) => `Not found: ${s.id} (install: ${getInstallHint(s.id)})`),
   ]
 
   return {
