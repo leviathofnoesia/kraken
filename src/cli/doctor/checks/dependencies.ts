@@ -1,13 +1,18 @@
 import type { CheckResult, CheckDefinition, DependencyInfo } from "../types"
 import { CHECK_IDS, CHECK_NAMES } from "../constants"
 
+function getLocatorCommand(): string[] {
+  return process.platform === "win32" ? ["where"] : ["which"]
+}
+
 async function checkBinaryExists(binary: string): Promise<{ exists: boolean; path: string | null }> {
   try {
-    const proc = Bun.spawn(["which", binary], { stdout: "pipe", stderr: "pipe" })
+    const proc = Bun.spawn([...getLocatorCommand(), binary], { stdout: "pipe", stderr: "pipe" })
     const output = await new Response(proc.stdout).text()
     await proc.exited
     if (proc.exitCode === 0) {
-      return { exists: true, path: output.trim() }
+      const path = output.trim().split("\n")[0]?.trim() ?? null
+      return { exists: true, path }
     }
   } catch {
     // intentionally empty - binary not found
@@ -19,9 +24,11 @@ async function getBinaryVersion(binary: string): Promise<string | null> {
   try {
     const proc = Bun.spawn([binary, "--version"], { stdout: "pipe", stderr: "pipe" })
     const output = await new Response(proc.stdout).text()
+    const errorOutput = await new Response(proc.stderr).text()
     await proc.exited
     if (proc.exitCode === 0) {
-      return output.trim().split("\n")[0]
+      const rawOutput = output.trim() || errorOutput.trim()
+      return rawOutput.split("\n")[0]
     }
   } catch {
     // intentionally empty - version unavailable
@@ -80,26 +87,48 @@ export function checkAstGrepNapi(): DependencyInfo {
 
 export async function checkPython3(): Promise<DependencyInfo> {
   const binaryCheck = await checkBinaryExists("python3")
+  const fallbackCheck = !binaryCheck.exists ? await checkBinaryExists("python") : null
 
-  if (!binaryCheck.exists) {
+  const pythonBinary = binaryCheck.exists ? binaryCheck : fallbackCheck
+
+  if (!pythonBinary || !pythonBinary.exists) {
     return {
       name: "Python 3",
       required: false,
       installed: false,
       version: null,
       path: null,
-      installHint: "Install: https://www.python.org/downloads/",
+      installHint:
+        process.platform === "win32"
+          ? "Install: https://www.python.org/downloads/windows/"
+          : "Install: https://www.python.org/downloads/",
     }
   }
 
-  const version = await getBinaryVersion(binaryCheck.path!)
+  const version = await getBinaryVersion(pythonBinary.path!)
+  const majorMatch = version?.match(/(?:python\s*)?(\d+)(?:\.\d+)?/i)
+  const majorVersion = majorMatch ? Number(majorMatch[1]) : null
+
+  if (majorVersion !== 3) {
+    return {
+      name: "Python 3",
+      required: false,
+      installed: false,
+      version: null,
+      path: null,
+      installHint:
+        process.platform === "win32"
+          ? "Install: https://www.python.org/downloads/windows/"
+          : "Install: https://www.python.org/downloads/",
+    }
+  }
 
   return {
     name: "Python 3",
     required: false,
     installed: true,
     version,
-    path: binaryCheck.path,
+    path: pythonBinary.path,
   }
 }
 
@@ -113,7 +142,11 @@ export async function checkRipgrep(): Promise<DependencyInfo> {
       installed: false,
       version: null,
       path: null,
-      installHint: "Install: apt install ripgrep or brew install ripgrep",
+      installHint:
+        "Install: apt install ripgrep or brew install ripgrep" +
+        (process.platform === "win32"
+          ? " or choco install ripgrep or winget install BurntSushi.ripgrep.MSVC"
+          : ""),
     }
   }
 

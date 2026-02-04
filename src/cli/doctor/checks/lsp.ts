@@ -13,9 +13,13 @@ const DEFAULT_LSP_SERVERS: Array<{
   { id: "gopls", binary: "gopls", extensions: [".go"] },
 ]
 
+function getLocatorCommand(): string[] {
+  return process.platform === "win32" ? ["where"] : ["which"]
+}
+
 async function checkBinaryExists(binary: string): Promise<boolean> {
   try {
-    const proc = Bun.spawn(["which", binary], { stdout: "pipe", stderr: "pipe" })
+    const proc = Bun.spawn([...getLocatorCommand(), binary], { stdout: "pipe", stderr: "pipe" })
     await proc.exited
     return proc.exitCode === 0
   } catch {

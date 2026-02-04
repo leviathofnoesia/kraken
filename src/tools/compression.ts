@@ -6,16 +6,28 @@ import path from "node:path"
 
 const execFileAsync = promisify(execFile)
 
-const resolvePythonBinary = async (): Promise<string | null> => {
-  try {
-    const python3Path = await Bun.which("python3")
-    if (python3Path) {
-      return python3Path
-    }
+function getLocatorCommand(): string[] {
+  return process.platform === "win32" ? ["where"] : ["which"]
+}
 
-    const pythonPath = await Bun.which("python")
-    if (pythonPath) {
-      return pythonPath
+async function resolvePythonBinary(): Promise<string | null> {
+  try {
+    const python3Proc = Bun.spawn([...getLocatorCommand(), "python3"], { stdout: "pipe", stderr: "pipe" })
+    const python3Output = await new Response(python3Proc.stdout).text()
+    await python3Proc.exited
+    if (python3Proc.exitCode === 0) {
+      return python3Output.trim().split("\n")[0]?.trim() ?? null
+    }
+  } catch {
+    // ignore - handled by caller
+  }
+
+  try {
+    const pythonProc = Bun.spawn([...getLocatorCommand(), "python"], { stdout: "pipe", stderr: "pipe" })
+    const pythonOutput = await new Response(pythonProc.stdout).text()
+    await pythonProc.exited
+    if (pythonProc.exitCode === 0) {
+      return pythonOutput.trim().split("\n")[0]?.trim() ?? null
     }
   } catch {
     // ignore - handled by caller
@@ -31,7 +43,10 @@ async function runCompression(prompt: string): Promise<CompressionResult> {
     if (!pythonBinary) {
       return {
         success: false,
-        error: "python3 not found. Install from https://www.python.org/downloads/",
+        error:
+          process.platform === "win32"
+            ? "Python not found. Install from https://www.python.org/downloads/windows/"
+            : "Python not found. Install from https://www.python.org/downloads/",
       }
     }
 
