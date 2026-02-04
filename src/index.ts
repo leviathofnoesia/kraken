@@ -21,6 +21,7 @@ import {
 
 // Tools
 import { opencodeXCompress } from './tools/compression'
+import { modelSwitcher } from './tools/model-switcher'
 import { createRalphLoopHook } from './hooks/ralph-loop'
 import { createAutoUpdateChecker } from './hooks/auto-update-checker'
 import { ast_grep_search, ast_grep_replace } from './tools/ast-grep'
@@ -167,7 +168,8 @@ const builtinTools: Record<string, any> = {
   session_read,
   session_search,
   session_info,
-  'model-switcher': opencodeXCompress,
+  'kraken-compress': opencodeXCompress,
+  'model-switcher': modelSwitcher,
   'ralph-loop': ralphLoop,
   lsp_hover,
   lsp_goto_definition,

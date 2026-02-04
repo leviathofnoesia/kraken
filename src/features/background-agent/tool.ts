@@ -1,11 +1,78 @@
 import { tool } from "@opencode-ai/plugin"
+import type { PluginInput } from "@opencode-ai/plugin"
+import type { Part } from "@opencode-ai/sdk"
 import { z } from "zod"
 import type { BackgroundManager } from "./manager"
+
+type AgentCallContext = {
+  client: PluginInput["client"]
+  directory: string
+}
+
+function buildAgentPrompt(task: string, context?: string): string {
+  if (!context) {
+    return task
+  }
+
+  return `${task}\n\nContext:\n${context}`
+}
+
+function extractTextFromParts(parts: Part[]): string {
+  const textChunks = parts
+    .filter((part) => part.type === "text" || part.type === "reasoning")
+    .map((part) => part.text)
+
+  return textChunks.join("\n").trim()
+}
+
+async function runAgentCall(
+  context: AgentCallContext,
+  agent: string,
+  task: string,
+  extraContext?: string
+): Promise<{ sessionId: string; responseText: string }> {
+  const sessionResult = await context.client.session.create({
+    body: { title: `Subagent: ${agent}` },
+    query: { directory: context.directory },
+  })
+
+  if (!sessionResult || sessionResult.error || !sessionResult.data) {
+    const errorMessage = sessionResult?.error
+      ? JSON.stringify(sessionResult.error)
+      : "Failed to create session for subagent task."
+    throw new Error(errorMessage)
+  }
+
+  const sessionId = sessionResult.data.id
+  const prompt = buildAgentPrompt(task, extraContext)
+  const promptResult = await context.client.session.prompt({
+    path: { id: sessionId },
+    query: { directory: context.directory },
+    body: {
+      agent,
+      parts: [{ type: "text", text: prompt }],
+    },
+  })
+
+  if (!promptResult || promptResult.error || !promptResult.data) {
+    const errorMessage = promptResult?.error
+      ? JSON.stringify(promptResult.error)
+      : "Subagent prompt failed."
+    throw new Error(errorMessage)
+  }
+
+  const responseText = extractTextFromParts(promptResult.data.parts)
+
+  return {
+    sessionId,
+    responseText: responseText || JSON.stringify(promptResult.data, null, 2),
+  }
+}
 
 /**
  * Creates a tool for calling subagents asynchronously
  */
-export function createCallAgentTool(manager: BackgroundManager) {
+export function createCallAgentTool(manager: BackgroundManager, context: AgentCallContext) {
   return tool({
     description: 
       "Delegate a task to a specialized subagent for domain expertise. " +
@@ -58,30 +125,47 @@ export function createCallAgentTool(manager: BackgroundManager) {
         ),
     },
     async execute(args): Promise<string> {
-      const { agent, task, context, wait: shouldWait } = args as any
+      const { agent, task, context: taskContext, wait: shouldWait } = args as any
 
       try {
-        const newTask = manager.createTask(agent, task, context)
+        const newTask = manager.createTask(agent, task, taskContext)
+
+        const runTask = async () => {
+          const result = await runAgentCall(context, agent, task, taskContext)
+          newTask.sessionId = result.sessionId
+          manager.completeTask(newTask.id, result.responseText)
+        }
+
+        manager.startTask(newTask.id)
 
         if (shouldWait) {
-          manager.startTask(newTask.id)
-          const result = await manager.waitForTask(newTask.id)
+          try {
+            await runTask()
+          } catch (error) {
+            manager.failTask(newTask.id, error instanceof Error ? error.message : "Unknown error")
+          }
+          const result = manager.getTask(newTask.id)
           return JSON.stringify(
             {
               success: true,
-              taskId: result.id,
-              agent: result.agent,
-              status: result.status,
-              result: result.result,
-              error: result.error,
-              duration: result.completedAt && result.startedAt
+              taskId: result?.id ?? newTask.id,
+              agent: result?.agent ?? agent,
+              status: result?.status ?? "failed",
+              result: result?.result,
+              error: result?.error,
+              duration: result?.completedAt && result?.startedAt
                 ? result.completedAt - result.startedAt
                 : null,
+              sessionId: result?.sessionId,
             },
             null,
             2
           )
         }
+
+        void runTask().catch((error) => {
+          manager.failTask(newTask.id, error instanceof Error ? error.message : "Unknown error")
+        })
 
         return JSON.stringify(
           {
@@ -90,6 +174,7 @@ export function createCallAgentTool(manager: BackgroundManager) {
             agent: newTask.agent,
             status: newTask.status,
             message: `Task delegated to ${agent}. Use background_task_status to check progress.`,
+            sessionId: newTask.sessionId,
           },
           null,
             2
@@ -151,6 +236,7 @@ export function createBackgroundTaskStatusTool(manager: BackgroundManager) {
           createdAt: task.createdAt,
           startedAt: task.startedAt,
           completedAt: task.completedAt,
+          sessionId: task.sessionId,
         },
         null,
             2
