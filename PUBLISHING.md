@@ -1,4 +1,4 @@
-# Publishing Guide: Kraken Code v5.0.0
+# Publishing Guide: Kraken Code
 
 ## Overview
 
@@ -58,7 +58,7 @@ bun pm audit
 ### 4. Package.json Review
 
 Ensure:
-- [x] Correct version (5.0.0)
+- [x] Correct version (from package.json)
 - [x] Proper name (kraken-code)
 - [x] Correct description
 - [x] All necessary files included in `files` field
@@ -133,31 +133,31 @@ bun pm publish
 
 ```bash
 # Tag the release
-git tag -a v5.0.0 -m "Release v5.0.0: Production-ready with 100% feature parity"
-git push origin v5.0.0
+git tag -a v<VERSION> -m "Release v<VERSION>"
+git push origin v<VERSION>
 ```
 
 ### Step 2: Create GitHub Release
 
 Using GitHub CLI:
 ```bash
-gh release create v5.0.0 \
-  --title "v5.0.0 - Production Release" \
+gh release create v<VERSION> \
+  --title "v<VERSION> - Production Release" \
   --notes "See CHANGELOG.md for detailed release notes"
 ```
 
 Or via GitHub web UI:
 1. Go to: https://github.com/leviathofnoesia/kraken-code/releases/new
-2. Tag: `v5.0.0`
-3. Title: `v5.0.0 - Production Release`
+2. Tag: `v<VERSION>`
+3. Title: `v<VERSION> - Production Release`
 4. Description: Add release notes
 
 ### Step 3: Upload Assets (Optional)
 
 ```bash
 # Create a GitHub release with attached binaries
-gh release create v5.0.0 \
-  --title "v5.0.0 - Production Release" \
+gh release create v<VERSION> \
+  --title "v<VERSION> - Production Release" \
   --notes "See CHANGELOG.md" \
   --assets dist/index.js,dist/cli/index.js
 ```
@@ -173,8 +173,11 @@ gh release create v5.0.0 \
 npm view kraken-code
 
 # Should show:
-# - Latest version: 5.0.0
+# - Latest version: <VERSION>
 # - All metadata correct
+
+# Check version matches
+npm view kraken-code version
 ```
 
 ### 2. Installation Test
@@ -186,17 +189,27 @@ cd /tmp/kraken-test
 
 # Test npm installation
 npm pack ../kraken-code
-npm install kraken-code-5.0.0.tgz
+npm install kraken-code-<VERSION>.tgz
 
 # Verify plugin loads
 # (Manual verification in OpenCode)
+```
+
+### 2b. Device Verification
+
+```bash
+# Confirm npm registry has the latest version
+npm view kraken-code version
+
+# Install the exact version on your device for testing
+npm install -g kraken-code@<VERSION>
 ```
 
 ### 3. GitHub Release Verification
 
 ```bash
 # Check release on GitHub
-gh release view v5.0.0
+gh release view v<VERSION>
 
 # Verify assets are attached
 # Check notes are correct
@@ -244,7 +257,7 @@ gh release view v5.0.0
 ## Release Notes Template
 
 ```markdown
-# Kraken Code v5.0.0
+# Kraken Code v<VERSION>
 
 ## What's New
 
@@ -320,7 +333,7 @@ npm publish --dry-run
 npm publish --access public
 
 # Unpublish (use with caution)
-npm unpublish kraken-code@5.0.0
+npm unpublish kraken-code@<VERSION>
 
 # View package info
 npm view kraken-code
@@ -343,16 +356,16 @@ bun pm config set registry https://registry.npmjs.org
 
 ```bash
 # Create annotated tag
-git tag -a v5.0.0 -m "Release v5.0.0"
+git tag -a v<VERSION> -m "Release v<VERSION>"
 
 # Push tag
-git push origin v5.0.0
+git push origin v<VERSION>
 
 # Delete local tag (if needed)
-git tag -d v5.0.0
+git tag -d v<VERSION>
 
 # Delete remote tag (if needed)
-git push origin :refs/tags/v5.0.0
+git push origin :refs/tags/v<VERSION>
 ```
 
 ---

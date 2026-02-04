@@ -129,6 +129,10 @@ export async function exchangeCode(
   clientSecret: string = ANTIGRAVITY_CLIENT_SECRET,
   codeVerifier?: string
 ): Promise<AntigravityTokenExchangeResult> {
+  if (!codeVerifier && !clientSecret) {
+    throw new Error("ANTIGRAVITY_CLIENT_SECRET is required when PKCE is not enabled.")
+  }
+
   const params: Record<string, string> = {
     client_id: clientId,
     code,

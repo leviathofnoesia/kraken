@@ -93,6 +93,14 @@ export async function refreshAccessToken(
   clientId: string = ANTIGRAVITY_CLIENT_ID,
   clientSecret: string = ANTIGRAVITY_CLIENT_SECRET
 ): Promise<AntigravityTokenExchangeResult> {
+  if (!clientSecret) {
+    throw new AntigravityTokenRefreshError({
+      message: "ANTIGRAVITY_CLIENT_SECRET is required to refresh access tokens.",
+      status: 0,
+      statusText: "Missing Client Secret",
+    })
+  }
+
   const params = new URLSearchParams({
     grant_type: "refresh_token",
     refresh_token: refreshToken,

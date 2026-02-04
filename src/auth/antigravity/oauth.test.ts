@@ -139,7 +139,12 @@ describe("OAuth PKCE Removal", () => {
       }) as unknown as typeof fetch
 
       // #when
-      await exchangeCode("test-code", "http://localhost:51121/oauth-callback")
+      await exchangeCode(
+        "test-code",
+        "http://localhost:51121/oauth-callback",
+        ANTIGRAVITY_CLIENT_ID,
+        "test-client-secret"
+      )
 
       // #then
       expect(capturedBody).toBeTruthy()
@@ -164,13 +169,19 @@ describe("OAuth PKCE Removal", () => {
       }) as unknown as typeof fetch
 
       // #when
-      await exchangeCode("test-code", "http://localhost:51121/oauth-callback")
+      await exchangeCode(
+        "test-code",
+        "http://localhost:51121/oauth-callback",
+        ANTIGRAVITY_CLIENT_ID,
+        "test-client-secret"
+      )
 
       // #then
       const params = new URLSearchParams(capturedBody!)
       expect(params.get("grant_type")).toBe("authorization_code")
       expect(params.get("code")).toBe("test-code")
       expect(params.get("client_id")).toBe(ANTIGRAVITY_CLIENT_ID)
+      expect(params.get("client_secret")).toBe("test-client-secret")
       expect(params.get("redirect_uri")).toBe("http://localhost:51121/oauth-callback")
     })
   })
