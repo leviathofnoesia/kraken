@@ -6,12 +6,52 @@ import path from "node:path"
 
 const execFileAsync = promisify(execFile)
 
+function getLocatorCommand(): string[] {
+  return process.platform === "win32" ? ["where"] : ["which"]
+}
+
+async function resolvePythonBinary(): Promise<string | null> {
+  try {
+    const python3Proc = Bun.spawn([...getLocatorCommand(), "python3"], { stdout: "pipe", stderr: "pipe" })
+    const python3Output = await new Response(python3Proc.stdout).text()
+    await python3Proc.exited
+    if (python3Proc.exitCode === 0) {
+      return python3Output.trim().split("\n")[0]?.trim() ?? null
+    }
+  } catch {
+    // ignore - handled by caller
+  }
+
+  try {
+    const pythonProc = Bun.spawn([...getLocatorCommand(), "python"], { stdout: "pipe", stderr: "pipe" })
+    const pythonOutput = await new Response(pythonProc.stdout).text()
+    await pythonProc.exited
+    if (pythonProc.exitCode === 0) {
+      return pythonOutput.trim().split("\n")[0]?.trim() ?? null
+    }
+  } catch {
+    // ignore - handled by caller
+  }
+  return null
+}
+
 async function runCompression(prompt: string): Promise<CompressionResult> {
   const compressionDir = path.resolve(__dirname, "..", "compression")
 
   try {
+    const pythonBinary = await resolvePythonBinary()
+    if (!pythonBinary) {
+      return {
+        success: false,
+        error:
+          process.platform === "win32"
+            ? "Python not found. Install from https://www.python.org/downloads/windows/"
+            : "Python not found. Install from https://www.python.org/downloads/",
+      }
+    }
+
     const { stdout, stderr } = await execFileAsync(
-      "python3",
+      pythonBinary,
       [path.join(compressionDir, "cli.py"), "compress", prompt],
       {
         cwd: compressionDir,

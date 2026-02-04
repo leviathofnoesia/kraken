@@ -162,7 +162,8 @@ async function isServerInstalled(command: string[]): Promise<boolean> {
   if (!cmd) return false
 
   try {
-    const result = Bun.spawn(["which", cmd], { stdout: "pipe" })
+    const locator = process.platform === "win32" ? "where" : "which"
+    const result = Bun.spawn([locator, cmd], { stdout: "pipe" })
     const output = await new Response(result.stdout).text()
     return output.trim().length > 0
   } catch {
@@ -170,7 +171,7 @@ async function isServerInstalled(command: string[]): Promise<boolean> {
   }
 }
 
-function getInstallHint(serverId: string): string {
+export function getInstallHint(serverId: string): string {
   const hints: Record<string, string> = {
     "typescript-language-server": "npm install -g typescript-language-server typescript",
     pyright: "npm install -g pyright",
