@@ -6,12 +6,37 @@ import path from "node:path"
 
 const execFileAsync = promisify(execFile)
 
+const resolvePythonBinary = async (): Promise<string | null> => {
+  try {
+    const python3Path = await Bun.which("python3")
+    if (python3Path) {
+      return python3Path
+    }
+
+    const pythonPath = await Bun.which("python")
+    if (pythonPath) {
+      return pythonPath
+    }
+  } catch {
+    // ignore - handled by caller
+  }
+  return null
+}
+
 async function runCompression(prompt: string): Promise<CompressionResult> {
   const compressionDir = path.resolve(__dirname, "..", "compression")
 
   try {
+    const pythonBinary = await resolvePythonBinary()
+    if (!pythonBinary) {
+      return {
+        success: false,
+        error: "python3 not found. Install from https://www.python.org/downloads/",
+      }
+    }
+
     const { stdout, stderr } = await execFileAsync(
-      "python3",
+      pythonBinary,
       [path.join(compressionDir, "cli.py"), "compress", prompt],
       {
         cwd: compressionDir,

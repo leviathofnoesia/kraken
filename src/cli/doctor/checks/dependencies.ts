@@ -78,6 +78,56 @@ export function checkAstGrepNapi(): DependencyInfo {
   }
 }
 
+export async function checkPython3(): Promise<DependencyInfo> {
+  const binaryCheck = await checkBinaryExists("python3")
+
+  if (!binaryCheck.exists) {
+    return {
+      name: "Python 3",
+      required: false,
+      installed: false,
+      version: null,
+      path: null,
+      installHint: "Install: https://www.python.org/downloads/",
+    }
+  }
+
+  const version = await getBinaryVersion(binaryCheck.path!)
+
+  return {
+    name: "Python 3",
+    required: false,
+    installed: true,
+    version,
+    path: binaryCheck.path,
+  }
+}
+
+export async function checkRipgrep(): Promise<DependencyInfo> {
+  const binaryCheck = await checkBinaryExists("rg")
+
+  if (!binaryCheck.exists) {
+    return {
+      name: "ripgrep (rg)",
+      required: false,
+      installed: false,
+      version: null,
+      path: null,
+      installHint: "Install: apt install ripgrep or brew install ripgrep",
+    }
+  }
+
+  const version = await getBinaryVersion(binaryCheck.path!)
+
+  return {
+    name: "ripgrep (rg)",
+    required: false,
+    installed: true,
+    version,
+    path: binaryCheck.path,
+  }
+}
+
 // Comment checker is now a built-in hook, no external dependency needed
 
 function dependencyToCheckResult(dep: DependencyInfo, checkName: string): CheckResult {
@@ -108,6 +158,16 @@ export async function checkDependencyAstGrepNapi(): Promise<CheckResult> {
   return dependencyToCheckResult(info, CHECK_NAMES[CHECK_IDS.DEP_AST_GREP_NAPI])
 }
 
+export async function checkDependencyPython3(): Promise<CheckResult> {
+  const info = await checkPython3()
+  return dependencyToCheckResult(info, CHECK_NAMES[CHECK_IDS.DEP_PYTHON])
+}
+
+export async function checkDependencyRipgrep(): Promise<CheckResult> {
+  const info = await checkRipgrep()
+  return dependencyToCheckResult(info, CHECK_NAMES[CHECK_IDS.DEP_RIPGREP])
+}
+
 export async function checkDependencyCommentChecker(): Promise<CheckResult> {
   return {
     name: "Comment Checker",
@@ -131,6 +191,20 @@ export function getDependencyCheckDefinitions(): CheckDefinition[] {
       name: CHECK_NAMES[CHECK_IDS.DEP_AST_GREP_NAPI],
       category: "dependencies",
       check: checkDependencyAstGrepNapi,
+      critical: false,
+    },
+    {
+      id: CHECK_IDS.DEP_PYTHON,
+      name: CHECK_NAMES[CHECK_IDS.DEP_PYTHON],
+      category: "dependencies",
+      check: checkDependencyPython3,
+      critical: false,
+    },
+    {
+      id: CHECK_IDS.DEP_RIPGREP,
+      name: CHECK_NAMES[CHECK_IDS.DEP_RIPGREP],
+      category: "dependencies",
+      check: checkDependencyRipgrep,
       critical: false,
     },
     {
