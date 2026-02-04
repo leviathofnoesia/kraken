@@ -6,13 +6,16 @@ import path from "node:path"
 
 const execFileAsync = promisify(execFile)
 
-async function resolvePythonBinary(): Promise<string | null> {
+const resolvePythonBinary = async (): Promise<string | null> => {
   try {
-    const proc = Bun.spawn(["which", "python3"], { stdout: "pipe", stderr: "pipe" })
-    const output = await new Response(proc.stdout).text()
-    await proc.exited
-    if (proc.exitCode === 0) {
-      return output.trim()
+    const python3Path = await Bun.which("python3")
+    if (python3Path) {
+      return python3Path
+    }
+
+    const pythonPath = await Bun.which("python")
+    if (pythonPath) {
+      return pythonPath
     }
   } catch {
     // ignore - handled by caller
