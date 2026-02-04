@@ -48,3 +48,24 @@ export class SkillLoader {
 }
 
 export const skillLoader = new SkillLoader(join(__dirname, "../builtin-skills"))
+
+let isInitialized = false
+
+export async function initializeSkillLoader(): Promise<SkillLoader> {
+  if (!isInitialized) {
+    skillLoader.loadSkills()
+    isInitialized = true
+  }
+  return skillLoader
+}
+
+export async function getSkills(): Promise<Skill[]> {
+  const loader = await initializeSkillLoader()
+  return loader.loadSkills()
+}
+
+export async function getSkillContent(name: string): Promise<string | null> {
+  const loader = await initializeSkillLoader()
+  const skill = loader.getSkill(name)
+  return skill?.instructions ?? null
+}

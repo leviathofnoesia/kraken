@@ -15,6 +15,11 @@ export async function initializeCommandLoader() {
   return loader
 }
 
+export async function getCommands() {
+  const commandLoader = await initializeCommandLoader()
+  return commandLoader.listCommands()
+}
+
 export function getCommandLoader(): CommandLoader | null {
   return loader
 }

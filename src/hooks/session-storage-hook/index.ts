@@ -108,3 +108,5 @@ export const metadata = {
   priority: 33,
   description: "Records todos and transcripts to Kraken storage",
 } as const
+
+export const sessionStorageHooks = createSessionStorageHook({} as PluginInput)

@@ -4,7 +4,7 @@
 
 | Aspect | Kraken-Code |
 |--------|-------------|
-| **Version** | 5.0.0 |
+| **Version** | 1.1.4 |
 | **Author** | LeviathofNoesia |
 | **Type** | Unified OpenCode Plugin |
 | **License** | MIT |
@@ -17,7 +17,7 @@
 **Core Philosophy**: Feature completeness, modular architecture, comprehensive tooling
 
 **Key Architectural Decisions**:
-- 10 sea-themed agents with clear specialization boundaries
+- 11 sea-themed agents with clear specialization boundaries
 - Modular feature system (skills, commands, MCP, memory)
 - Native integrations with full SDK implementations
 - Comprehensive hook system (30+ hooks)
@@ -66,7 +66,7 @@
 **Ralph Loop**:
 - `ralph-loop` - Self-referential development loop with state persistence
 
-**Kratos Memory Tools**:
+**Native Memory Tools**:
 - `memory_save` - Save memories with tags and importance
 - `memory_search` - Search memories by query or tags
 - `memory_get_recent` - Get recent memories
@@ -108,7 +108,7 @@
 - Custom commands support
 
 **Memory Integration**:
-- Kratos MCP with persistent storage
+- Native memory system with persistent storage
 - Obsidian MCP (optional)
 - Memory search and retrieval
 - Natural language queries
@@ -141,11 +141,10 @@
 - **websearch** - Exa AI (real-time web search)
 - **context7** - Official documentation lookup
 - **grep_app** - GitHub code search (grep.app)
-- **kratos** - Ultra-lean memory system
+- **memory** - Native memory system
 
-**Kratos MCP Implementation**:
-- Full JSON-RPC 2.0 protocol
-- Subprocess management (kratos-mcp)
+**Native Memory Implementation**:
+- Local persistence
 - Request/response handling with timeouts
 - 4 tools: memory_save, memory_search, memory_get_recent, memory_ask
 
@@ -174,7 +173,7 @@
 **Key Config Sections**:
 - `agents` - Agent configuration
 - `blitzkrieg` - Blitzkrieg TDD enforcement
-- `kratos` - Kratos memory config
+- `memory` - Memory config
 - `mcp` - MCP server config
 - `modes` - Special mode configurations (ultrawork, search, analyze, ultrathink)
 - `skillMcp` - Skill MCP server config
@@ -205,7 +204,7 @@ export class SkillLoader {
 - Skills installed via CLI to `~/.config/opencode/skill/`
 
 **Data Storage**:
-- Kratos storage: `~/.kratos`
+- Memory storage: `~/.kraken/memory`
 
 ---
 
@@ -280,9 +279,9 @@ export class SkillLoader {
 
 **Initialization Process**:
 1. Creates `~/.config/opencode/opencode.json`
-2. Configures agents, blitzkrieg, skills, kratos
+2. Configures agents, blitzkrieg, skills, memory
 3. Installs skill templates to `~/.config/opencode/skill/`
-4. Creates Kratos storage directory
+4. Creates memory storage directory
 
 ---
 
@@ -300,7 +299,7 @@ export class SkillLoader {
 - Sea-themed agents with clear specialization
 - Blitzkrieg for TDD enforcement
 - Skills for custom workflows
-- Kratos for persistent memory
+- Native memory for persistent context
 
 **Target Audience**:
 - Users wanting comprehensive feature set
@@ -315,19 +314,19 @@ export class SkillLoader {
 | Category | Kraken-Code |
 |----------|-------------|
 | **Agent Model Specialization** | User-configured per agent |
-| **Number of Agents** | 10 domain-specific |
+| **Number of Agents** | 11 domain-specific |
 | **Keyword Detection** | Basic (enhanced mode) |
  | **LSP Integration** | Full (12 tools, 16 servers) |
-| **MCP Support** | Dedicated Kratos, structured |
+| **MCP Support** | Built-in MCP servers, structured |
 | **Authentication** | 2 providers (Claude, Google) |
 | **Loaders** | Skills only |
 | **Hooks** | 30+ hooks, code-based |
 | **TDD Support** | Full Blitzkrieg system |
-| **Memory System** | Kratos persistent memory |
+| **Memory System** | Native persistent memory |
 | **CLI Commands** | install, init, status, doctor |
 | **Configuration** | Zod validation, centralized |
 | **File-based Hooks** | No (code-based) |
-| **Data Persistence** | Kratos storage |
+| **Data Persistence** | Memory storage |
 | **Native Integrations** | GitHub SDK, Git SDK, PR/Issue SDK |
 | **Background Agents** | Yes, manager-based |
 | **Context Pruning** | DCP engine + multiple strategies |
@@ -342,9 +341,9 @@ export class SkillLoader {
 
 ## Key Features
 
-1. **Sea-themed agent system** - 10 domain-specific agents for comprehensive coverage
+1. **Sea-themed agent system** - 11 domain-specific agents for comprehensive coverage
 2. **Blitzkrieg TDD system** - Complete test-driven development enforcement
-3. **Kratos memory** - Persistent memory storage across sessions
+3. **Native memory** - Persistent memory storage across sessions
 4. **Native SDK integrations** - GitHub, Git, PR/Issue SDKs
 5. **Skills system** - Dynamic skill discovery and templates
 6. **Extensive hooks** - 30+ hooks for customization

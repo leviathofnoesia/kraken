@@ -71,3 +71,15 @@ export function clearAllModes(): void {
 export function getActiveModeCount(): number {
   return activeModes.size
 }
+
+export function createModeSwitcher(options?: ModeSwitcherOptions) {
+  return {
+    activateMode: (sessionID: string, modeName: string) =>
+      activateMode(sessionID, modeName, options),
+    deactivateMode,
+    getActiveMode,
+    isModeActive,
+    clearAllModes,
+    getActiveModeCount,
+  }
+}

@@ -1,5 +1,7 @@
+import type { Hooks } from "@opencode-ai/plugin"
+
 import { promises as fs } from "fs"
-import { join, dirname } from "path"
+import { join } from "path"
 import * as os from "os"
 
 export interface ClaudeCodeConfig {
@@ -139,4 +141,15 @@ export function isPluginEnabled(
   }
 
   return true
+}
+
+export function createClaudeCodeCompatibilityLayer(
+  options: { onConfigLoaded?: (config: ClaudeCodeConfig) => void } = {}
+): Hooks {
+  return {
+    config: async () => {
+      const config = await loadClaudeCodeSettings()
+      options.onConfigLoaded?.(config)
+    },
+  }
 }

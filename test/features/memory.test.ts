@@ -1,10 +1,10 @@
 import { describe, it, expect } from "bun:test"
-import { initializeKratos, saveMemory, searchMemories } from "../../src/features/memory"
+import { initializeMemory, saveMemory, searchMemories } from "../../src/features/memory"
 
 describe("Memory Feature", () => {
-  describe("initializeKratos", () => {
-    it("should initialize kratos memory", async () => {
-      const result = await initializeKratos()
+  describe("initializeMemory", () => {
+    it("should initialize native memory", async () => {
+      const result = await initializeMemory()
       expect(result).toBeDefined()
     })
   })

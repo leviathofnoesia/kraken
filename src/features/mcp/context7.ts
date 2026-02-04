@@ -241,7 +241,7 @@ async function getDocumentation(
  * Context7 search tool
  */
 const context7SearchTool = tool({
-  description: 'Search official documentation for libraries, SDKs, and APIs. Returns relevant documentation pages with content.',
+  description: 'search official documentation for libraries, SDKs, and APIs. Returns relevant documentation pages with content.',
   args: {
     query: z.string().describe('Search query for documentation'),
     library: z.string().optional().describe('Library name (e.g., "react", "nodejs", "python")'),

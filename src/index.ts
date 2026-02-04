@@ -1,8 +1,6 @@
-import type { Plugin, PluginInput, Hooks, ToolDefinition } from '@opencode-ai/plugin'
-import type { BackgroundManager } from './features/background-agent/manager'
 import type { AgentConfig } from '@opencode-ai/sdk'
-import { z } from 'zod'
-import type { OpenCodeXConfig } from './config/schema'
+import type { Hooks, Plugin, PluginInput } from '@opencode-ai/plugin'
+
 import { getClaudeCodeCompatibilityConfig } from './config/manager'
 import { createLogger } from './utils/logger'
 
@@ -20,9 +18,6 @@ import {
   leviathanAgent,
   poseidonAgent,
 } from './agents'
-
-// Utils
-import { getAvailableAgents } from './utils'
 
 // Tools
 import { opencodeXCompress } from './tools/compression'
@@ -80,11 +75,18 @@ import { createBlitzkriegPlannerConstraintsHook } from './hooks/blitzkrieg-plann
 
 // MCP & Features
 import { initializeAllMcpServers, shutdownAllMcpServers } from './features/mcp/index'
-import { initializeKratos, shutdownKratos } from './features/mcp/kratos'
-import { getBuiltinMcpTools } from './features/mcp/index'
+import {
+  context7GetToolMCP,
+  context7SearchToolMCP,
+  grepGetFileToolMCP,
+  grepSearchToolMCP,
+  webfetchTool,
+  websearchTool,
+} from './features/mcp'
 
 // CLI & Skills
-import { getMcpManager } from './features/skills/mcp-manager'
+import { initializeCommandLoader } from './features/command-loader'
+import { initializeSkillMcpManager } from './features/skill-mcp-manager'
 
 // Helper function
 function getSeaThemedAgents(): Record<string, AgentConfig> {
@@ -143,17 +145,6 @@ function mergeHooks(...hooks: Hooks[]): Hooks {
   return result
 }
 
-async function initializeCommandLoader(): Promise<void> {
-  // Placeholder for command loader initialization
-  console.log('[kraken-code] Command loader not yet implemented')
-}
-
-async function initializeSkillMcpManager(): Promise<void> {
-  // Placeholder for skill MCP manager initialization
-  const mcpManager = getMcpManager()
-  console.log('[kraken-code] Skill MCP manager initialized')
-}
-
 const builtinTools: Record<string, any> = {
   ast_grep_search,
   ast_grep_replace,
@@ -176,53 +167,13 @@ const builtinTools: Record<string, any> = {
   lsp_code_action_resolve,
   lsp_servers,
   'call-kraken-agent': call_kraken_agent,
-  // TODO: Fix tool definitions with proper schema types
-  // "websearch": {
-  //   description: "Search the web using Exa AI",
-  //   args: z.object({
-  //     query: z.string(),
-  //     numResults: z.number().default(8),
-  //   }),
-  // },
-  // "webfetch": {
-  //   description: "Fetch a web page",
-  //   args: z.object({
-  //     url: z.string(),
-  //     format: z.enum(["text", "markdown", "html"]),
-  //   }),
-  // },
-  // "context7-search": {
-  //   description: "Search official documentation",
-  //   args: z.object({
-  //     query: z.string(),
-  //     numResults: z.number().default(5),
-  //   }),
-  // },
-  // "context7-get": {
-  //   description: "Get specific documentation",
-  //   args: z.object({
-  //     library: z.string(),
-  //     section: z.string().optional(),
-  //   }),
-  // },
-  // "grep-search": {
-  //   description: "Search code across GitHub",
-  //   args: z.object({
-  //     query: z.string(),
-  //     language: z.string().optional(),
-  //     numResults: z.number().default(10),
-  //   }),
-  // },
-  // "grep-get-file": {
-  //   description: "Get file from GitHub",
-  //   args: z.object({
-  //     repo: z.string(),
-  //     path: z.string(),
-  //   }),
-  // },
+  websearch: websearchTool,
+  webfetch: webfetchTool,
+  'context7-search': context7SearchToolMCP,
+  'context7-get': context7GetToolMCP,
+  'grep-search': grepSearchToolMCP,
+  'grep-get-file': grepGetFileToolMCP,
 }
-
-let backgroundManager: BackgroundManager | null = null
 
 const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
   const logger = createLogger('plugin-main')
@@ -284,15 +235,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         })(),
         (async () => {
           try {
-            await initializeKratos()
-            logger.info('Kratos initialized')
-          } catch (e) {
-            logger.error('Error initializing Kratos:', e)
-          }
-        })(),
-        (async () => {
-          const mcpConfig = pluginConfig.mcp || {}
-          try {
+            const mcpConfig = pluginConfig.mcp || {}
             await initializeAllMcpServers(mcpConfig)
             logger.info('MCP servers initialized')
           } catch (e) {
@@ -356,7 +299,6 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
   process.on('exit', async () => {
     try {
       await shutdownAllMcpServers()
-      await shutdownKratos()
     } catch (e) {
       console.error('Kraken Code: Error shutting down services', e)
     }

@@ -272,7 +272,7 @@ function parseRepositoryFromUrl(url: string): { owner: string; repo: string; pat
  * Grep search tool
  */
 const grepSearchTool = tool({
-  description: 'Search code across public GitHub repositories. Returns matching files with repository information.',
+  description: 'search code across public GitHub repositories. Returns matching files with repository information.',
   args: {
     query: z.string().describe('Search query (supports GitHub code search syntax)'),
     language: z.string().optional().describe('Filter by programming language (e.g., "TypeScript", "Python")'),
