@@ -106,6 +106,22 @@ export async function checkPython3(): Promise<DependencyInfo> {
   }
 
   const version = await getBinaryVersion(pythonBinary.path!)
+  const majorMatch = version?.match(/(?:python\s*)?(\d+)(?:\.\d+)?/i)
+  const majorVersion = majorMatch ? Number(majorMatch[1]) : null
+
+  if (majorVersion !== 3) {
+    return {
+      name: "Python 3",
+      required: false,
+      installed: false,
+      version: null,
+      path: null,
+      installHint:
+        process.platform === "win32"
+          ? "Install: https://www.python.org/downloads/windows/"
+          : "Install: https://www.python.org/downloads/",
+    }
+  }
 
   return {
     name: "Python 3",
@@ -126,7 +142,11 @@ export async function checkRipgrep(): Promise<DependencyInfo> {
       installed: false,
       version: null,
       path: null,
-      installHint: "Install: apt install ripgrep or brew install ripgrep",
+      installHint:
+        "Install: apt install ripgrep or brew install ripgrep" +
+        (process.platform === "win32"
+          ? " or choco install ripgrep or winget install BurntSushi.ripgrep.MSVC"
+          : ""),
     }
   }
 
