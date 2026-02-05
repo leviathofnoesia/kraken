@@ -42,9 +42,9 @@ describe('Cartographer', () => {
       expect(config).toBeDefined()
       // Cartographer can delegate to subagents, but cannot write/edit/task
       // Only prevents loops to other planning agents
-      expect(config.tools?.write).toBe('deny')
-      expect(config.tools?.edit).toBe('deny')
-      expect(config.tools?.task).toBe('deny')
+      expect(config.tools?.write).toBe(false)
+      expect(config.tools?.edit).toBe(false)
+      expect(config.tools?.task).toBe(false)
     })
   })
 
