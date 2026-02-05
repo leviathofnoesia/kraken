@@ -27,8 +27,8 @@
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "KRAKEN_BUILD=1 bun run build:plugin && bun run build:cli && bun run build:schema",
-    "build:plugin": "KRAKEN_BUILD=1 bun build src/index.ts --outdir dist --target node --format esm --external @opencode-ai/plugin --external @opencode-ai/sdk --external zod --minify",
+    "build": "bun run build:plugin && bun run build:cli && bun run build:schema",
+    "build:plugin": "bun build src/index.ts --outdir dist --target node --format esm --external @opencode-ai/plugin --external @opencode-ai/sdk --external zod --minify",
     "build:cli": "bun build src/cli/index.ts --outdir dist/cli --target bun --format esm --packages external --minify",
     "build:schema": "bun run script/build-schema.ts && mkdir -p dist && cp assets/kraken-code.schema.json dist/kraken-code.schema.json",
     "build:binary": "bun build --compile src/cli/index.ts --outfile bin/kraken-code",
