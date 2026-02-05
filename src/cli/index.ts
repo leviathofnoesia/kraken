@@ -46,6 +46,8 @@ program
     await runStatus()
   })
 
+addUninstallCommand(program)
+
 program
   .command('doctor')
   .description('Run system checks and diagnostics')

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test"
-import { initializeCommandLoader, getCommands } from "../../src/features/command-loader"
+import { initializeCommandLoader, getCommandLoader } from "../../src/features/command-loader"
 
 describe("Command Loader Feature", () => {
   describe("initializeCommandLoader", () => {
@@ -9,10 +9,11 @@ describe("Command Loader Feature", () => {
     })
   })
 
-  describe("getCommands", () => {
-    it("should get available commands", async () => {
-      const commands = await getCommands()
-      expect(Array.isArray(commands)).toBe(true)
+  describe("getCommandLoader", () => {
+    it("should return loader after initialization", async () => {
+      await initializeCommandLoader()
+      const loader = getCommandLoader()
+      expect(loader).toBeDefined()
     })
   })
 })

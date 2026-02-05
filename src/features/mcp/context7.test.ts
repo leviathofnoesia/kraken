@@ -93,7 +93,7 @@ describe("context7 MCP", () => {
 
     it("has search tool", () => {
       // #given
-      const searchTool = context7MCP.tools.find(t => t.description.includes("search"))
+      const searchTool = context7MCP.tools.find(t => t.description.includes("Search official documentation"))
 
       // #then search tool should exist
       expect(searchTool).toBeDefined()
