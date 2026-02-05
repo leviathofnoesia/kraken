@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test"
-import { initializeSkillMcpManager, createSkillMcpServer } from "../../src/features/skill-mcp-manager"
+import { initializeSkillMcpManager, getSkillMcpManager } from "../../src/features/skill-mcp-manager"
 
 describe("Skill MCP Manager Feature", () => {
   describe("initializeSkillMcpManager", () => {
@@ -9,10 +9,11 @@ describe("Skill MCP Manager Feature", () => {
     })
   })
 
-  describe("createSkillMcpServer", () => {
-    it("should create skill mcp server", () => {
-      const server = createSkillMcpServer("test-skill", "test config")
-      expect(server).toBeDefined()
+  describe("getSkillMcpManager", () => {
+    it("should return manager after initialization", async () => {
+      await initializeSkillMcpManager()
+      const manager = getSkillMcpManager()
+      expect(manager).toBeDefined()
     })
   })
 })

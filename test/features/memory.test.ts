@@ -7,7 +7,6 @@ describe("Learning Feature", () => {
       const result = await initializeLearning()
       expect(result).toBeDefined()
     })
-  })
 
   describe("addExperience", () => {
     it("should save experience", async () => {
@@ -20,7 +19,6 @@ describe("Learning Feature", () => {
       })
       expect(result).toBeDefined()
     })
-  })
 
   describe("searchExperiences", () => {
     it("should search experiences", () => {

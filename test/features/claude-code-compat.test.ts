@@ -1,16 +1,26 @@
 import { describe, it, expect } from "bun:test"
-import { createClaudeCodeCompatibilityLayer } from "../../src/features/claude-code-compatibility"
+import { loadClaudeCodeSettings, executeSettingsHooks, isFeatureEnabled, isPluginEnabled } from "../../src/features/claude-code-compatibility"
 
 describe("Claude Code Compatibility Feature", () => {
-  describe("createClaudeCodeCompatibilityLayer", () => {
-    it("should create claude code compatibility layer", () => {
-      const layer = createClaudeCodeCompatibilityLayer({})
-      expect(layer).toBeDefined()
+  describe("loadClaudeCodeSettings", () => {
+    it("should export load function", () => {
+      expect(loadClaudeCodeSettings).toBeDefined()
     })
+  })
 
-    it("should have config hook", () => {
-      const layer = createClaudeCodeCompatibilityLayer({})
-      expect(layer.config).toBeDefined()
+  describe("executeSettingsHooks", () => {
+    it("should export hook execution function", () => {
+      expect(executeSettingsHooks).toBeDefined()
+    })
+  })
+  
+  describe("feature flags", () => {
+    it("should export isFeatureEnabled", () => {
+      expect(isFeatureEnabled).toBeDefined()
+    })
+    
+    it("should export isPluginEnabled", () => {
+      expect(isPluginEnabled).toBeDefined()
     })
   })
 })
