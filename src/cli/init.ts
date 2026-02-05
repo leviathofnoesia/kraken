@@ -11,8 +11,21 @@ export async function runInit(options: { minimal?: boolean; full?: boolean }) {
   const opencodeConfigPath = path.join(configDir, 'opencode.json')
   const krakenConfigPath = path.join(configDir, 'kraken-code.json')
 
+  // Check if config directory exists, create if needed
   if (!existsSync(configDir)) {
-    mkdirSync(configDir, { recursive: true })
+    try {
+      mkdirSync(configDir, { recursive: true })
+      if (options.verbose) {
+        console.log(color.dim(`ℹ️  Created config directory: ${configDir}`))
+      }
+      console.log(color.green(`✓ Created config directory: ${configDir}`))
+    } catch (error: unknown) {
+      console.error(color.red(`❌ Failed to create config directory: ${error instanceof Error ? error.message : String(error)}`))
+      console.error(color.dim("Try running with elevated permissions or check permissions for ~/.config/opencode"))
+      process.exit(1)
+    }
+  } else if (options.verbose) {
+    console.log(color.dim(`ℹ️  Config directory already exists: ${configDir}`))
   }
 
   const isMinimal = options.minimal
@@ -100,10 +113,17 @@ export async function runInit(options: { minimal?: boolean; full?: boolean }) {
   let existingKrakenConfig: Record<string, any> = {}
   if (existsSync(krakenConfigPath)) {
     try {
-      existingKrakenConfig = JSON.parse(readFileSync(krakenConfigPath, 'utf-8'))
-    } catch {
+      existingKrakenConfig = JSON.parse(readFileSync(krakenConfigPath, "utf-8"))
+      if (options.verbose) {
+        console.log(color.dim(`ℹ️  Found existing Kraken configuration at ${krakenConfigPath}, merging with new settings`))
+      }
+    } catch (error: unknown) {
+      console.error(color.red(`❌ Failed to read existing Kraken configuration: ${error instanceof Error ? error.message : String(error)}`))
+      console.error(color.dim("This might be a corrupted config file. Try removing it manually and re-running init."))
       existingKrakenConfig = {}
     }
+  } else if (options.verbose) {
+    console.log(color.dim(`ℹ️  No existing Kraken configuration found at ${krakenConfigPath}`))
   }
 
   const mergedKrakenConfig = {
@@ -112,17 +132,33 @@ export async function runInit(options: { minimal?: boolean; full?: boolean }) {
   }
 
   // Write kraken-code config
-  writeFileSync(krakenConfigPath, JSON.stringify(mergedKrakenConfig, null, 2))
-  console.log(color.green(`✓ Kraken Code configuration written to ${krakenConfigPath}`))
+  try {
+    writeFileSync(krakenConfigPath, JSON.stringify(mergedKrakenConfig, null, 2))
+    if (options.verbose) {
+      console.log(color.dim(`ℹ️  Wrote configuration with ${Object.keys(mergedKrakenConfig).length} keys`))
+    }
+    console.log(color.green(`✓ Kraken Code configuration written to ${krakenConfigPath}`))
+  } catch (error) {
+    console.error(color.red(`❌ Failed to write Kraken configuration: ${error instanceof Error ? error.message : String(error)}`))
+    console.error(color.dim("Check permissions for the config file and try again."))
+    process.exit(1)
+  }
 
   // Update opencode.json to add plugin (only)
   let existingOpencodeConfig: Record<string, any> = {}
   if (existsSync(opencodeConfigPath)) {
     try {
-      existingOpencodeConfig = JSON.parse(readFileSync(opencodeConfigPath, 'utf-8'))
-    } catch {
+      existingOpencodeConfig = JSON.parse(readFileSync(opencodeConfigPath, "utf-8"))
+      if (options.verbose) {
+        console.log(color.dim(`ℹ️  Found existing OpenCode configuration at ${opencodeConfigPath}`))
+      }
+    } catch (error: unknown) {
+      console.error(color.red(`❌ Failed to read OpenCode configuration: ${error instanceof Error ? error.message : String(error)}`))
+      console.error(color.dim("This might be a corrupted opencode.json file. Try removing it manually and re-running init."))
       existingOpencodeConfig = {}
     }
+  } else if (options.verbose) {
+    console.log(color.dim(`ℹ️  No existing OpenCode configuration found at ${opencodeConfigPath}`))
   }
 
   const mergedOpencodeConfig = {
@@ -131,16 +167,78 @@ export async function runInit(options: { minimal?: boolean; full?: boolean }) {
     plugin: Array.from(new Set([...(existingOpencodeConfig.plugin || []), 'kraken-code'])),
   }
 
-  writeFileSync(opencodeConfigPath, JSON.stringify(mergedOpencodeConfig, null, 2))
-  console.log(color.green(`✓ OpenCode configuration updated at ${opencodeConfigPath}`))
+  if (options.verbose) {
+    console.log(color.dim(`ℹ️  Adding kraken-code to plugin list (current plugins: ${existingOpencodeConfig.plugin || []})`))
+  }
+
+  try {
+    writeFileSync(opencodeConfigPath, JSON.stringify(mergedOpencodeConfig, null, 2))
+    if (options.verbose) {
+      console.log(color.dim(`ℹ️  Updated OpenCode configuration with ${mergedOpencodeConfig.plugin.length} plugins`))
+    }
+    console.log(color.green(`✓ OpenCode configuration updated at ${opencodeConfigPath}`))
+  } catch (error: unknown) {
+    console.error(color.red(`❌ Failed to update OpenCode configuration: ${error instanceof Error ? error.message : String(error)}`))
+    console.error(color.dim("Check permissions for the config file and try again."))
+    process.exit(1)
+  }
 
   // Install skill templates
-  await installSkillTemplates()
+  try {
+    await installSkillTemplates()
+    if (options.verbose) {
+      console.log(color.dim(`ℹ️  Skill templates installation completed successfully`))
+    }
+    console.log(color.green("✓ Skill templates installed successfully"))
+  } catch (error: unknown) {
+    console.error(color.yellow(`⚠️  Failed to install skill templates: ${error instanceof Error ? error.message : String(error)}`))
+    console.error(color.dim("You can install them manually later by copying templates/skills to ~/.config/opencode/skill"))
+  }
 
-  console.log(color.green('\n🎉 Kraken Code initialized!'))
-  console.log(color.dim('\nNext steps:'))
-  console.log(color.dim('  1. Run: opencode'))
+  console.log(color.green("\n🎉 Kraken Code initialized successfully!"))
+  console.log(color.dim("\nNext steps:"))
+  console.log(color.dim("  1. Run: opencode"))
   console.log(color.dim("  2. Use 'blitz' or 'blz' to activate Blitzkrieg Mode"))
+
+  // Verify installation
+  if (options.verbose) {
+    console.log(color.dim("\n🔍 Verifying installation with detailed output..."))
+  } else {
+    console.log(color.dim("\n🔍 Verifying installation..."))
+  }
+  try {
+    const opencodeConfigPath = path.join(os.homedir(), ".config", "opencode", "opencode.json")
+    const opencodeConfig = JSON.parse(readFileSync(opencodeConfigPath, "utf-8"))
+    
+    if (opencodeConfig.plugin && opencodeConfig.plugin.includes("kraken-code")) {
+      console.log(color.green("✓ Kraken Code plugin is registered in opencode.json"))
+    } else {
+      console.log(color.yellow("⚠️  Kraken Code plugin not found in opencode.json - may need manual registration"))
+    }
+
+    const krakenConfigPath = path.join(os.homedir(), ".config", "opencode", "kraken-code.json")
+    if (existsSync(krakenConfigPath)) {
+      console.log(color.green("✓ Kraken Code configuration file exists"))
+    } else {
+      console.log(color.yellow("⚠️  Kraken Code configuration file missing"))
+    }
+
+    // Check if kraken-code appears in plugin list
+    const { exec } = await import("node:child_process")
+    const result = await new Promise((resolve) => {
+      exec("opencode --plugins", (error, stdout, stderr) => {
+        resolve(stdout)
+      })
+    })
+    
+    if ((result as string).includes("kraken-code")) {
+      console.log(color.green("✓ Kraken Code appears in plugin list"))
+    } else {
+      console.log(color.yellow("⚠️  Kraken Code not found in plugin list - run 'opencode --plugins' to verify"))
+    }
+  } catch (error) {
+    console.log(color.yellow("⚠️  Verification failed - some checks could not be performed"))
+  }
 }
 
 async function installSkillTemplates() {
