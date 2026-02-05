@@ -1,0 +1,197 @@
+name: Build and Release Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., v1.1.4)'
+        required: true
+        default: 'v1.1.4'
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macOS
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            binary_name: kraken-code-macos-x64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            binary_name: kraken-code-macos-arm64
+          # Linux
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            binary_name: kraken-code-linux-x64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            binary_name: kraken-code-linux-arm64
+          # Windows
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            binary_name: kraken-code-windows-x64.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build project
+        run: bun run build
+
+      - name: Build binary (Unix)
+        if: matrix.os != 'windows-latest'
+        run: |
+          bun build --compile src/cli/index.ts --outfile ${{ matrix.binary_name }}
+          chmod +x ${{ matrix.binary_name }}
+
+      - name: Build binary (Windows)
+        if: matrix.os == 'windows-latest'
+        run: bun build --compile src/cli/index.ts --outfile ${{ matrix.binary_name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary_name }}
+          path: ${{ matrix.binary_name }}
+          retention-days: 1
+
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./binaries
+          merge-multiple: false
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release
+          for dir in ./binaries/*/; do
+            binary=$(basename "$dir")
+            if [ -f "${dir}${binary}" ]; then
+              # Create tar.gz for Unix binaries
+              if [[ "$binary" != *.exe ]]; then
+                tar -czf "release/${binary}.tar.gz" -C "$dir" "$binary"
+              else
+                # Zip for Windows
+                (cd "$dir" && zip "../../release/${binary%.exe}.zip" "$binary")
+              fi
+            fi
+          done
+          ls -la release/
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "## Kraken Code $(echo '${{ github.ref_name }}' | sed 's/^v//')" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "### Binary Downloads" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "| Platform | Architecture | Download |" >> $GITHUB_ENV
+          echo "|----------|--------------|----------|" >> $GITHUB_ENV
+          echo "| macOS | x64 | kraken-code-macos-x64.tar.gz |" >> $GITHUB_ENV
+          echo "| macOS | ARM64 | kraken-code-macos-arm64.tar.gz |" >> $GITHUB_ENV
+          echo "| Linux | x64 | kraken-code-linux-x64.tar.gz |" >> $GITHUB_ENV
+          echo "| Linux | ARM64 | kraken-code-linux-arm64.tar.gz |" >> $GITHUB_ENV
+          echo "| Windows | x64 | kraken-code-windows-x64.zip |" >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "### Quick Install" >> $GITHUB_ENV
+          echo '```bash' >> $GITHUB_ENV
+          echo '# Using the install script' >> $GITHUB_ENV
+          echo 'curl -fsSL https://raw.githubusercontent.com/leviathofnoesia/kraken-code/main/install.sh | bash' >> $GITHUB_ENV
+          echo '' >> $GITHUB_ENV
+          echo '# Or using a package manager' >> $GITHUB_ENV
+          echo 'npm install -g kraken-code' >> $GITHUB_ENV
+          echo '# or' >> $GITHUB_ENV
+          echo 'bun install -g kraken-code' >> $GITHUB_ENV
+          echo '```' >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "### Docker" >> $GITHUB_ENV
+          echo '```bash' >> $GITHUB_ENV
+          echo 'docker pull ghcr.io/leviathofnoesia/kraken-code:${{ github.ref_name }}' >> $GITHUB_ENV
+          echo '```' >> $GITHUB_ENV
+          echo "" >> $GITHUB_ENV
+          echo "See [CHANGELOG.md](./CHANGELOG.md) for detailed release notes." >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body: ${{ env.RELEASE_NOTES }}
+          files: release/*
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/leviathofnoesia/kraken-code
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
