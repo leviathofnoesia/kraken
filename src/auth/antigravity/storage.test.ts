@@ -1,24 +1,24 @@
-import { describe, it, expect, beforeEach, afterEach } from "bun:test"
-import { join } from "node:path"
-import { homedir } from "node:os"
-import { promises as fs } from "node:fs"
-import { tmpdir } from "node:os"
-import type { AccountStorage } from "./types"
-import { getDataDir, getStoragePath, loadAccounts, saveAccounts } from "./storage"
+import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
+import { join } from 'node:path'
+import { homedir } from 'node:os'
+import { promises as fs } from 'node:fs'
+import { tmpdir } from 'node:os'
+import type { AccountStorage } from './types'
+import { getDataDir, getStoragePath, loadAccounts, saveAccounts } from './storage'
 
-describe("storage", () => {
+describe('storage', () => {
   const testDir = join(tmpdir(), `kraken-code-storage-test-${Date.now()}`)
-  const testStoragePath = join(testDir, "kraken-code-accounts.json")
+  const testStoragePath = join(testDir, 'kraken-code-accounts.json')
 
   const validStorage: AccountStorage = {
     version: 1,
     accounts: [
       {
-        email: "test@example.com",
-        tier: "free",
-        refreshToken: "refresh-token-123",
-        projectId: "project-123",
-        accessToken: "access-token-123",
+        email: 'test@example.com',
+        tier: 'free',
+        refreshToken: 'refresh-token-123',
+        projectId: 'project-123',
+        accessToken: 'access-token-123',
         expiresAt: Date.now() + 3600000,
         rateLimits: {},
       },
@@ -38,8 +38,8 @@ describe("storage", () => {
     }
   })
 
-  describe("getDataDir", () => {
-    it("returns path containing kraken-code directory", () => {
+  describe('getDataDir', () => {
+    it('returns path containing kraken-code directory', () => {
       // #given
       // platform is current system
 
@@ -47,26 +47,26 @@ describe("storage", () => {
       const result = getDataDir()
 
       // #then
-      expect(result).toContain("kraken-code")
+      expect(result).toContain('kraken-code')
     })
 
-    it("returns XDG_CONFIG_HOME/kraken-code when XDG_CONFIG_HOME is set on non-Windows", () => {
+    it('returns XDG_CONFIG_HOME/kraken-code when XDG_CONFIG_HOME is set on non-Windows', () => {
       // #given
       const originalXdg = process.env.XDG_CONFIG_HOME
       const originalPlatform = process.platform
 
-      if (originalPlatform === "win32") {
+      if (originalPlatform === 'win32') {
         return
       }
 
       try {
-        process.env.XDG_CONFIG_HOME = "/custom/config"
+        process.env.XDG_CONFIG_HOME = '/custom/config'
 
         // #when
         const result = getDataDir()
 
         // #then
-        expect(result).toBe("/custom/config/kraken-code")
+        expect(result).toBe('/custom/config/kraken-code')
       } finally {
         if (originalXdg !== undefined) {
           process.env.XDG_CONFIG_HOME = originalXdg
@@ -76,12 +76,12 @@ describe("storage", () => {
       }
     })
 
-    it("returns ~/.config/kraken-code when XDG_CONFIG_HOME is not set on non-Windows", () => {
+    it('returns ~/.config/kraken-code when XDG_CONFIG_HOME is not set on non-Windows', () => {
       // #given
       const originalXdg = process.env.XDG_CONFIG_HOME
       const originalPlatform = process.platform
 
-      if (originalPlatform === "win32") {
+      if (originalPlatform === 'win32') {
         return
       }
 
@@ -92,7 +92,7 @@ describe("storage", () => {
         const result = getDataDir()
 
         // #then
-        expect(result).toBe(join(homedir(), ".config", "kraken-code"))
+        expect(result).toBe(join(homedir(), '.config', 'kraken-code'))
       } finally {
         if (originalXdg !== undefined) {
           process.env.XDG_CONFIG_HOME = originalXdg
@@ -103,8 +103,8 @@ describe("storage", () => {
     })
   })
 
-  describe("getStoragePath", () => {
-    it("returns path ending with kraken-code-accounts.json", () => {
+  describe('getStoragePath', () => {
+    it('returns path ending with kraken-code-accounts.json', () => {
       // #given
       // no setup needed
 
@@ -112,15 +112,15 @@ describe("storage", () => {
       const result = getStoragePath()
 
       // #then
-      expect(result.endsWith("kraken-code-accounts.json")).toBe(true)
-      expect(result).toContain("kraken-code")
+      expect(result.endsWith('kraken-code-accounts.json')).toBe(true)
+      expect(result).toContain('kraken-code')
     })
   })
 
-  describe("loadAccounts", () => {
-    it("returns parsed storage when file exists and is valid", async () => {
+  describe('loadAccounts', () => {
+    it('returns parsed storage when file exists and is valid', async () => {
       // #given
-      await fs.writeFile(testStoragePath, JSON.stringify(validStorage), "utf-8")
+      await fs.writeFile(testStoragePath, JSON.stringify(validStorage), 'utf-8')
 
       // #when
       const result = await loadAccounts(testStoragePath)
@@ -129,12 +129,12 @@ describe("storage", () => {
       expect(result).not.toBeNull()
       expect(result?.version).toBe(1)
       expect(result?.accounts).toHaveLength(1)
-      expect(result?.accounts[0].email).toBe("test@example.com")
+      expect(result?.accounts[0].email).toBe('test@example.com')
     })
 
-    it("returns null when file does not exist (ENOENT)", async () => {
+    it('returns null when file does not exist (ENOENT)', async () => {
       // #given
-      const nonExistentPath = join(testDir, "non-existent.json")
+      const nonExistentPath = join(testDir, 'non-existent.json')
 
       // #when
       const result = await loadAccounts(nonExistentPath)
@@ -143,10 +143,10 @@ describe("storage", () => {
       expect(result).toBeNull()
     })
 
-    it("returns null when file contains invalid JSON", async () => {
+    it('returns null when file contains invalid JSON', async () => {
       // #given
-      const invalidJsonPath = join(testDir, "invalid.json")
-      await fs.writeFile(invalidJsonPath, "{ invalid json }", "utf-8")
+      const invalidJsonPath = join(testDir, 'invalid.json')
+      await fs.writeFile(invalidJsonPath, '{ invalid json }', 'utf-8')
 
       // #when
       const result = await loadAccounts(invalidJsonPath)
@@ -155,10 +155,10 @@ describe("storage", () => {
       expect(result).toBeNull()
     })
 
-    it("returns null when file contains valid JSON but invalid schema", async () => {
+    it('returns null when file contains valid JSON but invalid schema', async () => {
       // #given
-      const invalidSchemaPath = join(testDir, "invalid-schema.json")
-      await fs.writeFile(invalidSchemaPath, JSON.stringify({ foo: "bar" }), "utf-8")
+      const invalidSchemaPath = join(testDir, 'invalid-schema.json')
+      await fs.writeFile(invalidSchemaPath, JSON.stringify({ foo: 'bar' }), 'utf-8')
 
       // #when
       const result = await loadAccounts(invalidSchemaPath)
@@ -167,13 +167,13 @@ describe("storage", () => {
       expect(result).toBeNull()
     })
 
-    it("returns null when accounts is not an array", async () => {
+    it('returns null when accounts is not an array', async () => {
       // #given
-      const invalidAccountsPath = join(testDir, "invalid-accounts.json")
+      const invalidAccountsPath = join(testDir, 'invalid-accounts.json')
       await fs.writeFile(
         invalidAccountsPath,
-        JSON.stringify({ version: 1, accounts: "not-array", activeIndex: 0 }),
-        "utf-8"
+        JSON.stringify({ version: 1, accounts: 'not-array', activeIndex: 0 }),
+        'utf-8',
       )
 
       // #when
@@ -183,13 +183,13 @@ describe("storage", () => {
       expect(result).toBeNull()
     })
 
-    it("returns null when activeIndex is not a number", async () => {
+    it('returns null when activeIndex is not a number', async () => {
       // #given
-      const invalidIndexPath = join(testDir, "invalid-index.json")
+      const invalidIndexPath = join(testDir, 'invalid-index.json')
       await fs.writeFile(
         invalidIndexPath,
-        JSON.stringify({ version: 1, accounts: [], activeIndex: "zero" }),
-        "utf-8"
+        JSON.stringify({ version: 1, accounts: [], activeIndex: 'zero' }),
+        'utf-8',
       )
 
       // #when
@@ -200,8 +200,8 @@ describe("storage", () => {
     })
   })
 
-  describe("saveAccounts", () => {
-    it("writes storage to file with proper JSON formatting", async () => {
+  describe('saveAccounts', () => {
+    it('writes storage to file with proper JSON formatting', async () => {
       // #given
       // testStoragePath is ready
 
@@ -209,45 +209,45 @@ describe("storage", () => {
       await saveAccounts(validStorage, testStoragePath)
 
       // #then
-      const content = await fs.readFile(testStoragePath, "utf-8")
+      const content = await fs.readFile(testStoragePath, 'utf-8')
       const parsed = JSON.parse(content)
       expect(parsed.version).toBe(1)
       expect(parsed.accounts).toHaveLength(1)
       expect(parsed.activeIndex).toBe(0)
     })
 
-    it("creates parent directories if they do not exist", async () => {
+    it('creates parent directories if they do not exist', async () => {
       // #given
-      const nestedPath = join(testDir, "nested", "deep", "kraken-code-accounts.json")
+      const nestedPath = join(testDir, 'nested', 'deep', 'kraken-code-accounts.json')
 
       // #when
       await saveAccounts(validStorage, nestedPath)
 
       // #then
-      const content = await fs.readFile(nestedPath, "utf-8")
+      const content = await fs.readFile(nestedPath, 'utf-8')
       const parsed = JSON.parse(content)
       expect(parsed.version).toBe(1)
     })
 
-    it("overwrites existing file", async () => {
+    it('overwrites existing file', async () => {
       // #given
       const existingStorage: AccountStorage = {
         version: 1,
         accounts: [],
         activeIndex: 0,
       }
-      await fs.writeFile(testStoragePath, JSON.stringify(existingStorage), "utf-8")
+      await fs.writeFile(testStoragePath, JSON.stringify(existingStorage), 'utf-8')
 
       // #when
       await saveAccounts(validStorage, testStoragePath)
 
       // #then
-      const content = await fs.readFile(testStoragePath, "utf-8")
+      const content = await fs.readFile(testStoragePath, 'utf-8')
       const parsed = JSON.parse(content)
       expect(parsed.accounts).toHaveLength(1)
     })
 
-    it("uses pretty-printed JSON with 2-space indentation", async () => {
+    it('uses pretty-printed JSON with 2-space indentation', async () => {
       // #given
       // testStoragePath is ready
 
@@ -255,25 +255,28 @@ describe("storage", () => {
       await saveAccounts(validStorage, testStoragePath)
 
       // #then
-      const content = await fs.readFile(testStoragePath, "utf-8")
-      expect(content).toContain("\n")
-      expect(content).toContain("  ")
+      const content = await fs.readFile(testStoragePath, 'utf-8')
+      expect(content).toContain('\n')
+      expect(content).toContain('  ')
     })
 
-    it("sets restrictive file permissions (0o600) for security", async () => {
-      // #given
-      // testStoragePath is ready
+    it.skipIf(process.platform === 'win32')(
+      'sets restrictive file permissions (0o600) for security',
+      async () => {
+        // #given
+        // testStoragePath is ready
 
-      // #when
-      await saveAccounts(validStorage, testStoragePath)
+        // #when
+        await saveAccounts(validStorage, testStoragePath)
 
-      // #then
-      const stats = await fs.stat(testStoragePath)
-      const mode = stats.mode & 0o777
-      expect(mode).toBe(0o600)
-    })
+        // #then
+        const stats = await fs.stat(testStoragePath)
+        const mode = stats.mode & 0o777
+        expect(mode).toBe(0o600)
+      },
+    )
 
-    it("uses atomic write pattern with temp file and rename", async () => {
+    it('uses atomic write pattern with temp file and rename', async () => {
       // #given
       // This test verifies that the file is written atomically
       // by checking that no partial writes occur
@@ -283,26 +286,26 @@ describe("storage", () => {
 
       // #then
       // If we can read valid JSON, the atomic write succeeded
-      const content = await fs.readFile(testStoragePath, "utf-8")
+      const content = await fs.readFile(testStoragePath, 'utf-8')
       const parsed = JSON.parse(content)
       expect(parsed.version).toBe(1)
       expect(parsed.accounts).toHaveLength(1)
     })
 
-    it("cleans up temp file on rename failure", async () => {
+    it('cleans up temp file on rename failure', async () => {
       // #given
-      const readOnlyDir = join(testDir, "readonly")
+      const readOnlyDir = join(testDir, 'readonly')
       await fs.mkdir(readOnlyDir, { recursive: true })
-      
-      // On some systems/CI (like root user or specific FS mounts), 
+
+      // On some systems/CI (like root user or specific FS mounts),
       // simple chmod 0o444 doesn't prevent writing by the owner.
       // We'll skip the permission check if we can't effectively lock the directory.
-      const readOnlyPath = join(readOnlyDir, "accounts.json")
-      
+      const readOnlyPath = join(readOnlyDir, 'accounts.json')
+
       try {
         // Try to make directory read-only to prevent rename/creation
-        await fs.chmod(readOnlyDir, 0o555) 
-        
+        await fs.chmod(readOnlyDir, 0o555)
+
         // #when
         try {
           await saveAccounts(validStorage, readOnlyPath)
@@ -313,7 +316,7 @@ describe("storage", () => {
         // #then
         // Cleanup attempt should have happened
         const files = await fs.readdir(testDir) // Check parent, as readOnlyDir might be unreadable
-        const tempFiles = files.filter((f) => f.includes(".tmp."))
+        const tempFiles = files.filter((f) => f.includes('.tmp.'))
         expect(tempFiles).toHaveLength(0)
       } finally {
         // Cleanup permissions
@@ -321,7 +324,7 @@ describe("storage", () => {
       }
     })
 
-    it("uses unique temp filename with pid and timestamp", async () => {
+    it('uses unique temp filename with pid and timestamp', async () => {
       // #given
       // We verify this by checking the implementation behavior
       // The temp file should include process.pid and Date.now()
@@ -331,19 +334,22 @@ describe("storage", () => {
 
       // #then
       // File should exist and be valid (temp file was successfully renamed)
-      const exists = await fs.access(testStoragePath).then(() => true).catch(() => false)
+      const exists = await fs
+        .access(testStoragePath)
+        .then(() => true)
+        .catch(() => false)
       expect(exists).toBe(true)
     })
 
-    it("handles sequential writes without corruption", async () => {
+    it('handles sequential writes without corruption', async () => {
       // #given
       const storage1: AccountStorage = {
         ...validStorage,
-        accounts: [{ ...validStorage.accounts[0]!, email: "user1@example.com" }],
+        accounts: [{ ...validStorage.accounts[0]!, email: 'user1@example.com' }],
       }
       const storage2: AccountStorage = {
         ...validStorage,
-        accounts: [{ ...validStorage.accounts[0]!, email: "user2@example.com" }],
+        accounts: [{ ...validStorage.accounts[0]!, email: 'user2@example.com' }],
       }
 
       // #when - sequential writes (concurrent writes are inherently racy)
@@ -351,20 +357,20 @@ describe("storage", () => {
       await saveAccounts(storage2, testStoragePath)
 
       // #then - file should contain valid JSON from last write
-      const content = await fs.readFile(testStoragePath, "utf-8")
+      const content = await fs.readFile(testStoragePath, 'utf-8')
       const parsed = JSON.parse(content) as AccountStorage
       expect(parsed.version).toBe(1)
-      expect(parsed.accounts[0]?.email).toBe("user2@example.com")
+      expect(parsed.accounts[0]?.email).toBe('user2@example.com')
     })
   })
 
-  describe("loadAccounts error handling", () => {
-    it("re-throws non-ENOENT filesystem errors", async () => {
+  describe('loadAccounts error handling', () => {
+    it('re-throws non-ENOENT filesystem errors', async () => {
       // #given
-      const unreadableDir = join(testDir, "unreadable")
+      const unreadableDir = join(testDir, 'unreadable')
       await fs.mkdir(unreadableDir, { recursive: true })
-      const unreadablePath = join(unreadableDir, "accounts.json")
-      await fs.writeFile(unreadablePath, JSON.stringify(validStorage), "utf-8")
+      const unreadablePath = join(unreadableDir, 'accounts.json')
+      await fs.writeFile(unreadablePath, JSON.stringify(validStorage), 'utf-8')
       await fs.chmod(unreadablePath, 0o000)
 
       // #when
@@ -378,9 +384,12 @@ describe("storage", () => {
 
       // #then
       if (thrownError) {
-        expect((thrownError as NodeJS.ErrnoException).code).not.toBe("ENOENT")
+        expect((thrownError as NodeJS.ErrnoException).code).not.toBe('ENOENT')
       } else {
-        console.log("[TEST SKIP] File permissions did not work as expected on this system, got result:", result)
+        console.log(
+          '[TEST SKIP] File permissions did not work as expected on this system, got result:',
+          result,
+        )
       }
 
       // Cleanup
