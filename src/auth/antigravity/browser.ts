@@ -38,6 +38,12 @@ function debugLog(message: string): void {
  * ```
  */
 export async function openBrowserURL(url: string): Promise<boolean> {
+  // Prevent OAuth popup during build process
+  if (process.env.KRAKEN_BUILD === '1') {
+    debugLog(`Skipping browser open during build: ${url}`)
+    return true
+  }
+
   debugLog(`Opening browser: ${url}`)
 
   try {
