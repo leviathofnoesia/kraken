@@ -45,14 +45,21 @@ jobs:
         run: |
           TAG="${{ steps.version.outputs.version }}"
 
-          # Delete existing tag if it exists
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Delete remote tag if it exists (ignore errors)
+          git push origin ":refs/tags/$TAG" 2>/dev/null || true
+
+          # Delete local tag if it exists
           git tag -d "$TAG" 2>/dev/null || true
 
           # Create new tag
           git tag "$TAG"
 
-          # Push tag
-          git push origin "$TAG"
+          # Push tag to origin
+          git push origin "refs/tags/$TAG"
 
           echo "Tag $TAG created and pushed successfully"
 
