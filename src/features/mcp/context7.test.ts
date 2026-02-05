@@ -49,16 +49,24 @@ describe('context7 MCP', () => {
     it('warns when no API key provided', async () => {
       // #given no API key and debug mode enabled
       const originalDebug = process.env.DEBUG
-      process.env.DEBUG = '1'
       const consoleWarnSpy = spyOn(console, 'warn').mockImplementation(() => {})
 
-      // #when initializing without API key
-      await initializeContext7MCP({})
+      try {
+        process.env.DEBUG = '1'
 
-      // #then should warn
-      expect(consoleWarnSpy).toHaveBeenCalled()
-      consoleWarnSpy.mockRestore()
-      process.env.DEBUG = originalDebug
+        // #when initializing without API key
+        await initializeContext7MCP({})
+
+        // #then should warn
+        expect(consoleWarnSpy).toHaveBeenCalled()
+      } finally {
+        consoleWarnSpy.mockRestore()
+        if (originalDebug === undefined) {
+          delete process.env.DEBUG
+        } else {
+          process.env.DEBUG = originalDebug
+        }
+      }
     })
   })
 

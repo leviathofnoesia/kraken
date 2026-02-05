@@ -70,7 +70,7 @@ export interface ConfigInfo {
   errors: string[]
 }
 
-export type AuthProviderId = 'anthropic' | 'openai' | 'google'
+export type AuthProviderId = 'anthropic' | 'openai'
 
 export interface AuthProviderInfo {
   id: AuthProviderId

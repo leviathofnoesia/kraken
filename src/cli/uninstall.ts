@@ -22,23 +22,16 @@ export async function runUninstall(options: { dryRun?: boolean; verbose?: boolea
 
   // List files that would be removed
   const filesToRemove = []
-  
+
   if (existsSync(krakenConfigPath)) {
     filesToRemove.push(krakenConfigPath)
   }
 
-  if (existsSync(skillDir)) {
-    filesToRemove.push(skillDir)
-  }
-
-  // Check if kraken-code is in opencode.json plugin list
+  // Check if kraken-code is in opencode.json plugin list (we'll update it in place, not delete it)
   let opencodeConfig: { plugin?: string[] } = {}
   if (existsSync(opencodeConfigPath)) {
     try {
       opencodeConfig = JSON.parse(readFileSync(opencodeConfigPath, "utf-8"))
-      if (opencodeConfig.plugin && opencodeConfig.plugin.includes("kraken-code")) {
-        filesToRemove.push(opencodeConfigPath)
-      }
     } catch {
       // Ignore parsing errors
     }
@@ -57,7 +50,7 @@ export async function runUninstall(options: { dryRun?: boolean; verbose?: boolea
   }
 
   // List directories that would be removed
-  const dirsToRemove = []
+  const dirsToRemove: string[] = []
   if (existsSync(skillDir)) {
     dirsToRemove.push(skillDir)
   }
