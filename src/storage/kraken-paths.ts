@@ -1,16 +1,16 @@
-import * as path from "path"
-import * as os from "os"
+import * as path from 'path'
+import * as os from 'os'
 
 export function getKrakenDir(): string {
-  return path.join(os.homedir(), ".kraken")
+  return path.join(os.homedir(), '.kraken')
 }
 
 export function getKrakenTodoDir(): string {
-  return path.join(getKrakenDir(), "todos")
+  return path.join(getKrakenDir(), 'todos')
 }
 
 export function getKrakenTranscriptDir(): string {
-  return path.join(getKrakenDir(), "transcripts")
+  return path.join(getKrakenDir(), 'transcripts')
 }
 
 export function getKrakenTodoPath(sessionId: string): string {
@@ -22,5 +22,5 @@ export function getKrakenTranscriptPath(sessionId: string): string {
 }
 
 export function getTempTranscriptPath(): string {
-  return path.join(getKrakenTranscriptDir(), "temp.jsonl")
+  return path.join(getKrakenTranscriptDir(), 'temp.jsonl')
 }

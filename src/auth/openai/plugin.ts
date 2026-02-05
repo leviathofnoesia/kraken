@@ -1,4 +1,4 @@
-import type { Plugin, PluginInput, Hooks } from '@opencode-ai/plugin'
+import type { Plugin, PluginInput } from '@opencode-ai/plugin'
 import { performOAuthFlow } from './oauth'
 import { OpenAIAuthManager, type OpenAIAuthConfig, type OpenAITokens } from './fetch'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
@@ -50,7 +50,7 @@ async function saveStoredTokens(tokens: OpenAITokens): Promise<void> {
 
 export async function createOpenAIAuthPlugin(
   input: PluginInput,
-  options?: { config?: { enabled?: boolean; autoRefresh?: boolean } }
+  options?: { config?: { enabled?: boolean; autoRefresh?: boolean } },
 ): Promise<Plugin> {
   const config = options?.config ?? { enabled: true, autoRefresh: true }
 
@@ -112,4 +112,3 @@ export async function createOpenAIAuthPlugin(
 
 export * from './constants'
 export * from './types'
-

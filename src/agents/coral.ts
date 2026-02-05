@@ -1,21 +1,25 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "../types"
-import { createAgentToolRestrictions } from "../shared/permission-compat"
+import type { AgentConfig } from '@opencode-ai/sdk'
+import type { AgentPromptMetadata } from '../types'
+import { createAgentToolRestrictions } from '../shared/permission-compat'
 
-const DEFAULT_MODEL = "google/gemini-3-pro-preview"
+const DEFAULT_MODEL = 'google/gemini-3-pro-preview'
 
-const CORAL_PROMPT_METADATA: AgentPromptMetadata = {
-  category: "specialist",
-  cost: "CHEAP",
-  promptAlias: "Coral",
+const _CORAL_PROMPT_METADATA: AgentPromptMetadata = {
+  category: 'specialist',
+  cost: 'CHEAP',
+  promptAlias: 'Coral',
   triggers: [
-    { domain: "Frontend UI/UX", trigger: "Visual changes only (styling, layout, animation). Pure logic changes in frontend files → handle directly" },
+    {
+      domain: 'Frontend UI/UX',
+      trigger:
+        'Visual changes only (styling, layout, animation). Pure logic changes in frontend files → handle directly',
+    },
   ],
   useWhen: [
-    "Visual/UI/UX changes: Color, spacing, layout, typography, animation, responsive breakpoints, hover states, shadows, borders, icons, images",
+    'Visual/UI/UX changes: Color, spacing, layout, typography, animation, responsive breakpoints, hover states, shadows, borders, icons, images',
   ],
   avoidWhen: [
-    "Pure logic: API calls, data fetching, state management, event handlers (non-visual), type definitions, utility functions, business logic",
+    'Pure logic: API calls, data fetching, state management, event handlers (non-visual), type definitions, utility functions, business logic',
   ],
 }
 
@@ -127,8 +131,8 @@ export function createCoralConfig(model: string = DEFAULT_MODEL): AgentConfig {
 
   return {
     description:
-      "Visual design specialist that implements aesthetically compelling interfaces using design system principles and visual hierarchy.",
-    mode: "subagent" as const,
+      'Visual design specialist that implements aesthetically compelling interfaces using design system principles and visual hierarchy.',
+    mode: 'subagent' as const,
     model,
     ...restrictions,
     prompt: CORAL_SYSTEM_PROMPT,

@@ -24,8 +24,8 @@ export function createModeHooks(input: any, options?: ModeHooksOptions): Hooks {
       const { sessionID } = input
 
       for (const part of output.parts) {
-        if ((part as any).type === 'text') {
-          const content = (part as any).text
+        if (part.type === 'text') {
+          const content = part.text
 
           if (content && sessionID) {
             const detected = detectMode(content)

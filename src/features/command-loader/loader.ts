@@ -1,20 +1,20 @@
-import type { LoadedCommand, CommandScope, CommandLoaderOptions } from "./types"
-import { loadCommandsFromDir, getDefaultCommandPaths } from "./discovery"
-import { createLogger } from "../../utils/logger"
+import type { LoadedCommand, CommandScope, CommandLoaderOptions } from './types'
+import { loadCommandsFromDir, getDefaultCommandPaths } from './discovery'
+import { createLogger } from '../../utils/logger'
 
 const SCOPE_PRIORITY: CommandScope[] = [
-  "builtin",
-  "user",
-  "opencode",
-  "opencode-project",
-  "project",
-  "skill",
+  'builtin',
+  'user',
+  'opencode',
+  'opencode-project',
+  'project',
+  'skill',
 ]
 const SHOULD_LOG =
-  process.env.ANTIGRAVITY_DEBUG === "1" ||
-  process.env.DEBUG === "1" ||
-  process.env.KRAKEN_LOG === "1"
-const logger = createLogger("command-loader")
+  process.env.ANTIGRAVITY_DEBUG === '1' ||
+  process.env.DEBUG === '1' ||
+  process.env.KRAKEN_LOG === '1'
+const logger = createLogger('command-loader')
 
 export class CommandLoader {
   private commands: Map<string, LoadedCommand> = new Map()
@@ -29,26 +29,24 @@ export class CommandLoader {
 
     const loaders: Promise<LoadedCommand[]>[] = []
 
-    if (!this.isScopeDisabled("user")) {
+    if (!this.isScopeDisabled('user')) {
       const userDir = this.options.userCommandsDir || paths.user
-      loaders.push(loadCommandsFromDir(userDir, "user"))
+      loaders.push(loadCommandsFromDir(userDir, 'user'))
     }
 
-    if (!this.isScopeDisabled("project")) {
+    if (!this.isScopeDisabled('project')) {
       const projectDir = this.options.projectCommandsDir || paths.project
-      loaders.push(loadCommandsFromDir(projectDir, "project"))
+      loaders.push(loadCommandsFromDir(projectDir, 'project'))
     }
 
-    if (!this.isScopeDisabled("opencode")) {
-      const opencodeGlobalDir =
-        this.options.opencodeGlobalCommandsDir || paths.opencodeGlobal
-      loaders.push(loadCommandsFromDir(opencodeGlobalDir, "opencode"))
+    if (!this.isScopeDisabled('opencode')) {
+      const opencodeGlobalDir = this.options.opencodeGlobalCommandsDir || paths.opencodeGlobal
+      loaders.push(loadCommandsFromDir(opencodeGlobalDir, 'opencode'))
     }
 
-    if (!this.isScopeDisabled("opencode-project")) {
-      const opencodeProjectDir =
-        this.options.opencodeProjectCommandsDir || paths.opencodeProject
-      loaders.push(loadCommandsFromDir(opencodeProjectDir, "opencode-project"))
+    if (!this.isScopeDisabled('opencode-project')) {
+      const opencodeProjectDir = this.options.opencodeProjectCommandsDir || paths.opencodeProject
+      loaders.push(loadCommandsFromDir(opencodeProjectDir, 'opencode-project'))
     }
 
     const allCommands = await Promise.all(loaders)
@@ -59,9 +57,7 @@ export class CommandLoader {
     }
 
     if (SHOULD_LOG) {
-      logger.debug(
-        `Loaded ${this.commands.size} commands from ${allCommands.length} sources`
-      )
+      logger.debug(`Loaded ${this.commands.size} commands from ${allCommands.length} sources`)
     }
 
     return this.commands
@@ -77,9 +73,7 @@ export class CommandLoader {
       if (currentPriority > existingPriority) {
         this.commands.set(command.name, command)
         if (SHOULD_LOG) {
-          logger.debug(
-            `Overriding ${command.name} from ${existing.scope} with ${command.scope}`
-          )
+          logger.debug(`Overriding ${command.name} from ${existing.scope} with ${command.scope}`)
         }
       }
     } else {

@@ -18,7 +18,7 @@ export const MODEL_CATALOG: Record<string, ModelInfo> = {
     capabilities: ['code', 'thinking', 'vision', 'multimodal'],
     costPer1kTokens: 15.0,
     maxContext: 200000,
-    recommendedFor: ['Kraken', 'Maelstrom', 'Leviathan', 'Poseidon', 'Scylla']
+    recommendedFor: ['Kraken', 'Maelstrom', 'Leviathan', 'Poseidon', 'Scylla'],
   },
   'anthropic/claude-sonnet-4-5': {
     id: 'anthropic/claude-sonnet-4-5',
@@ -28,7 +28,7 @@ export const MODEL_CATALOG: Record<string, ModelInfo> = {
     capabilities: ['code', 'thinking', 'vision', 'multimodal'],
     costPer1kTokens: 3.0,
     maxContext: 200000,
-    recommendedFor: ['Nautilus', 'Abyssal', 'Coral', 'Siren', 'Pearl']
+    recommendedFor: ['Nautilus', 'Abyssal', 'Coral', 'Siren', 'Pearl'],
   },
   'anthropic/claude-haiku-4-5': {
     id: 'anthropic/claude-haiku-4-5',
@@ -38,7 +38,7 @@ export const MODEL_CATALOG: Record<string, ModelInfo> = {
     capabilities: ['code', 'vision'],
     costPer1kTokens: 0.25,
     maxContext: 200000,
-    recommendedFor: ['Nautilus', 'Pearl']
+    recommendedFor: ['Nautilus', 'Pearl'],
   },
   'openai/gpt-4o': {
     id: 'openai/gpt-4o',
@@ -48,7 +48,7 @@ export const MODEL_CATALOG: Record<string, ModelInfo> = {
     capabilities: ['code', 'vision', 'multimodal'],
     costPer1kTokens: 5.0,
     maxContext: 128000,
-    recommendedFor: ['Abyssal', 'Coral']
+    recommendedFor: ['Abyssal', 'Coral'],
   },
   'openai/gpt-4o-mini': {
     id: 'openai/gpt-4o-mini',
@@ -58,7 +58,7 @@ export const MODEL_CATALOG: Record<string, ModelInfo> = {
     capabilities: ['code', 'vision'],
     costPer1kTokens: 0.15,
     maxContext: 128000,
-    recommendedFor: ['Nautilus', 'Siren']
+    recommendedFor: ['Nautilus', 'Siren'],
   },
   'google/antigravity-gemini-3-flash': {
     id: 'google/antigravity-gemini-3-flash',
@@ -68,7 +68,7 @@ export const MODEL_CATALOG: Record<string, ModelInfo> = {
     capabilities: ['code', 'vision', 'multimodal'],
     costPer1kTokens: 0.075,
     maxContext: 1048576,
-    recommendedFor: ['Nautilus', 'Pearl']
+    recommendedFor: ['Nautilus', 'Pearl'],
   },
   'google/antigravity-gemini-3-pro': {
     id: 'google/antigravity-gemini-3-pro',
@@ -78,7 +78,7 @@ export const MODEL_CATALOG: Record<string, ModelInfo> = {
     capabilities: ['code', 'vision', 'multimodal'],
     costPer1kTokens: 1.5,
     maxContext: 1048576,
-    recommendedFor: ['Kraken', 'Maelstrom', 'Leviathan']
+    recommendedFor: ['Kraken', 'Maelstrom', 'Leviathan'],
   },
   'google/antigravity-claude-opus-4-5-thinking': {
     id: 'google/antigravity-claude-opus-4-5-thinking',
@@ -88,7 +88,7 @@ export const MODEL_CATALOG: Record<string, ModelInfo> = {
     capabilities: ['code', 'thinking', 'vision', 'multimodal'],
     costPer1kTokens: 10.0,
     maxContext: 200000,
-    recommendedFor: ['Kraken', 'Maelstrom', 'Leviathan', 'Poseidon', 'Scylla']
+    recommendedFor: ['Kraken', 'Maelstrom', 'Leviathan', 'Poseidon', 'Scylla'],
   },
   'google/antigravity-claude-sonnet-4-5-thinking': {
     id: 'google/antigravity-claude-sonnet-4-5-thinking',
@@ -98,8 +98,8 @@ export const MODEL_CATALOG: Record<string, ModelInfo> = {
     capabilities: ['code', 'thinking', 'vision', 'multimodal'],
     costPer1kTokens: 3.0,
     maxContext: 200000,
-    recommendedFor: ['Nautilus', 'Abyssal', 'Coral', 'Siren', 'Pearl']
-  }
+    recommendedFor: ['Nautilus', 'Abyssal', 'Coral', 'Siren', 'Pearl'],
+  },
 }
 
 export interface ProviderSubscription {
@@ -111,26 +111,34 @@ export interface AgentConfig {
   [agent: string]: { model: string; enabled?: boolean }
 }
 
-export function generateOptimalPresets(subscriptions: ProviderSubscription[]): Record<string, AgentConfig> {
-  const hasAnthropic = subscriptions.some(s => s.provider === 'anthropic')
-  const hasOpenAI = subscriptions.some(s => s.provider === 'openai')
-  const hasGoogle = subscriptions.some(s => s.provider === 'google')
-  
+export function generateOptimalPresets(
+  subscriptions: ProviderSubscription[],
+): Record<string, AgentConfig> {
+  const hasAnthropic = subscriptions.some((s) => s.provider === 'anthropic')
+  const hasOpenAI = subscriptions.some((s) => s.provider === 'openai')
+  const hasGoogle = subscriptions.some((s) => s.provider === 'google')
+
   const presets: Record<string, AgentConfig> = {}
-  
+
   presets.performance = {
-    Kraken: { model: hasAnthropic ? 'anthropic/claude-sonnet-4-5' : 'google/antigravity-gemini-3-pro' },
+    Kraken: {
+      model: hasAnthropic ? 'anthropic/claude-sonnet-4-5' : 'google/antigravity-gemini-3-pro',
+    },
     Maelstrom: { model: 'anthropic/claude-sonnet-4-5' },
-    Nautilus: { model: hasGoogle ? 'google/antigravity-gemini-3-flash' : 'anthropic/claude-haiku-4-5' },
+    Nautilus: {
+      model: hasGoogle ? 'google/antigravity-gemini-3-flash' : 'anthropic/claude-haiku-4-5',
+    },
     Abyssal: { model: hasOpenAI ? 'openai/gpt-4o-mini' : 'anthropic/claude-sonnet-4-5' },
     Coral: { model: 'anthropic/claude-sonnet-4-5' },
     Siren: { model: 'anthropic/claude-sonnet-4-5' },
     Leviathan: { model: 'anthropic/claude-sonnet-4-5' },
     'Poseidon (Plan Consultant)': { model: 'anthropic/claude-opus-4-5' },
     'Scylla (Plan Reviewer)': { model: 'anthropic/claude-sonnet-4-5' },
-    Pearl: { model: hasGoogle ? 'google/antigravity-gemini-3-flash' : 'anthropic/claude-haiku-4-5' }
+    Pearl: {
+      model: hasGoogle ? 'google/antigravity-gemini-3-flash' : 'anthropic/claude-haiku-4-5',
+    },
   }
-  
+
   presets.quality = {
     Kraken: { model: 'anthropic/claude-opus-4-5' },
     Maelstrom: { model: 'anthropic/claude-opus-4-5' },
@@ -141,9 +149,9 @@ export function generateOptimalPresets(subscriptions: ProviderSubscription[]): R
     Leviathan: { model: 'anthropic/claude-opus-4-5' },
     'Poseidon (Plan Consultant)': { model: 'anthropic/claude-opus-4-5' },
     'Scylla (Plan Reviewer)': { model: 'anthropic/claude-sonnet-4-5' },
-    Pearl: { model: 'anthropic/claude-sonnet-4-5' }
+    Pearl: { model: 'anthropic/claude-sonnet-4-5' },
   }
-  
+
   presets.economy = {
     Kraken: { model: 'anthropic/claude-haiku-4-5' },
     Maelstrom: { model: 'anthropic/claude-haiku-4-5' },
@@ -154,9 +162,9 @@ export function generateOptimalPresets(subscriptions: ProviderSubscription[]): R
     Leviathan: { model: 'anthropic/claude-haiku-4-5' },
     'Poseidon (Plan Consultant)': { model: 'anthropic/claude-sonnet-4-5' },
     'Scylla (Plan Reviewer)': { model: 'anthropic/claude-sonnet-4-5' },
-    Pearl: { model: 'anthropic/claude-haiku-4-5' }
+    Pearl: { model: 'anthropic/claude-haiku-4-5' },
   }
-  
+
   presets.balanced = {
     Kraken: { model: 'anthropic/claude-opus-4-5' },
     Maelstrom: { model: 'anthropic/claude-opus-4-5' },
@@ -167,15 +175,17 @@ export function generateOptimalPresets(subscriptions: ProviderSubscription[]): R
     Leviathan: { model: 'anthropic/claude-opus-4-5' },
     'Poseidon (Plan Consultant)': { model: 'anthropic/claude-opus-4-5' },
     'Scylla (Plan Reviewer)': { model: 'anthropic/claude-sonnet-4-5' },
-    Pearl: { model: 'google/antigravity-gemini-3-flash' }
+    Pearl: { model: 'google/antigravity-gemini-3-flash' },
   }
-  
+
   return presets
 }
 
-export function getAvailableModelsByProvider(provider: 'anthropic' | 'openai' | 'google'): ModelInfo[] {
+export function getAvailableModelsByProvider(
+  provider: 'anthropic' | 'openai' | 'google',
+): ModelInfo[] {
   return Object.values(MODEL_CATALOG)
-    .filter(m => m.provider === provider)
+    .filter((m) => m.provider === provider)
     .sort((a, b) => {
       const tierOrder = { flagship: 0, balanced: 1, fast: 2 }
       return tierOrder[a.tier] - tierOrder[b.tier]

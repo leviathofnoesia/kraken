@@ -5,13 +5,13 @@
  * Issues warnings at configurable threshold (default 70%).
  */
 
-import type { Hooks, PluginInput } from '@opencode-ai/plugin';
-import type { Part } from '@opencode-ai/sdk';
+import type { Hooks, PluginInput } from '@opencode-ai/plugin'
+import type { Part } from '@opencode-ai/sdk'
 
 /**
  * Default warning threshold as percentage (70%)
  */
-export const DEFAULT_WARNING_THRESHOLD = 0.7;
+export const DEFAULT_WARNING_THRESHOLD = 0.7
 
 /**
  * Model token limits (in tokens)
@@ -40,22 +40,22 @@ const MODEL_TOKEN_LIMITS: Record<string, number> = {
   'gemini-1.5-flash': 1000000,
 
   // Default fallback
-  'default': 100000,
-};
+  default: 100000,
+}
 
 /**
  * Session state for tracking context window usage
  */
 interface ContextMonitorSession {
-  messageCount: number;
-  lastWarningAt: number;
-  totalEstimatedTokens: number;
+  messageCount: number
+  lastWarningAt: number
+  totalEstimatedTokens: number
 }
 
 /**
  * Map of sessionID to context monitor state
  */
-const contextMonitorSessions = new Map<string, ContextMonitorSession>();
+const contextMonitorSessions = new Map<string, ContextMonitorSession>()
 
 /**
  * Get context monitor state for a session
@@ -63,7 +63,7 @@ const contextMonitorSessions = new Map<string, ContextMonitorSession>();
  * @returns The session state or undefined
  */
 function getSessionState(sessionID: string): ContextMonitorSession | undefined {
-  return contextMonitorSessions.get(sessionID);
+  return contextMonitorSessions.get(sessionID)
 }
 
 /**
@@ -72,16 +72,16 @@ function getSessionState(sessionID: string): ContextMonitorSession | undefined {
  * @returns The session state
  */
 function getOrCreateSessionState(sessionID: string): ContextMonitorSession {
-  let state = contextMonitorSessions.get(sessionID);
+  let state = contextMonitorSessions.get(sessionID)
   if (!state) {
     state = {
       messageCount: 0,
       lastWarningAt: 0,
       totalEstimatedTokens: 0,
-    };
-    contextMonitorSessions.set(sessionID, state);
+    }
+    contextMonitorSessions.set(sessionID, state)
   }
-  return state;
+  return state
 }
 
 /**
@@ -91,22 +91,22 @@ function getOrCreateSessionState(sessionID: string): ContextMonitorSession {
  */
 function getModelTokenLimit(model: string): number {
   // Normalize model name (lowercase, remove version suffixes)
-  const normalized = model.toLowerCase();
+  const normalized = model.toLowerCase()
 
   // Try to find an exact match
   if (MODEL_TOKEN_LIMITS[normalized]) {
-    return MODEL_TOKEN_LIMITS[normalized];
+    return MODEL_TOKEN_LIMITS[normalized]
   }
 
   // Try to find a partial match
   for (const [key, limit] of Object.entries(MODEL_TOKEN_LIMITS)) {
     if (normalized.includes(key.toLowerCase())) {
-      return limit;
+      return limit
     }
   }
 
   // Use default limit
-  return MODEL_TOKEN_LIMITS['default'];
+  return MODEL_TOKEN_LIMITS['default']
 }
 
 /**
@@ -117,7 +117,7 @@ function getModelTokenLimit(model: string): number {
 function estimateTokens(text: string): number {
   // Rough approximation: ~4 characters per token for English text
   // This is a heuristic; actual tokenization varies by model
-  return Math.ceil(text.length / 4);
+  return Math.ceil(text.length / 4)
 }
 
 /**
@@ -130,16 +130,16 @@ function estimateTokens(text: string): number {
 export function shouldIssueContextWarning(
   currentTokens: number,
   model: string,
-  threshold: number = DEFAULT_WARNING_THRESHOLD
+  threshold: number = DEFAULT_WARNING_THRESHOLD,
 ): boolean {
   if (currentTokens <= 0) {
-    return false;
+    return false
   }
 
-  const tokenLimit = getModelTokenLimit(model);
-  const usagePercentage = currentTokens / tokenLimit;
+  const tokenLimit = getModelTokenLimit(model)
+  const usagePercentage = currentTokens / tokenLimit
 
-  return usagePercentage >= threshold;
+  return usagePercentage >= threshold
 }
 
 /**
@@ -153,38 +153,35 @@ export function checkContextWindow(
   sessionID: string,
   model: string,
   estimatedTokens: number,
-  threshold?: number
+  threshold?: number,
 ): void {
-  const state = getOrCreateSessionState(sessionID);
-  state.messageCount++;
-  state.totalEstimatedTokens += estimatedTokens;
+  const state = getOrCreateSessionState(sessionID)
+  state.messageCount++
+  state.totalEstimatedTokens += estimatedTokens
 
   // Check if we should warn (warn every 10 messages or if at threshold)
   const shouldWarn =
     state.messageCount % 10 === 0 ||
-    shouldIssueContextWarning(state.totalEstimatedTokens, model, threshold);
+    shouldIssueContextWarning(state.totalEstimatedTokens, model, threshold)
 
-    if (shouldWarn) {
-      // Debounce warnings - only warn once per minute for same session
-      const now = Date.now();
-      if (now - state.lastWarningAt >= 60000) {
-        const tokenLimit = getModelTokenLimit(model);
-        const usagePercentage = calculateUsagePercentage(
-          state.totalEstimatedTokens,
-          model
-        );
+  if (shouldWarn) {
+    // Debounce warnings - only warn once per minute for same session
+    const now = Date.now()
+    if (now - state.lastWarningAt >= 60000) {
+      const tokenLimit = getModelTokenLimit(model)
+      const usagePercentage = calculateUsagePercentage(state.totalEstimatedTokens, model)
 
       if (usagePercentage >= (threshold ?? DEFAULT_WARNING_THRESHOLD) * 100) {
         console.warn(
-          `⚠️  Context Window Warning: You are at ${usagePercentage}% of ${tokenLimit} token limit (~${state.totalEstimatedTokens}/${tokenLimit} tokens). Consider clearing context.`
-        );
+          `⚠️  Context Window Warning: You are at ${usagePercentage}% of ${tokenLimit} token limit (~${state.totalEstimatedTokens}/${tokenLimit} tokens). Consider clearing context.`,
+        )
       } else {
         console.log(
-          `ℹ️  Context Window: At ${usagePercentage}% of ${tokenLimit} token limit (~${state.totalEstimatedTokens}/${tokenLimit} tokens, ${state.messageCount} messages).`
-        );
+          `ℹ️  Context Window: At ${usagePercentage}% of ${tokenLimit} token limit (~${state.totalEstimatedTokens}/${tokenLimit} tokens, ${state.messageCount} messages).`,
+        )
       }
 
-      state.lastWarningAt = now;
+      state.lastWarningAt = now
     }
   }
 }
@@ -195,15 +192,12 @@ export function checkContextWindow(
  * @param model - The model name
  * @returns Usage percentage (0-100)
  */
-export function calculateUsagePercentage(
-  currentTokens: number,
-  model: string
-): number {
-  const tokenLimit = getModelTokenLimit(model);
+export function calculateUsagePercentage(currentTokens: number, model: string): number {
+  const tokenLimit = getModelTokenLimit(model)
   if (tokenLimit <= 0) {
-    return 0;
+    return 0
   }
-  return Math.round((currentTokens / tokenLimit) * 100);
+  return Math.round((currentTokens / tokenLimit) * 100)
 }
 
 /**
@@ -212,7 +206,7 @@ export function calculateUsagePercentage(
  * @returns Token limit in tokens, or default limit if unknown
  */
 export function getTokenLimitForModel(model: string): number {
-  return getModelTokenLimit(model);
+  return getModelTokenLimit(model)
 }
 
 /**
@@ -220,7 +214,7 @@ export function getTokenLimitForModel(model: string): number {
  * @returns Record of model names to token limits
  */
 export function getModelTokenLimits(): Readonly<Record<string, number>> {
-  return { ...MODEL_TOKEN_LIMITS };
+  return { ...MODEL_TOKEN_LIMITS }
 }
 
 /**
@@ -232,25 +226,25 @@ export function createContextWindowMonitorHook(input: PluginInput): Hooks {
   return {
     // Hook executed before chat messages
     'chat.message': async (messageInput: any, messageOutput: any) => {
-      const { sessionID, model } = messageInput;
-      const modelID = model?.modelID || 'default';
+      const { sessionID, model } = messageInput
+      const modelID = model?.modelID || 'default'
 
       // Estimate tokens from message content
-      const parts = messageOutput?.parts || [];
+      const parts = messageOutput?.parts || []
       const textContent = parts
         .filter((p: any) => p.type === 'text')
         .map((p: any) => p.text)
-        .join('\n');
+        .join('\n')
 
       if (textContent) {
-        const estimatedTokens = estimateTokens(textContent);
-        checkContextWindow(sessionID, modelID, estimatedTokens);
+        const estimatedTokens = estimateTokens(textContent)
+        checkContextWindow(sessionID, modelID, estimatedTokens)
       }
 
       // Allow execution to continue
-      return;
+      return
     },
-  };
+  }
 }
 
 /**
@@ -259,7 +253,7 @@ export function createContextWindowMonitorHook(input: PluginInput): Hooks {
  * @returns A Hooks object
  */
 export function createHook(input: PluginInput): Hooks {
-  return createContextWindowMonitorHook(input);
+  return createContextWindowMonitorHook(input)
 }
 
 /**
@@ -269,7 +263,7 @@ export const metadata = {
   name: 'context-window-monitor',
   priority: 40,
   description: 'Monitors token usage and warns at context window threshold',
-};
+}
 
 /**
  * Get context monitor state for a session (for testing/debugging)
@@ -277,14 +271,14 @@ export const metadata = {
  * @returns The session state or undefined
  */
 export function getSessionContextState(sessionID: string): ContextMonitorSession | undefined {
-  return getSessionState(sessionID);
+  return getSessionState(sessionID)
 }
 
 /**
  * Reset all context monitor sessions (for testing)
  */
 export function resetAllContextSessions(): void {
-  contextMonitorSessions.clear();
+  contextMonitorSessions.clear()
 }
 
 /**
@@ -292,5 +286,5 @@ export function resetAllContextSessions(): void {
  * @param sessionID - The session ID
  */
 export function clearContextSession(sessionID: string): void {
-  contextMonitorSessions.delete(sessionID);
+  contextMonitorSessions.delete(sessionID)
 }

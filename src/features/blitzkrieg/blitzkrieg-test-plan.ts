@@ -96,7 +96,7 @@ export function createEmptyTestPlanState(): TestPlanState {
 export function validateTestPlan(
   state: TestPlanState,
   requirements: TestPlanRequirements,
-  options: TestPlanValidationOptions = DEFAULT_TEST_PLAN_VALIDATION_OPTIONS
+  options: TestPlanValidationOptions = DEFAULT_TEST_PLAN_VALIDATION_OPTIONS,
 ): TestPlanValidationResult {
   const violations: TestPlanViolation[] = []
   const recommendations: string[] = []
@@ -138,7 +138,9 @@ export function validateTestPlan(
         details: 'Coverage target is not specified in test plan',
         severity: 'warning',
       })
-      recommendations.push(`Specify coverage target (min ${requirements.coverageThresholdPercent}%)`)
+      recommendations.push(
+        `Specify coverage target (min ${requirements.coverageThresholdPercent}%)`,
+      )
     } else if (state.coverageTarget < requirements.coverageThresholdPercent) {
       violations.push({
         type: 'insufficient-coverage',
@@ -146,7 +148,7 @@ export function validateTestPlan(
         severity: 'error',
       })
       recommendations.push(
-        `Increase coverage target to at least ${requirements.coverageThresholdPercent}%`
+        `Increase coverage target to at least ${requirements.coverageThresholdPercent}%`,
       )
     }
   }
@@ -221,7 +223,7 @@ export function generateTestPlanSummary(state: TestPlanState): TestPlanSummary {
  */
 export function canBeginImplementation(
   state: TestPlanState,
-  requirements: TestPlanRequirements
+  requirements: TestPlanRequirements,
 ): boolean {
   if (!state.exists) {
     return !requirements.requiredBeforeImplementation

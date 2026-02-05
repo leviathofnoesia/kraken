@@ -1,13 +1,10 @@
-import * as fs from "fs"
-import * as path from "path"
-import { tool } from "@opencode-ai/plugin"
-import { z } from "zod"
-import {
-  getSessionStorageDir,
-  SessionMetadata,
-} from "./list"
+import * as fs from 'fs'
+import * as path from 'path'
+import { tool } from '@opencode-ai/plugin'
+import { z } from 'zod'
+import { getSessionStorageDir, SessionMetadata } from './list'
 
-const SESSION_STORAGE_DIR = path.join(process.env.HOME || "", ".opencode", "sessions")
+const SESSION_STORAGE_DIR = path.join(process.env.HOME || '', '.opencode', 'sessions')
 
 function getSessionFilePath(sessionID: string): string {
   return path.join(getSessionStorageDir(), `${sessionID}.json`)
@@ -21,14 +18,14 @@ function parseSessionFile(sessionID: string): SessionMetadata | null {
   }
 
   try {
-    const content = fs.readFileSync(filePath, "utf-8")
+    const content = fs.readFileSync(filePath, 'utf-8')
     const data = JSON.parse(content)
 
     const metadata: SessionMetadata = {
       sessionID,
       created: data.created || data.createdAt || new Date(0).toISOString(),
       lastActive: data.lastActive || data.updatedAt || new Date().toISOString(),
-      messageCount: data.messageCount || (data.messages?.length || 0),
+      messageCount: data.messageCount || data.messages?.length || 0,
       agent: data.agent,
       duration: data.duration,
       fileCount: data.fileCount,
@@ -47,7 +44,7 @@ function calculateSessionStats(metadata: SessionMetadata) {
   const stats = {
     totalMessages: metadata.messageCount,
     totalToolsUsed: Object.values(metadata.toolUsage || {}).reduce((sum, count) => sum + count, 0),
-    mostUsedTool: "",
+    mostUsedTool: '',
     mostUsedToolCount: 0,
     averageMessagesPerMinute: 0,
   }
@@ -67,9 +64,9 @@ function calculateSessionStats(metadata: SessionMetadata) {
 }
 
 export const session_info = tool({
-  description: "Get detailed metadata and statistics about a specific session.",
+  description: 'Get detailed metadata and statistics about a specific session.',
   args: {
-    sessionID: z.string().describe("Session ID to query"),
+    sessionID: z.string().describe('Session ID to query'),
   },
   async execute(args) {
     try {
@@ -106,7 +103,7 @@ export const session_info = tool({
         },
       })
     } catch (error) {
-      console.error("[session-info] Error:", error)
+      console.error('[session-info] Error:', error)
       return JSON.stringify({
         success: false,
         error: String(error),

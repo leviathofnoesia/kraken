@@ -1,5 +1,3 @@
-import type { OpenCodeXConfig } from "../config/schema"
-
 export interface ModeHooksConfig {
   enabled?: boolean
   autoActivate?: boolean

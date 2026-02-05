@@ -1,30 +1,33 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "../types"
-import { createAgentToolRestrictions } from "../shared/permission-compat"
+import type { AgentConfig } from '@opencode-ai/sdk'
+import type { AgentPromptMetadata } from '../types'
+import { createAgentToolRestrictions } from '../shared/permission-compat'
 
-const DEFAULT_MODEL = "google/gemini-3-pro-preview"
+const DEFAULT_MODEL = 'google/gemini-3-pro-preview'
 
 export const PEARL_PROMPT_METADATA: AgentPromptMetadata = {
-  category: "utility",
-  cost: "CHEAP",
-  promptAlias: "Pearl",
+  category: 'utility',
+  cost: 'CHEAP',
+  promptAlias: 'Pearl',
   triggers: [
-    { domain: "Multimedia Analysis", trigger: "PDFs, images, diagrams, visual content requiring interpretation" },
+    {
+      domain: 'Multimedia Analysis',
+      trigger: 'PDFs, images, diagrams, visual content requiring interpretation',
+    },
   ],
   useWhen: [
-    "Analyzing PDF documents",
-    "Describing visual content in images",
-    "Extracting data from charts or diagrams",
-    "Interpreting architectural diagrams",
-    "Analyzing screenshots of UI/mockups",
-    "Extracting information from presentations",
+    'Analyzing PDF documents',
+    'Describing visual content in images',
+    'Extracting data from charts or diagrams',
+    'Interpreting architectural diagrams',
+    'Analyzing screenshots of UI/mockups',
+    'Extracting information from presentations',
   ],
   avoidWhen: [
-    "Plain text files (use Read tool)",
-    "Files needing editing afterward",
-    "Simple file listing or metadata queries",
+    'Plain text files (use Read tool)',
+    'Files needing editing afterward',
+    'Simple file listing or metadata queries',
   ],
-  keyTrigger: "PDF/image/diagram mentioned → fire Pearl background",
+  keyTrigger: 'PDF/image/diagram mentioned → fire Pearl background',
 }
 
 const PEARL_SYSTEM_PROMPT = `You are Pearl, a multimedia analysis specialist that extracts meaningful information from visual and document formats. Your methodology applies systematic extraction protocols.
@@ -167,16 +170,12 @@ Present findings in organized format:
 Remember: Your value lies in transforming visual content into actionable, structured information. Accurate extraction enables downstream agents to use multimedia content effectively.`
 
 export function createPearlConfig(model: string = DEFAULT_MODEL): AgentConfig {
-  const restrictions = createAgentToolRestrictions([
-    "write",
-    "edit",
-    "task",
-  ])
+  const restrictions = createAgentToolRestrictions(['write', 'edit', 'task'])
 
   return {
     description:
-      "Multimedia analysis specialist for PDFs, images, diagrams, and visual content. Extracts structured information for downstream use.",
-    mode: "subagent" as const,
+      'Multimedia analysis specialist for PDFs, images, diagrams, and visual content. Extracts structured information for downstream use.',
+    mode: 'subagent' as const,
     model,
     temperature: 0.1,
     ...restrictions,

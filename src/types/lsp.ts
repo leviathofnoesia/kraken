@@ -1,9 +1,9 @@
-import { z } from "zod"
+import { z } from 'zod'
 
 export interface HoverResult {
-  kind: "success" | "error"
+  kind: 'success' | 'error'
   contents: {
-    kind: "markdown" | "plaintext"
+    kind: 'markdown' | 'plaintext'
     value: string
   } | null
   range?: {
@@ -13,24 +13,26 @@ export interface HoverResult {
 }
 
 export const HoverResultSchema = z.object({
-  kind: z.enum(["success", "error"]),
+  kind: z.enum(['success', 'error']),
   contents: z.union([
     z.object({
-      kind: z.enum(["markdown", "plaintext"]),
+      kind: z.enum(['markdown', 'plaintext']),
       value: z.string(),
     }),
     z.null(),
   ]),
-  range: z.object({
-    start: z.object({
-      line: z.number(),
-      character: z.number(),
-    }),
-    end: z.object({
-      line: z.number(),
-      character: z.number(),
-    }),
-  }).optional(),
+  range: z
+    .object({
+      start: z.object({
+        line: z.number(),
+        character: z.number(),
+      }),
+      end: z.object({
+        line: z.number(),
+        character: z.number(),
+      }),
+    })
+    .optional(),
 })
 
 export const LocationSchema = z.object({
@@ -62,8 +64,12 @@ export const DiagnosticSchema = z.object({
   code: z.union([z.string(), z.number()]).optional(),
   source: z.string().optional(),
   message: z.string(),
-  relatedInformation: z.array(z.object({
-    location: LocationSchema,
-    message: z.string(),
-  })).optional(),
+  relatedInformation: z
+    .array(
+      z.object({
+        location: LocationSchema,
+        message: z.string(),
+      }),
+    )
+    .optional(),
 })

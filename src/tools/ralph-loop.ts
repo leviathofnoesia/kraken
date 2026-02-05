@@ -1,5 +1,5 @@
-import { tool } from "@opencode-ai/plugin"
-import { z } from "zod"
+import { tool } from '@opencode-ai/plugin'
+import { z } from 'zod'
 
 export interface RalphStatus {
   sessionID: string
@@ -7,51 +7,49 @@ export interface RalphStatus {
   task: string
   currentIteration: number
   maxIterations: number
-  status: "active" | "completed" | "maxed_out" | "cancelled"
+  status: 'active' | 'completed' | 'maxed_out' | 'cancelled'
   elapsedMs: number
 }
 
 export const ralphLoop = tool({
   description:
-    "Control Ralph-Loop iterations for achieving completion promises. " +
+    'Control Ralph-Loop iterations for achieving completion promises. ' +
     "Ralph complements Kraken's PDSA cycles by iteratively refining until <promise> is satisfied. " +
-    "Automatically triggered when chat contains <promise>...</promise> pattern, or use this tool for manual control.",
+    'Automatically triggered when chat contains <promise>...</promise> pattern, or use this tool for manual control.',
   args: {
-    command: z
-      .enum(["status", "cancel", "continue", "info"])
-      .describe("Ralph-Loop command"),
-    sessionID: z.string().optional().describe("Session ID (required for status, cancel)"),
-    maxIterations: z.number().min(1).max(100).optional().describe("Max iterations (default: 24)"),
+    command: z.enum(['status', 'cancel', 'continue', 'info']).describe('Ralph-Loop command'),
+    sessionID: z.string().optional().describe('Session ID (required for status, cancel)'),
+    maxIterations: z.number().min(1).max(100).optional().describe('Max iterations (default: 24)'),
   },
   async execute(args): Promise<string> {
     const { command, sessionID, maxIterations } = args
 
     switch (command) {
-      case "status":
+      case 'status':
         if (!sessionID) {
           return JSON.stringify({
             success: false,
-            error: "sessionID required for status command",
+            error: 'sessionID required for status command',
           })
         }
         return JSON.stringify({
           success: true,
           session: {
             sessionID,
-            status: "active",
-            promise: "Use /ralph-loop in chat to start a new session",
-            task: "N/A",
+            status: 'active',
+            promise: 'Use /ralph-loop in chat to start a new session',
+            task: 'N/A',
             currentIteration: 0,
             maxIterations: maxIterations ?? 24,
             elapsedMs: 0,
           },
         })
 
-      case "cancel":
+      case 'cancel':
         if (!sessionID) {
           return JSON.stringify({
             success: false,
-            error: "sessionID required for cancel command",
+            error: 'sessionID required for cancel command',
           })
         }
         return JSON.stringify({
@@ -59,11 +57,11 @@ export const ralphLoop = tool({
           message: `Session ${sessionID} cancelled`,
         })
 
-      case "continue":
+      case 'continue':
         if (!sessionID) {
           return JSON.stringify({
             success: false,
-            error: "sessionID required for continue command",
+            error: 'sessionID required for continue command',
           })
         }
         return JSON.stringify({
@@ -71,19 +69,19 @@ export const ralphLoop = tool({
           message: `Session ${sessionID} continuing to next iteration`,
         })
 
-      case "info":
+      case 'info':
         return JSON.stringify({
           success: true,
           info: {
             description:
-              "Ralph-Loop: Self-referential iteration agent that continues until completion promise is satisfied",
+              'Ralph-Loop: Self-referential iteration agent that continues until completion promise is satisfied',
             triggers: [
-              "Chat message contains <promise>...</promise> pattern",
-              "User types /ralph-loop [task] <promise>...</promise>",
+              'Chat message contains <promise>...</promise> pattern',
+              'User types /ralph-loop [task] <promise>...</promise>',
             ],
             defaults: {
               maxIterations: 24,
-              timeout: "None (continues until promise met or max iterations)",
+              timeout: 'None (continues until promise met or max iterations)',
             },
             complement:
               "Ralph complements Kraken's PDSA cycles. Kraken orchestrates; Ralph iterates.",

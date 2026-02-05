@@ -4,7 +4,7 @@
  * This file defines shared types and interfaces for all built-in MCP servers.
  */
 
-import type { ToolDefinition } from '@opencode-ai/plugin';
+import type { ToolDefinition } from '@opencode-ai/plugin'
 
 /**
  * Base MCP Server Configuration
@@ -13,17 +13,17 @@ export interface BaseMCPConfig {
   /**
    * API key for authentication
    */
-  apiKey?: string;
+  apiKey?: string
 
   /**
    * Request timeout in milliseconds
    */
-  timeout?: number;
+  timeout?: number
 
   /**
    * Enable/disable this MCP server
    */
-  enabled?: boolean;
+  enabled?: boolean
 }
 
 /**
@@ -34,17 +34,17 @@ export interface MCPTool extends ToolDefinition {
   /**
    * MCP server name
    */
-  serverName: string;
+  serverName: string
 
   /**
    * Tool category for organization
    */
-  category: 'search' | 'documentation' | 'code' | 'utility';
+  category: 'search' | 'documentation' | 'code' | 'utility'
 
   /**
    * Rate limit (max requests per minute)
    */
-  rateLimit?: number;
+  rateLimit?: number
 }
 
 /**
@@ -55,42 +55,42 @@ export interface MCPServerDefinition {
   /**
    * Server identifier (e.g., 'websearch', 'context7', 'grep_app')
    */
-  name: string;
+  name: string
 
   /**
    * Human-readable description
    */
-  description: string;
+  description: string
 
   /**
    * Server version
    */
-  version: string;
+  version: string
 
   /**
    * Tools provided by this server
    */
-  tools: MCPTool[];
+  tools: MCPTool[]
 
   /**
    * Server configuration schema
    */
-  configSchema?: Record<string, unknown>;
+  configSchema?: Record<string, unknown>
 
   /**
    * Initialize the server
    */
-  initialize?: (config: Record<string, unknown>) => Promise<void>;
+  initialize?: (config: Record<string, unknown>) => Promise<void>
 
   /**
    * Cleanup/shutdown the server
    */
-  shutdown?: () => Promise<void>;
+  shutdown?: () => Promise<void>
 
   /**
    * Health check
    */
-  healthCheck?: () => Promise<boolean>;
+  healthCheck?: () => Promise<boolean>
 }
 
 /**
@@ -100,33 +100,33 @@ export interface WebsearchConfig extends BaseMCPConfig {
   /**
    * Default number of search results
    */
-  numResults?: number;
+  numResults?: number
 
   /**
    * Live crawl mode: 'fallback' or 'preferred'
    */
-  livecrawl?: 'fallback' | 'preferred';
+  livecrawl?: 'fallback' | 'preferred'
 
   /**
    * Search type: 'auto', 'fast', or 'deep'
    */
-  searchType?: 'auto' | 'fast' | 'deep';
+  searchType?: 'auto' | 'fast' | 'deep'
 
   /**
    * Maximum context characters
    */
-  contextMaxCharacters?: number;
+  contextMaxCharacters?: number
 }
 
 /**
  * Websearch Result
  */
 export interface WebsearchResult {
-  title: string;
-  url: string;
-  content: string;
-  score?: number;
-  publishedDate?: string;
+  title: string
+  url: string
+  content: string
+  score?: number
+  publishedDate?: string
 }
 
 /**
@@ -136,29 +136,29 @@ export interface Context7Config extends BaseMCPConfig {
   /**
    * Cache TTL in seconds
    */
-  cacheTTL?: number;
+  cacheTTL?: number
 
   /**
    * Maximum tokens for results
    */
-  maxTokens?: number;
+  maxTokens?: number
 
   /**
    * Number of results to return
    */
-  numResults?: number;
+  numResults?: number
 }
 
 /**
  * Documentation Search Result
  */
 export interface DocumentationResult {
-  library: string;
-  version: string;
-  content: string;
-  url: string;
-  relevance: number;
-  metadata?: Record<string, unknown>;
+  library: string
+  version: string
+  content: string
+  url: string
+  relevance: number
+  metadata?: Record<string, unknown>
 }
 
 /**
@@ -168,44 +168,44 @@ export interface GrepAppConfig extends BaseMCPConfig {
   /**
    * GitHub personal access token
    */
-  githubToken?: string;
+  githubToken?: string
 
   /**
    * Maximum number of results
    */
-  maxResults?: number;
+  maxResults?: number
 
   /**
    * Rate limit delay between requests (ms)
    */
-  rateLimitDelay?: number;
+  rateLimitDelay?: number
 
   /**
    * Default file extensions to search
    */
-  defaultExtensions?: string[];
+  defaultExtensions?: string[]
 
   /**
    * Default languages to search
    */
-  defaultLanguages?: string[];
+  defaultLanguages?: string[]
 }
 
 /**
  * GitHub Search Result
  */
 export interface GrepResult {
-  repository: string;
-  path: string;
-  language: string;
-  matches: string[];
-  url: string;
-  score?: number;
+  repository: string
+  path: string
+  language: string
+  matches: string[]
+  url: string
+  score?: number
   metadata?: {
-    stars?: number;
-    forks?: number;
-    updatedAt?: string;
-  };
+    stars?: number
+    forks?: number
+    updatedAt?: string
+  }
 }
 
 /**
@@ -215,31 +215,37 @@ export class MCPError extends Error {
   constructor(
     public readonly code: string,
     message: string,
-    public readonly details?: Record<string, unknown>
+    public readonly details?: Record<string, unknown>,
   ) {
-    super(message);
-    this.name = 'MCPError';
+    super(message)
+    this.name = 'MCPError'
   }
 }
 
 export class MCPRateLimitError extends MCPError {
-  constructor(message: string, public readonly retryAfter?: number) {
-    super('RATE_LIMIT', message, { retryAfter });
-    this.name = 'MCPRateLimitError';
+  constructor(
+    message: string,
+    public readonly retryAfter?: number,
+  ) {
+    super('RATE_LIMIT', message, { retryAfter })
+    this.name = 'MCPRateLimitError'
   }
 }
 
 export class MCPAuthenticationError extends MCPError {
   constructor(message: string) {
-    super('AUTHENTICATION', message);
-    this.name = 'MCPAuthenticationError';
+    super('AUTHENTICATION', message)
+    this.name = 'MCPAuthenticationError'
   }
 }
 
 export class MCPTimeoutError extends MCPError {
-  constructor(message: string, public readonly timeout?: number) {
-    super('TIMEOUT', message, { timeout });
-    this.name = 'MCPTimeoutError';
+  constructor(
+    message: string,
+    public readonly timeout?: number,
+  ) {
+    super('TIMEOUT', message, { timeout })
+    this.name = 'MCPTimeoutError'
   }
 }
 
@@ -247,27 +253,30 @@ export class MCPTimeoutError extends MCPError {
  * Rate limiter utility for MCP tools
  */
 export class RateLimiter {
-  private requests: number[] = [];
+  private requests: number[] = []
 
-  constructor(private readonly maxRequests: number, private readonly windowMs: number) {}
+  constructor(
+    private readonly maxRequests: number,
+    private readonly windowMs: number,
+  ) {}
 
   async waitIfNeeded(): Promise<void> {
-    const now = Date.now();
+    const now = Date.now()
     // Remove requests outside the time window
-    this.requests = this.requests.filter(timestamp => now - timestamp < this.windowMs);
+    this.requests = this.requests.filter((timestamp) => now - timestamp < this.windowMs)
 
     if (this.requests.length >= this.maxRequests) {
-      const oldestRequest = this.requests[0];
-      const waitTime = this.windowMs - (now - oldestRequest);
+      const oldestRequest = this.requests[0]
+      const waitTime = this.windowMs - (now - oldestRequest)
       if (waitTime > 0) {
-        await new Promise(resolve => setTimeout(resolve, waitTime));
+        await new Promise((resolve) => setTimeout(resolve, waitTime))
       }
     }
 
-    this.requests.push(now);
+    this.requests.push(now)
   }
 
   reset(): void {
-    this.requests = [];
+    this.requests = []
   }
 }

@@ -1,63 +1,15 @@
 export const COMMENT_PATTERNS = {
   // Common comment patterns
-  todo: [
-    /TODO:/i,
-    /@todo/i,
-    /\[TODO\]/i,
-    /待办/i,
-    /할 일/i,
-    /待辦/i,
-  ],
-  fixme: [
-    /FIXME:/i,
-    /@fixme/i,
-    /\[FIXME\]/i,
-    /修复/i,
-    /수정/i,
-    /修正/i,
-  ],
-  xxx: [
-    /XXX:/i,
-    /@xxx/i,
-    /\[XXX\]/i,
-  ],
-  hack: [
-    /HACK:/i,
-    /@hack/i,
-    /\[HACK\]/i,
-  ],
-  note: [
-    /NOTE:/i,
-    /@note/i,
-    /\[NOTE\]/i,
-    /注意/i,
-    /참고/i,
-    /註記/i,
-  ],
-  bug: [
-    /BUG:/i,
-    /@bug/i,
-    /\[BUG\]/i,
-  ],
-  warning: [
-    /WARNING:/i,
-    /@warning/i,
-    /\[WARNING\]/i,
-    /경고/i,
-  ],
-  optimization: [
-    /OPTIMIZE:/i,
-    /PERFORMANCE:/i,
-    /@optimize/i,
-  ],
-  refactoring: [
-    /REFACTOR:/i,
-    /@refactor/i,
-  ],
-  documentation: [
-    /DOC:/i,
-    /@doc/i,
-  ],
+  todo: [/TODO:/i, /@todo/i, /\[TODO\]/i, /待办/i, /할 일/i, /待辦/i],
+  fixme: [/FIXME:/i, /@fixme/i, /\[FIXME\]/i, /修复/i, /수정/i, /修正/i],
+  xxx: [/XXX:/i, /@xxx/i, /\[XXX\]/i],
+  hack: [/HACK:/i, /@hack/i, /\[HACK\]/i],
+  note: [/NOTE:/i, /@note/i, /\[NOTE\]/i, /注意/i, /참고/i, /註記/i],
+  bug: [/BUG:/i, /@bug/i, /\[BUG\]/i],
+  warning: [/WARNING:/i, /@warning/i, /\[WARNING\]/i, /경고/i],
+  optimization: [/OPTIMIZE:/i, /PERFORMANCE:/i, /@optimize/i],
+  refactoring: [/REFACTOR:/i, /@refactor/i],
+  documentation: [/DOC:/i, /@doc/i],
 }
 
 export const EXCEPTION_PATTERNS = {
@@ -73,7 +25,7 @@ export const EXCEPTION_PATTERNS = {
     /^\s*\/\/\s*Then\s+/i,
     /^\s*\/\/\s*And\s+/i,
   ],
-  
+
   // Linter directives
   linter: [
     /^\s*#\s*noqa/i,
@@ -89,13 +41,10 @@ export const EXCEPTION_PATTERNS = {
     /^\s*#\s*pylint:\s*disable\b/i,
     /^\s*#\s*mypy:\s*ignore\b/i,
   ],
-  
+
   // Shebangs
-  shebang: [
-    /^#!\/bin\//,
-    /^#!\/usr\/bin\/env\s+/,
-  ],
-  
+  shebang: [/^#!\/bin\//, /^#!\/usr\/bin\/env\s+/],
+
   // Copyright and license
   copyright: [
     /Copyright\s+\(c\)/i,
@@ -106,7 +55,7 @@ export const EXCEPTION_PATTERNS = {
     /GPL License/i,
     /BSD License/i,
   ],
-  
+
   // File headers
   fileHeader: [
     /^\s*File:\s+.*\.md/i,
@@ -115,7 +64,7 @@ export const EXCEPTION_PATTERNS = {
     /^\s*Created:/i,
     /^\s*Modified:/i,
   ],
-  
+
   // Doxygen/JSDoc/Sphinx
   documentation: [
     /^\s*\/\*\*[\s\S]*?\*\//, // JSDoc block
@@ -128,181 +77,176 @@ export const EXCEPTION_PATTERNS = {
     /^\s*#\s+@return/i, // Sphinx Python
     /^\s*#\s+@type/i, // Sphinx Python
   ],
-  
+
   // Inline documentation
   inlineDocs: [
     /^\s*\/\/\s*[A-Z]/, // Capitalized comment likely documentation
     /^\s*#\s*[A-Z]/, // Python capital comment
   ],
-  
+
   // Import statements
-  imports: [
-    /^\s*import\s+/,
-    /^\s*require\s*\(/,
-    /^\s*#\s*include\s+/,
-    /^\s*using\s+namespace/,
-  ],
+  imports: [/^\s*import\s+/, /^\s*require\s*\(/, /^\s*#\s*include\s+/, /^\s*using\s+namespace/],
 }
 
 export const LANGUAGE_COMMENT_DELIMITERS = {
   javascript: {
-    single: ["//"],
-    multi: ["/*", "*/"],
-    shebang: ["#!/usr/bin/env node", "#!/usr/bin/nodejs"],
+    single: ['//'],
+    multi: ['/*', '*/'],
+    shebang: ['#!/usr/bin/env node', '#!/usr/bin/nodejs'],
   },
   typescript: {
-    single: ["//"],
-    multi: ["/*", "*/"],
-    shebang: ["#!/usr/bin/env node", "#!/usr/bin/ts-node"],
+    single: ['//'],
+    multi: ['/*', '*/'],
+    shebang: ['#!/usr/bin/env node', '#!/usr/bin/ts-node'],
   },
   python: {
-    single: ["#"],
+    single: ['#'],
     multi: ['"""', '"""'],
-    shebang: ["#!/usr/bin/env python3", "#!/usr/bin/python3"],
+    shebang: ['#!/usr/bin/env python3', '#!/usr/bin/python3'],
   },
   rust: {
-    single: ["//"],
-    multi: ["/*", "*/"],
-    shebang: ["#!/usr/bin/env rust-script"],
+    single: ['//'],
+    multi: ['/*', '*/'],
+    shebang: ['#!/usr/bin/env rust-script'],
   },
   go: {
-    single: ["//"],
-    multi: ["/*", "*/"],
+    single: ['//'],
+    multi: ['/*', '*/'],
   },
   java: {
-    single: ["//"],
-    multi: ["/*", "*/"],
+    single: ['//'],
+    multi: ['/*', '*/'],
   },
   cpp: {
-    single: ["//"],
-    multi: ["/*", "*/"],
+    single: ['//'],
+    multi: ['/*', '*/'],
   },
   csharp: {
-    single: ["//"],
-    multi: ["/*", "*/"],
+    single: ['//'],
+    multi: ['/*', '*/'],
   },
   ruby: {
-    single: ["#"],
-    multi: ["=begin", "=end"],
+    single: ['#'],
+    multi: ['=begin', '=end'],
   },
   php: {
-    single: ["//", "#"],
-    multi: ["/*", "*/"],
-    shebang: ["#!/usr/bin/env php"],
+    single: ['//', '#'],
+    multi: ['/*', '*/'],
+    shebang: ['#!/usr/bin/env php'],
   },
   swift: {
-    single: ["//"],
-    multi: ["/*", "*/"],
+    single: ['//'],
+    multi: ['/*', '*/'],
   },
   kotlin: {
-    single: ["//"],
-    multi: ["/*", "*/"],
+    single: ['//'],
+    multi: ['/*', '*/'],
   },
   scala: {
-    single: ["//"],
-    multi: ["/*", "*/"],
+    single: ['//'],
+    multi: ['/*', '*/'],
   },
   shell: {
-    single: ["#"],
+    single: ['#'],
     multi: ["<<'", "'"],
-    shebang: ["#!/bin/bash", "#!/bin/sh", "#!/usr/bin/env bash"],
+    shebang: ['#!/bin/bash', '#!/bin/sh', '#!/usr/bin/env bash'],
   },
   powershell: {
-    single: ["#"],
-    multi: ["<#", "#>"],
-    shebang: ["#!/usr/bin/env pwsh"],
+    single: ['#'],
+    multi: ['<#', '#>'],
+    shebang: ['#!/usr/bin/env pwsh'],
   },
   lua: {
-    single: ["--"],
-    multi: ["--[[", "]]"],
+    single: ['--'],
+    multi: ['--[[', ']]'],
   },
   sql: {
-    single: ["--"],
-    multi: ["/*", "*/"],
+    single: ['--'],
+    multi: ['/*', '*/'],
   },
   html: {
-    multi: ["<!--", "-->"],
+    multi: ['<!--', '-->'],
   },
   css: {
-    multi: ["/*", "*/"],
+    multi: ['/*', '*/'],
   },
   yaml: {
-    single: ["#"],
+    single: ['#'],
   },
   toml: {
-    single: ["#"],
+    single: ['#'],
   },
   json: {
     none: [],
   },
   xml: {
-    multi: ["<!--", "-->"],
+    multi: ['<!--', '-->'],
   },
   r: {
-    single: ["#"],
+    single: ['#'],
   },
   matlab: {
-    single: ["%"],
-    multi: ["%{", "%}"],
+    single: ['%'],
+    multi: ['%{', '%}'],
   },
   fortran: {
-    single: ["!"],
-    multi: ["/*", "*/"],
+    single: ['!'],
+    multi: ['/*', '*/'],
   },
   cobol: {
-    single: ["*"],
+    single: ['*'],
   },
   assembly: {
-    single: [";"],
+    single: [';'],
   },
 }
 
 export function getLanguageFromFile(filename: string): string | null {
-  const ext = filename.split(".").pop()?.toLowerCase()
+  const ext = filename.split('.').pop()?.toLowerCase()
   const langMap: Record<string, string> = {
-    js: "javascript",
-    jsx: "javascript",
-    ts: "typescript",
-    tsx: "typescript",
-    py: "python",
-    rs: "rust",
-    go: "go",
-    java: "java",
-    cpp: "cpp",
-    cxx: "cpp",
-    cc: "cpp",
-    c: "cpp",
-    cs: "csharp",
-    rb: "ruby",
-    php: "php",
-    swift: "swift",
-    kt: "kotlin",
-    scala: "scala",
-    sh: "shell",
-    bash: "shell",
-    zsh: "shell",
-    fish: "shell",
-    ps1: "powershell",
-    psm1: "powershell",
-    lua: "lua",
-    sql: "sql",
-    html: "html",
-    css: "css",
-    scss: "css",
-    yaml: "yaml",
-    yml: "yaml",
-    toml: "toml",
-    json: "json",
-    xml: "xml",
-    r: "r",
-    m: "matlab",
-    f: "fortran",
-    f90: "fortran",
-    f95: "fortran",
-    cbl: "cobol",
-    cob: "cobol",
-    asm: "assembly",
-    s: "assembly",
+    js: 'javascript',
+    jsx: 'javascript',
+    ts: 'typescript',
+    tsx: 'typescript',
+    py: 'python',
+    rs: 'rust',
+    go: 'go',
+    java: 'java',
+    cpp: 'cpp',
+    cxx: 'cpp',
+    cc: 'cpp',
+    c: 'cpp',
+    cs: 'csharp',
+    rb: 'ruby',
+    php: 'php',
+    swift: 'swift',
+    kt: 'kotlin',
+    scala: 'scala',
+    sh: 'shell',
+    bash: 'shell',
+    zsh: 'shell',
+    fish: 'shell',
+    ps1: 'powershell',
+    psm1: 'powershell',
+    lua: 'lua',
+    sql: 'sql',
+    html: 'html',
+    css: 'css',
+    scss: 'css',
+    yaml: 'yaml',
+    yml: 'yaml',
+    toml: 'toml',
+    json: 'json',
+    xml: 'xml',
+    r: 'r',
+    m: 'matlab',
+    f: 'fortran',
+    f90: 'fortran',
+    f95: 'fortran',
+    cbl: 'cobol',
+    cob: 'cobol',
+    asm: 'assembly',
+    s: 'assembly',
   }
-  return ext ? langMap[ext] ?? null : null
+  return ext ? (langMap[ext] ?? null) : null
 }

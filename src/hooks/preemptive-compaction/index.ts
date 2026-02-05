@@ -1,5 +1,5 @@
-import type { Hooks } from "@opencode-ai/plugin"
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { Hooks } from '@opencode-ai/plugin'
+import type { PluginInput } from '@opencode-ai/plugin'
 
 export interface PreemptiveCompactionConfig {
   enabled?: boolean
@@ -8,19 +8,21 @@ export interface PreemptiveCompactionConfig {
 
 export function createPreemptiveCompaction(
   _input: PluginInput,
-  options?: { config?: PreemptiveCompactionConfig }
+  options?: { config?: PreemptiveCompactionConfig },
 ): Hooks {
   const config = options?.config ?? { enabled: true, threshold: 10000 }
 
   return {
-    "chat.message": async (input, output) => {
+    'chat.message': async (input, output) => {
       if (!config.enabled) return
       const threshold = config.threshold ?? 10000
-      console.log(`[preemptive-compaction] Monitoring message length for preemptive compaction (threshold: ${threshold})`)
+      console.log(
+        `[preemptive-compaction] Monitoring message length for preemptive compaction (threshold: ${threshold})`,
+      )
     },
-    "experimental.session.compacting": async (input, output) => {
+    'experimental.session.compacting': async (input, output) => {
       if (!config.enabled) return
-      console.log("[preemptive-compaction] Triggering preemptive session compaction")
+      console.log('[preemptive-compaction] Triggering preemptive session compaction')
     },
   }
 }

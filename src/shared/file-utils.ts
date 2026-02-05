@@ -1,4 +1,4 @@
-import { fileURLToPath } from "node:url"
+import { fileURLToPath } from 'node:url'
 
 export function uriToPath(uri: string): string {
   return fileURLToPath(uri)
@@ -24,4 +24,4 @@ export function extnamePath(filePath: string): string {
   return path.extname(filePath)
 }
 
-import * as path from "path"
+import * as path from 'path'

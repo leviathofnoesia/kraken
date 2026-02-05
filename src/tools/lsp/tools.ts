@@ -1,15 +1,15 @@
-import { tool } from "@opencode-ai/plugin"
-import { z } from "zod"
-import { withLspClient, formatHoverResult, formatLocation, formatSymbolKind } from "./utils"
+import { tool } from '@opencode-ai/plugin'
+import { z } from 'zod'
+import { withLspClient, formatHoverResult, formatLocation, formatSymbolKind } from './utils'
 
 export const lsp_hover = tool({
   description:
-    "Get hover information (type, documentation) for a symbol at a position in a file. " +
-    "Use this to get information about variables, functions, classes, etc.",
+    'Get hover information (type, documentation) for a symbol at a position in a file. ' +
+    'Use this to get information about variables, functions, classes, etc.',
   args: {
-    path: z.string().describe("Absolute path to the source file"),
-    line: z.number().describe("0-indexed line number"),
-    character: z.number().describe("0-indexed character position"),
+    path: z.string().describe('Absolute path to the source file'),
+    line: z.number().describe('0-indexed line number'),
+    character: z.number().describe('0-indexed character position'),
   },
   async execute({ path, line, character }) {
     try {
@@ -17,7 +17,7 @@ export const lsp_hover = tool({
         return await client.hover(path, line, character)
       })
 
-      const formattedHover = result ? formatHoverResult(result) : "No hover information available"
+      const formattedHover = result ? formatHoverResult(result) : 'No hover information available'
 
       return JSON.stringify({
         success: true,
@@ -34,12 +34,12 @@ export const lsp_hover = tool({
 
 export const lsp_goto_definition = tool({
   description:
-    "Jump to the definition of a symbol at the given position. " +
-    "Returns the location where the symbol is defined.",
+    'Jump to the definition of a symbol at the given position. ' +
+    'Returns the location where the symbol is defined.',
   args: {
-    path: z.string().describe("Absolute path to the source file"),
-    line: z.number().describe("0-indexed line number"),
-    character: z.number().describe("0-indexed character position"),
+    path: z.string().describe('Absolute path to the source file'),
+    line: z.number().describe('0-indexed line number'),
+    character: z.number().describe('0-indexed character position'),
   },
   async execute({ path, line, character }) {
     try {
@@ -50,7 +50,7 @@ export const lsp_goto_definition = tool({
       if (!result) {
         return JSON.stringify({
           success: true,
-          message: "No definition found",
+          message: 'No definition found',
         })
       }
 
@@ -72,17 +72,17 @@ export const lsp_goto_definition = tool({
 
 export const lsp_find_references = tool({
   description:
-    "Find all references to a symbol in the workspace. " +
-    "Returns a list of locations where the symbol is used.",
+    'Find all references to a symbol in the workspace. ' +
+    'Returns a list of locations where the symbol is used.',
   args: {
-    path: z.string().describe("Absolute path to the source file"),
-    line: z.number().describe("0-indexed line number"),
-    character: z.number().describe("0-indexed character position"),
+    path: z.string().describe('Absolute path to the source file'),
+    line: z.number().describe('0-indexed line number'),
+    character: z.number().describe('0-indexed character position'),
     includeDeclaration: z
       .boolean()
       .optional()
       .default(true)
-      .describe("Include the declaration location in results"),
+      .describe('Include the declaration location in results'),
   },
   async execute({ path, line, character, includeDeclaration }) {
     try {
@@ -93,7 +93,7 @@ export const lsp_find_references = tool({
       if (!result) {
         return JSON.stringify({
           success: true,
-          message: "No references found",
+          message: 'No references found',
         })
       }
 
@@ -116,10 +116,10 @@ export const lsp_find_references = tool({
 
 export const lsp_document_symbols = tool({
   description:
-    "Get all symbols (classes, functions, variables) in a document. " +
-    "Returns a hierarchical tree of symbols with their locations.",
+    'Get all symbols (classes, functions, variables) in a document. ' +
+    'Returns a hierarchical tree of symbols with their locations.',
   args: {
-    path: z.string().describe("Absolute path to the source file"),
+    path: z.string().describe('Absolute path to the source file'),
   },
   async execute({ path }) {
     try {
@@ -130,7 +130,7 @@ export const lsp_document_symbols = tool({
       if (!result) {
         return JSON.stringify({
           success: true,
-          message: "No symbols found",
+          message: 'No symbols found',
         })
       }
 
@@ -161,8 +161,8 @@ export const lsp_document_symbols = tool({
 
 export const lsp_workspace_symbols = tool({
   description:
-    "Search for symbols across the entire workspace. " +
-    "Use this to find classes, functions, etc. without knowing their location.",
+    'Search for symbols across the entire workspace. ' +
+    'Use this to find classes, functions, etc. without knowing their location.',
   args: {
     query: z.string().describe("Search query (e.g., 'MyClass', 'createUser')"),
   },
@@ -175,7 +175,7 @@ export const lsp_workspace_symbols = tool({
       if (!result) {
         return JSON.stringify({
           success: true,
-          message: "No symbols found",
+          message: 'No symbols found',
         })
       }
 
@@ -204,15 +204,15 @@ export const lsp_workspace_symbols = tool({
 
 export const lsp_diagnostics = tool({
   description:
-    "Get diagnostics (errors, warnings, hints) for a file. " +
-    "Returns all issues reported by the language server.",
+    'Get diagnostics (errors, warnings, hints) for a file. ' +
+    'Returns all issues reported by the language server.',
   args: {
-    path: z.string().describe("Absolute path to the source file"),
+    path: z.string().describe('Absolute path to the source file'),
     severity: z
-      .enum(["error", "warning", "information", "hint", "all"])
+      .enum(['error', 'warning', 'information', 'hint', 'all'])
       .optional()
-      .default("all")
-      .describe("Filter by severity level"),
+      .default('all')
+      .describe('Filter by severity level'),
   },
   async execute({ path, severity }) {
     try {
@@ -220,13 +220,13 @@ export const lsp_diagnostics = tool({
         return await client.diagnostics(path)
       })
 
-      const { filterDiagnosticsBySeverity } = await import("./utils")
+      const { filterDiagnosticsBySeverity } = await import('./utils')
 
       let items = result.items || []
-      if (severity !== "all") {
+      if (severity !== 'all') {
         items = filterDiagnosticsBySeverity(
           items,
-          severity as "error" | "warning" | "information" | "hint"
+          severity as 'error' | 'warning' | 'information' | 'hint',
         )
       }
 
@@ -254,12 +254,12 @@ export const lsp_diagnostics = tool({
 
 export const lsp_prepare_rename = tool({
   description:
-    "Prepare a rename operation at a position. " +
-    "Returns the range that would be renamed, if valid.",
+    'Prepare a rename operation at a position. ' +
+    'Returns the range that would be renamed, if valid.',
   args: {
-    path: z.string().describe("Absolute path to the source file"),
-    line: z.number().describe("0-indexed line number"),
-    character: z.number().describe("0-indexed character position"),
+    path: z.string().describe('Absolute path to the source file'),
+    line: z.number().describe('0-indexed line number'),
+    character: z.number().describe('0-indexed character position'),
   },
   async execute({ path, line, character }) {
     try {
@@ -270,7 +270,7 @@ export const lsp_prepare_rename = tool({
       if (!result) {
         return JSON.stringify({
           success: true,
-          message: "Cannot rename at this position",
+          message: 'Cannot rename at this position',
         })
       }
 
@@ -289,13 +289,13 @@ export const lsp_prepare_rename = tool({
 
 export const lsp_rename = tool({
   description:
-    "Rename a symbol at a position. " +
-    "Performs a workspace-wide rename of the symbol to the new name.",
+    'Rename a symbol at a position. ' +
+    'Performs a workspace-wide rename of the symbol to the new name.',
   args: {
-    path: z.string().describe("Absolute path to the source file"),
-    line: z.number().describe("0-indexed line number"),
-    character: z.number().describe("0-indexed character position"),
-    newName: z.string().describe("New name for the symbol"),
+    path: z.string().describe('Absolute path to the source file'),
+    line: z.number().describe('0-indexed line number'),
+    character: z.number().describe('0-indexed character position'),
+    newName: z.string().describe('New name for the symbol'),
   },
   async execute({ path, line, character, newName }) {
     try {
@@ -303,7 +303,7 @@ export const lsp_rename = tool({
         return await client.rename(path, line, character, newName)
       })
 
-      const { formatWorkspaceEdit, applyWorkspaceEdit, formatApplyResult } = await import("./utils")
+      const { formatWorkspaceEdit, applyWorkspaceEdit, formatApplyResult } = await import('./utils')
       const editResult = await applyWorkspaceEdit(result as any)
       const formatted = formatWorkspaceEdit(result as any)
 
@@ -323,14 +323,14 @@ export const lsp_rename = tool({
 
 export const lsp_code_actions = tool({
   description:
-    "Get available code actions (refactors, quick fixes) for a range. " +
-    "Returns a list of actions that can be applied to fix issues or refactor code.",
+    'Get available code actions (refactors, quick fixes) for a range. ' +
+    'Returns a list of actions that can be applied to fix issues or refactor code.',
   args: {
-    path: z.string().describe("Absolute path to the source file"),
-    startLine: z.number().describe("0-indexed start line"),
-    startChar: z.number().describe("0-indexed start character"),
-    endLine: z.number().describe("0-indexed end line"),
-    endChar: z.number().describe("0-indexed end character"),
+    path: z.string().describe('Absolute path to the source file'),
+    startLine: z.number().describe('0-indexed start line'),
+    startChar: z.number().describe('0-indexed start character'),
+    endLine: z.number().describe('0-indexed end line'),
+    endChar: z.number().describe('0-indexed end character'),
     only: z
       .array(z.string())
       .optional()
@@ -342,7 +342,7 @@ export const lsp_code_actions = tool({
         return await client.codeAction(path, startLine, startChar, endLine, endChar, only)
       })
 
-      const { formatCodeActions } = await import("./utils")
+      const { formatCodeActions } = await import('./utils')
 
       const actions = Array.isArray(result) ? result : []
       return JSON.stringify({
@@ -360,13 +360,13 @@ export const lsp_code_actions = tool({
 })
 
 export const lsp_code_action_resolve = tool({
-  description: "Resolve a code action to get its full details (including edits).",
+  description: 'Resolve a code action to get its full details (including edits).',
   args: {
-    action: z.object({}).passthrough().describe("Code action object from lsp_code_actions"),
+    action: z.object({}).passthrough().describe('Code action object from lsp_code_actions'),
   },
   async execute({ action }) {
     try {
-      const { formatWorkspaceEdit, applyWorkspaceEdit, formatApplyResult } = await import("./utils")
+      const { formatWorkspaceEdit, applyWorkspaceEdit, formatApplyResult } = await import('./utils')
 
       const result = await withLspClient(process.cwd(), async (client) => {
         return await client.codeActionResolve(action)
@@ -397,17 +397,14 @@ export const lsp_code_action_resolve = tool({
 
 export const lsp_servers = tool({
   description:
-    "List available LSP servers and their installation status. " +
-    "Shows which servers are configured and installed for different file types.",
+    'List available LSP servers and their installation status. ' +
+    'Shows which servers are configured and installed for different file types.',
   args: {
-    extension: z
-      .string()
-      .optional()
-      .describe("Filter by file extension (e.g., 'ts', 'py', 'js')"),
+    extension: z.string().optional().describe("Filter by file extension (e.g., 'ts', 'py', 'js')"),
   },
   async execute({ extension }) {
     try {
-      const { BUILTIN_SERVERS, findServerForExtension } = await import("./config")
+      const { BUILTIN_SERVERS, findServerForExtension } = await import('./config')
 
       if (extension) {
         const result = await findServerForExtension(extension)

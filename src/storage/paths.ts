@@ -1,5 +1,5 @@
-import * as os from "os"
-import * as path from "path"
+import * as os from 'os'
+import * as path from 'path'
 
 export interface StoragePaths {
   todoPath: string
@@ -11,7 +11,7 @@ export interface StoragePaths {
 export interface StorageConfig {
   todoPath?: string
   transcriptPath?: string
-  format?: "jsonl" | "json"
+  format?: 'jsonl' | 'json'
   autoCleanup?: boolean
 }
 
@@ -19,8 +19,8 @@ export function getDefaultPaths(): StoragePaths {
   const homeDir = os.homedir()
 
   return {
-    todoPath: path.join(homeDir, ".claude", "todos"),
-    transcriptPath: path.join(homeDir, ".claude", "transcripts"),
+    todoPath: path.join(homeDir, '.claude', 'todos'),
+    transcriptPath: path.join(homeDir, '.claude', 'transcripts'),
   }
 }
 
@@ -37,10 +37,10 @@ export function getPaths(config: StorageConfig): StoragePaths {
 
 export function resolveSessionId(sessionId: string): string {
   if (!sessionId) {
-    return "unknown"
+    return 'unknown'
   }
 
-  return sessionId.replace(/[^a-zA-Z0-9_-]/g, "_")
+  return sessionId.replace(/[^a-zA-Z0-9_-]/g, '_')
 }
 
 export function ensureDirectories(paths: StoragePaths): void {
@@ -48,9 +48,9 @@ export function ensureDirectories(paths: StoragePaths): void {
 
   for (const dir of dirs) {
     try {
-      require("fs").mkdirSync(dir, { recursive: true })
-    } catch (error) {
-      console.warn(`[storage-paths] Failed to create directory ${dir}:`, error)
+      require('node:fs').mkdirSync(dir, { recursive: true })
+    } catch {
+      // Directory creation failed silently
     }
   }
 }

@@ -1,11 +1,8 @@
-import * as fs from "fs"
-import * as path from "path"
-import { tool } from "@opencode-ai/plugin"
-import { z } from "zod"
-import {
-  getSessionStorageDir,
-  SessionMetadata,
-} from "./list"
+import * as fs from 'fs'
+import * as path from 'path'
+import { tool } from '@opencode-ai/plugin'
+import { z } from 'zod'
+import { getSessionStorageDir, SessionMetadata } from './list'
 
 function getSessionFilePath(sessionID: string): string {
   return path.join(getSessionStorageDir(), `${sessionID}.json`)
@@ -19,12 +16,12 @@ export interface SessionReadResult {
 }
 
 export const session_read = tool({
-  description: "Read messages from a specific session with pagination and filtering options.",
+  description: 'Read messages from a specific session with pagination and filtering options.',
   args: {
-    sessionID: z.string().describe("Session ID to read from"),
+    sessionID: z.string().describe('Session ID to read from'),
     limit: z.number().int().min(1).max(1000).optional(),
-    offset: z.number().int().min(0).default(0).describe("Offset for pagination"),
-    includeMetadata: z.boolean().default(false).describe("Include full session metadata"),
+    offset: z.number().int().min(0).default(0).describe('Offset for pagination'),
+    includeMetadata: z.boolean().default(false).describe('Include full session metadata'),
   },
   async execute(args) {
     try {
@@ -39,7 +36,7 @@ export const session_read = tool({
         })
       }
 
-      const content = fs.readFileSync(filePath, "utf-8")
+      const content = fs.readFileSync(filePath, 'utf-8')
       const data = JSON.parse(content)
 
       const messages = data.messages || []
@@ -84,7 +81,7 @@ export const session_read = tool({
 
       return JSON.stringify(response)
     } catch (error) {
-      console.error("[session-read] Error:", error)
+      console.error('[session-read] Error:', error)
       return JSON.stringify({
         success: false,
         error: String(error),

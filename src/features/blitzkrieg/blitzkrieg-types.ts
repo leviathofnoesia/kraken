@@ -121,7 +121,10 @@ export type TestCaseCategory = 'happy-path' | 'edge-case' | 'error-path' | 'inte
 /**
  * Type of constraint violation
  */
-export type ConstraintViolationType = 'missing-test-step' | 'missing-verification' | 'excessive-complexity'
+export type ConstraintViolationType =
+  | 'missing-test-step'
+  | 'missing-verification'
+  | 'excessive-complexity'
 
 /**
  * Type of TDD violation
