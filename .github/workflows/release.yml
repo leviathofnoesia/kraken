@@ -216,13 +216,14 @@ jobs:
           # Get version from package.json
           VERSION=$(grep '"version"' package.json | head -1 | cut -d'"' -f4)
 
-          # Create tarball
-          bun pack --outdir /tmp
+          # Create tarball using npm pack
+          npm pack
 
           # Publish tarball
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-          bun publish "/tmp/kraken-code-${VERSION}.tgz" --access public --userconfig .npmrc
+          npm publish "kraken-code-${VERSION}.tgz" --access public --userconfig .npmrc
           rm .npmrc
+          rm "kraken-code-${VERSION}.tgz"
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
