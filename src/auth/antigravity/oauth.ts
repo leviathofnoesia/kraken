@@ -5,6 +5,7 @@
 import {
   ANTIGRAVITY_CLIENT_ID,
   ANTIGRAVITY_CLIENT_SECRET,
+  ANTIGRAVITY_REDIRECT_URI,
   ANTIGRAVITY_SCOPES,
   ANTIGRAVITY_CALLBACK_PORT,
   GOOGLE_AUTH_URL,
@@ -81,6 +82,11 @@ export async function buildAuthURL(
   port: number = ANTIGRAVITY_CALLBACK_PORT,
   usePKCE: boolean = false,
 ): Promise<AuthorizationResult> {
+  if (!usePKCE) {
+    console.warn(
+      '[OAuth] PKCE is disabled. This weakens security and is not recommended. PKCE (RFC 7636) prevents authorization code interception attacks.',
+    )
+  }
   const state = crypto.randomUUID().replace(/-/g, '')
 
   const redirectUri = `http://localhost:${port}/oauth-callback`
@@ -125,10 +131,6 @@ export async function exchangeCode(
   clientSecret: string = ANTIGRAVITY_CLIENT_SECRET,
   codeVerifier?: string,
 ): Promise<AntigravityTokenExchangeResult> {
-  if (!codeVerifier && !clientSecret) {
-    throw new Error('ANTIGRAVITY_CLIENT_SECRET is required when PKCE is not enabled.')
-  }
-
   const params: Record<string, string> = {
     client_id: clientId,
     code,
@@ -235,6 +237,7 @@ export function startCallbackServer(timeoutMs: number = 5 * 60 * 1000): Callback
   let server: ReturnType<typeof Bun.serve> | null = null
   let timeoutId: ReturnType<typeof setTimeout> | null = null
   let resolveCallback: ((result: CallbackResult) => void) | null = null
+  let rejectCallback: ((error: Error) => void) | null = null
 
   const cleanup = () => {
     if (timeoutId) {
@@ -296,12 +299,13 @@ export function startCallbackServer(timeoutMs: number = 5 * 60 * 1000): Callback
   const redirectUri = `http://localhost:${actualPort}/oauth-callback`
 
   const waitForCallback = (): Promise<CallbackResult> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       resolveCallback = resolve
+      rejectCallback = reject
 
       timeoutId = setTimeout(() => {
         cleanup()
-        resolve({ code: '', state: '', error: 'timeout' })
+        reject(new Error('OAuth callback timeout'))
       }, timeoutMs)
     })
   }
@@ -319,7 +323,7 @@ export async function performOAuthFlow(
   openBrowser?: (url: string) => Promise<void>,
   clientId: string = ANTIGRAVITY_CLIENT_ID,
   clientSecret: string = ANTIGRAVITY_CLIENT_SECRET,
-  usePKCE: boolean = false,
+  usePKCE: boolean = true,
 ): Promise<{
   tokens: AntigravityTokenExchangeResult
   userInfo: AntigravityUserInfo
