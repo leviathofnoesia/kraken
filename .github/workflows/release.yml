@@ -44,10 +44,24 @@ jobs:
       - name: Create and push tag
         run: |
           TAG="${{ steps.version.outputs.version }}"
+
+          # Configure git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "$TAG" || true
-          git push origin "$TAG" || true
+
+          # Delete remote tag if it exists (ignore errors)
+          git push origin ":refs/tags/$TAG" 2>/dev/null || true
+
+          # Delete local tag if it exists
+          git tag -d "$TAG" 2>/dev/null || true
+
+          # Create new tag
+          git tag "$TAG"
+
+          # Push tag to origin
+          git push origin "refs/tags/$TAG"
+
+          echo "Tag $TAG created and pushed successfully"
 
   typecheck:
     name: Typecheck
@@ -157,6 +171,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Download all binaries
         uses: actions/download-artifact@v4
@@ -196,8 +213,15 @@ jobs:
 
       - name: Publish to NPM
         run: |
+          # Get version from package.json
+          VERSION=$(grep '"version"' package.json | head -1 | cut -d'"' -f4)
+
+          # Create tarball
+          bun pack --outdir /tmp
+
+          # Publish tarball
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
-          bun publish . --access public --userconfig .npmrc
+          bun publish "/tmp/kraken-code-${VERSION}.tgz" --access public --userconfig .npmrc
           rm .npmrc
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
