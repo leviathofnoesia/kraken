@@ -3,14 +3,14 @@ import {
   ANTIGRAVITY_CLIENT_SECRET,
   ANTIGRAVITY_TOKEN_REFRESH_BUFFER_MS,
   GOOGLE_TOKEN_URL,
-} from "./constants"
+} from './constants'
 import type {
   AntigravityRefreshParts,
   AntigravityTokenExchangeResult,
   AntigravityTokens,
   OAuthErrorPayload,
   ParsedOAuthError,
-} from "./types"
+} from './types'
 
 export class AntigravityTokenRefreshError extends Error {
   code?: string
@@ -28,7 +28,7 @@ export class AntigravityTokenRefreshError extends Error {
     responseBody?: string
   }) {
     super(options.message)
-    this.name = "AntigravityTokenRefreshError"
+    this.name = 'AntigravityTokenRefreshError'
     this.code = options.code
     this.description = options.description
     this.status = options.status
@@ -37,7 +37,7 @@ export class AntigravityTokenRefreshError extends Error {
   }
 
   get isInvalidGrant(): boolean {
-    return this.code === "invalid_grant"
+    return this.code === 'invalid_grant'
   }
 
   get isNetworkError(): boolean {
@@ -54,9 +54,9 @@ function parseOAuthErrorPayload(text: string | undefined): ParsedOAuthError {
     const payload = JSON.parse(text) as OAuthErrorPayload
     let code: string | undefined
 
-    if (typeof payload.error === "string") {
+    if (typeof payload.error === 'string') {
       code = payload.error
-    } else if (payload.error && typeof payload.error === "object") {
+    } else if (payload.error && typeof payload.error === 'object') {
       code = payload.error.status ?? payload.error.code
     }
 
@@ -91,18 +91,18 @@ function isRetryableError(status: number): boolean {
 export async function refreshAccessToken(
   refreshToken: string,
   clientId: string = ANTIGRAVITY_CLIENT_ID,
-  clientSecret: string = ANTIGRAVITY_CLIENT_SECRET
+  clientSecret: string = ANTIGRAVITY_CLIENT_SECRET,
 ): Promise<AntigravityTokenExchangeResult> {
   if (!clientSecret) {
     throw new AntigravityTokenRefreshError({
-      message: "ANTIGRAVITY_CLIENT_SECRET is required to refresh access tokens.",
+      message: 'ANTIGRAVITY_CLIENT_SECRET is required to refresh access tokens.',
       status: 0,
-      statusText: "Missing Client Secret",
+      statusText: 'Missing Client Secret',
     })
   }
 
   const params = new URLSearchParams({
-    grant_type: "refresh_token",
+    grant_type: 'refresh_token',
     refresh_token: refreshToken,
     client_id: clientId,
     client_secret: clientSecret,
@@ -113,9 +113,9 @@ export async function refreshAccessToken(
   for (let attempt = 0; attempt <= MAX_REFRESH_RETRIES; attempt++) {
     try {
       const response = await fetch(GOOGLE_TOKEN_URL, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: params,
       })
@@ -140,7 +140,8 @@ export async function refreshAccessToken(
       const parsed = parseOAuthErrorPayload(responseBody)
 
       lastError = new AntigravityTokenRefreshError({
-        message: parsed.description || `Token refresh failed: ${response.status} ${response.statusText}`,
+        message:
+          parsed.description || `Token refresh failed: ${response.status} ${response.statusText}`,
         code: parsed.code,
         description: parsed.description,
         status: response.status,
@@ -148,7 +149,7 @@ export async function refreshAccessToken(
         responseBody,
       })
 
-      if (parsed.code === "invalid_grant") {
+      if (parsed.code === 'invalid_grant') {
         throw lastError
       }
 
@@ -166,9 +167,9 @@ export async function refreshAccessToken(
       }
 
       lastError = new AntigravityTokenRefreshError({
-        message: error instanceof Error ? error.message : "Network error during token refresh",
+        message: error instanceof Error ? error.message : 'Network error during token refresh',
         status: 0,
-        statusText: "Network Error",
+        statusText: 'Network Error',
       })
 
       if (attempt < MAX_REFRESH_RETRIES) {
@@ -178,11 +179,14 @@ export async function refreshAccessToken(
     }
   }
 
-  throw lastError || new AntigravityTokenRefreshError({
-    message: "Token refresh failed after all retries",
-    status: 0,
-    statusText: "Max Retries Exceeded",
-  })
+  throw (
+    lastError ||
+    new AntigravityTokenRefreshError({
+      message: 'Token refresh failed after all retries',
+      status: 0,
+      statusText: 'Max Retries Exceeded',
+    })
+  )
 }
 
 /**
@@ -193,11 +197,11 @@ export async function refreshAccessToken(
  * @returns Parsed refresh parts with refreshToken, projectId, and optional managedProjectId
  */
 export function parseStoredToken(stored: string): AntigravityRefreshParts {
-  const parts = stored.split("|")
+  const parts = stored.split('|')
   const [refreshToken, projectId, managedProjectId] = parts
 
   return {
-    refreshToken: refreshToken || "",
+    refreshToken: refreshToken || '',
     projectId: projectId || undefined,
     managedProjectId: managedProjectId || undefined,
   }
@@ -215,7 +219,7 @@ export function parseStoredToken(stored: string): AntigravityRefreshParts {
 export function formatTokenForStorage(
   refreshToken: string,
   projectId: string,
-  managedProjectId?: string
+  managedProjectId?: string,
 ): string {
-  return `${refreshToken}|${projectId}|${managedProjectId || ""}`
+  return `${refreshToken}|${projectId}|${managedProjectId || ''}`
 }

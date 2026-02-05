@@ -1,9 +1,9 @@
-export * from "./types"
-export * from "./discovery"
-export * from "./loader"
-export * from "./processor"
+export * from './types'
+export * from './discovery'
+export * from './loader'
+export * from './processor'
 
-import { CommandLoader } from "./loader"
+import { CommandLoader } from './loader'
 
 let loader: CommandLoader | null = null
 

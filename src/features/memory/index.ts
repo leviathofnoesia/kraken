@@ -5,11 +5,11 @@
  * graph management, pattern detection, and spaced repetition scheduling.
  */
 
-import { promises as fs } from "node:fs"
-import * as os from "node:os"
-import * as path from "node:path"
+import { promises as fs } from 'node:fs'
+import * as os from 'node:os'
+import * as path from 'node:path'
 
-import { getLearningConfig, getMemoryConfig } from "../../config/manager"
+import { getLearningConfig, getMemoryConfig } from '../../config/manager'
 
 export interface ExperienceEntryInput {
   summary: string
@@ -130,8 +130,8 @@ export interface LearningConfig {
   }
 }
 
-const DEFAULT_STORAGE_PATH = path.join(os.homedir(), ".kraken", "learning")
-const STATE_FILE = "learning-state.json"
+const DEFAULT_STORAGE_PATH = path.join(os.homedir(), '.kraken', 'learning')
+const STATE_FILE = 'learning-state.json'
 let learningState: LearningState = {
   experiences: [],
   knowledgeNodes: [],
@@ -201,7 +201,7 @@ export function listExperiences(): ExperienceEntry[] {
 export function searchExperiences(query: string): ExperienceEntry[] {
   const normalizedQuery = query.toLowerCase()
   return learningState.experiences.filter((entry) => {
-    const tags = entry.tags?.join(" ").toLowerCase() ?? ""
+    const tags = entry.tags?.join(' ').toLowerCase() ?? ''
     return (
       entry.summary.toLowerCase().includes(normalizedQuery) ||
       entry.details.toLowerCase().includes(normalizedQuery) ||
@@ -221,7 +221,7 @@ export async function addKnowledgeNode(input: KnowledgeNodeInput): Promise<Knowl
     updatedAt: now,
     title: input.title,
     content: input.content,
-    type: input.type ?? "concept",
+    type: input.type ?? 'concept',
     tags: input.tags ?? [],
     sources: input.sources ?? [],
     metadata: input.metadata ?? {},
@@ -252,7 +252,7 @@ export function listKnowledgeNodes(): KnowledgeNode[] {
 export function searchKnowledgeNodes(query: string): KnowledgeNode[] {
   const normalizedQuery = query.toLowerCase()
   return learningState.knowledgeNodes.filter((node) => {
-    const tags = node.tags?.join(" ").toLowerCase() ?? ""
+    const tags = node.tags?.join(' ').toLowerCase() ?? ''
     return (
       node.title.toLowerCase().includes(normalizedQuery) ||
       node.content.toLowerCase().includes(normalizedQuery) ||
@@ -265,7 +265,7 @@ export async function linkKnowledgeNodes(
   sourceId: string,
   targetId: string,
   relation: string,
-  strength = 0.5
+  strength = 0.5,
 ): Promise<KnowledgeEdge> {
   const config = getResolvedLearningConfig()
   await ensureInitialized()
@@ -346,7 +346,7 @@ export function getReviewQueue(dueBefore?: string): SpacedRepetitionSchedule[] {
 
 export async function reviewKnowledgeNode(
   nodeId: string,
-  quality: number
+  quality: number,
 ): Promise<SpacedRepetitionSchedule> {
   const config = getResolvedLearningConfig()
   await ensureInitialized()
@@ -368,14 +368,13 @@ export async function reviewKnowledgeNode(
   }
 
   const easeFactor =
-    schedule.easeFactor +
-    (0.1 - (5 - normalizedQuality) * (0.08 + (5 - normalizedQuality) * 0.02))
+    schedule.easeFactor + (0.1 - (5 - normalizedQuality) * (0.08 + (5 - normalizedQuality) * 0.02))
   schedule.easeFactor = Math.max(1.3, easeFactor)
   const maxInterval = config.spacedRepetition?.maxIntervalDays ?? 365
   schedule.intervalDays = Math.min(schedule.intervalDays, maxInterval)
   schedule.lastReviewed = now.toISOString()
   schedule.nextReview = new Date(
-    now.getTime() + schedule.intervalDays * 24 * 60 * 60 * 1000
+    now.getTime() + schedule.intervalDays * 24 * 60 * 60 * 1000,
   ).toISOString()
 
   await persistStateIfNeeded(config)
@@ -414,7 +413,7 @@ export function listStateMachines(): StateMachine[] {
 
 export async function transitionStateMachine(
   machineId: string,
-  event: string
+  event: string,
 ): Promise<StateMachine | null> {
   const config = getResolvedLearningConfig()
   await ensureInitialized()
@@ -425,7 +424,7 @@ export async function transitionStateMachine(
   }
 
   const transition = machine.transitions.find(
-    (item) => item.from === machine.currentState && item.event === event
+    (item) => item.from === machine.currentState && item.event === event,
   )
   if (!transition) {
     return machine
@@ -474,7 +473,7 @@ function resolveStoragePath(storagePath?: string): string {
   if (!storagePath) {
     return DEFAULT_STORAGE_PATH
   }
-  if (storagePath.startsWith("~/")) {
+  if (storagePath.startsWith('~/')) {
     return path.join(os.homedir(), storagePath.slice(2))
   }
   return storagePath
@@ -493,7 +492,7 @@ async function ensureInitialized(): Promise<void> {
 async function loadStateFromDisk(storageDir: string): Promise<LearningState> {
   const filePath = path.join(storageDir, STATE_FILE)
   try {
-    const content = await fs.readFile(filePath, "utf-8")
+    const content = await fs.readFile(filePath, 'utf-8')
     const parsed = JSON.parse(content) as LearningState
     return {
       experiences: parsed.experiences ?? [],
@@ -522,7 +521,7 @@ async function persistStateIfNeeded(config: LearningConfig): Promise<void> {
   const storageDir = resolveStoragePath(config.storagePath)
   await ensureDirectory(storageDir)
   const filePath = path.join(storageDir, STATE_FILE)
-  await fs.writeFile(filePath, JSON.stringify(learningState, null, 2), "utf-8")
+  await fs.writeFile(filePath, JSON.stringify(learningState, null, 2), 'utf-8')
 }
 
 function updatePatternsFromExperience(entry: ExperienceEntry, config: LearningConfig): void {

@@ -1,20 +1,20 @@
 /**
  * OpenAI → Gemini message format converter
- * 
+ *
  * Converts OpenAI-style messages to Gemini contents format,
  * injecting thoughtSignature into functionCall parts.
  */
 
-import { SKIP_THOUGHT_SIGNATURE_VALIDATOR } from "./constants"
+import { SKIP_THOUGHT_SIGNATURE_VALIDATOR } from './constants'
 
 function debugLog(message: string): void {
-  if (process.env.ANTIGRAVITY_DEBUG === "1") {
+  if (process.env.ANTIGRAVITY_DEBUG === '1') {
     console.log(`[antigravity-converter] ${message}`)
   }
 }
 
 interface OpenAIMessage {
-  role: "system" | "user" | "assistant" | "tool"
+  role: 'system' | 'user' | 'assistant' | 'tool'
   content?: string | OpenAIContentPart[]
   tool_calls?: OpenAIToolCall[]
   tool_call_id?: string
@@ -30,7 +30,7 @@ interface OpenAIContentPart {
 
 interface OpenAIToolCall {
   id: string
-  type: "function"
+  type: 'function'
   function: {
     name: string
     arguments: string
@@ -56,34 +56,36 @@ interface GeminiPart {
 }
 
 interface GeminiContent {
-  role: "user" | "model"
+  role: 'user' | 'model'
   parts: GeminiPart[]
 }
 
 export function convertOpenAIToGemini(
   messages: OpenAIMessage[],
-  thoughtSignature?: string
+  thoughtSignature?: string,
 ): GeminiContent[] {
-  debugLog(`Converting ${messages.length} messages, signature: ${thoughtSignature ? "present" : "none"}`)
-  
+  debugLog(
+    `Converting ${messages.length} messages, signature: ${thoughtSignature ? 'present' : 'none'}`,
+  )
+
   const contents: GeminiContent[] = []
 
   for (const msg of messages) {
-    if (msg.role === "system") {
+    if (msg.role === 'system') {
       contents.push({
-        role: "user",
-        parts: [{ text: typeof msg.content === "string" ? msg.content : "" }],
+        role: 'user',
+        parts: [{ text: typeof msg.content === 'string' ? msg.content : '' }],
       })
       continue
     }
 
-    if (msg.role === "user") {
+    if (msg.role === 'user') {
       const parts = convertContentToParts(msg.content)
-      contents.push({ role: "user", parts })
+      contents.push({ role: 'user', parts })
       continue
     }
 
-    if (msg.role === "assistant") {
+    if (msg.role === 'assistant') {
       const parts: GeminiPart[] = []
 
       if (msg.content) {
@@ -108,38 +110,41 @@ export function convertOpenAIToGemini(
 
           // Always inject signature: use provided or default to skip validator (CLIProxyAPI approach)
           part.thoughtSignature = thoughtSignature || SKIP_THOUGHT_SIGNATURE_VALIDATOR
-          debugLog(`Injected signature into functionCall: ${toolCall.function.name} (${thoughtSignature ? "provided" : "default"})`)
+          debugLog(
+            `Injected signature into functionCall: ${toolCall.function.name} (${thoughtSignature ? 'provided' : 'default'})`,
+          )
 
           parts.push(part)
         }
       }
 
       if (parts.length > 0) {
-        contents.push({ role: "model", parts })
+        contents.push({ role: 'model', parts })
       }
       continue
     }
 
-    if (msg.role === "tool") {
+    if (msg.role === 'tool') {
       let response: Record<string, unknown> = {}
       try {
-        response = typeof msg.content === "string" 
-          ? JSON.parse(msg.content) 
-          : { result: msg.content }
+        response =
+          typeof msg.content === 'string' ? JSON.parse(msg.content) : { result: msg.content }
       } catch {
         response = { result: msg.content }
       }
 
-      const toolName = msg.name || "unknown"
-      
+      const toolName = msg.name || 'unknown'
+
       contents.push({
-        role: "user",
-        parts: [{
-          functionResponse: {
-            name: toolName,
-            response,
+        role: 'user',
+        parts: [
+          {
+            functionResponse: {
+              name: toolName,
+              response,
+            },
           },
-        }],
+        ],
       })
       continue
     }
@@ -151,20 +156,20 @@ export function convertOpenAIToGemini(
 
 function convertContentToParts(content: string | OpenAIContentPart[] | undefined): GeminiPart[] {
   if (!content) {
-    return [{ text: "" }]
+    return [{ text: '' }]
   }
 
-  if (typeof content === "string") {
+  if (typeof content === 'string') {
     return [{ text: content }]
   }
 
   const parts: GeminiPart[] = []
   for (const part of content) {
-    if (part.type === "text" && part.text) {
+    if (part.type === 'text' && part.text) {
       parts.push({ text: part.text })
-    } else if (part.type === "image_url" && part.image_url?.url) {
+    } else if (part.type === 'image_url' && part.image_url?.url) {
       const url = part.image_url.url
-      if (url.startsWith("data:")) {
+      if (url.startsWith('data:')) {
         const match = url.match(/^data:([^;]+);base64,(.+)$/)
         if (match) {
           parts.push({
@@ -178,7 +183,7 @@ function convertContentToParts(content: string | OpenAIContentPart[] | undefined
     }
   }
 
-  return parts.length > 0 ? parts : [{ text: "" }]
+  return parts.length > 0 ? parts : [{ text: '' }]
 }
 
 export function hasOpenAIMessages(body: Record<string, unknown>): boolean {
@@ -187,10 +192,10 @@ export function hasOpenAIMessages(body: Record<string, unknown>): boolean {
 
 export function convertRequestBody(
   body: Record<string, unknown>,
-  thoughtSignature?: string
+  thoughtSignature?: string,
 ): Record<string, unknown> {
   if (!hasOpenAIMessages(body)) {
-    debugLog("No messages array found, returning body as-is")
+    debugLog('No messages array found, returning body as-is')
     return body
   }
 

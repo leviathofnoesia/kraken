@@ -5,14 +5,14 @@
  */
 
 import {
-    ANTIGRAVITY_API_VERSION,
-    ANTIGRAVITY_ENDPOINT_FALLBACKS,
-    ANTIGRAVITY_HEADERS,
-    ANTIGRAVITY_SYSTEM_PROMPT,
-    SKIP_THOUGHT_SIGNATURE_VALIDATOR,
-    alias2ModelName,
-} from "./constants"
-import type { AntigravityRequestBody } from "./types"
+  ANTIGRAVITY_API_VERSION,
+  ANTIGRAVITY_ENDPOINT_FALLBACKS,
+  ANTIGRAVITY_HEADERS,
+  ANTIGRAVITY_SYSTEM_PROMPT,
+  SKIP_THOUGHT_SIGNATURE_VALIDATOR,
+  alias2ModelName,
+} from './constants'
+import type { AntigravityRequestBody } from './types'
 
 /**
  * Result of request transformation including URL, headers, and body.
@@ -38,10 +38,10 @@ export interface TransformedRequest {
 export function buildRequestHeaders(accessToken: string): Record<string, string> {
   return {
     Authorization: `Bearer ${accessToken}`,
-    "Content-Type": "application/json",
-    "User-Agent": ANTIGRAVITY_HEADERS["User-Agent"],
-    "X-Goog-Api-Client": ANTIGRAVITY_HEADERS["X-Goog-Api-Client"],
-    "Client-Metadata": ANTIGRAVITY_HEADERS["Client-Metadata"],
+    'Content-Type': 'application/json',
+    'User-Agent': ANTIGRAVITY_HEADERS['User-Agent'],
+    'X-Goog-Api-Client': ANTIGRAVITY_HEADERS['X-Goog-Api-Client'],
+    'Client-Metadata': ANTIGRAVITY_HEADERS['Client-Metadata'],
   }
 }
 
@@ -52,11 +52,9 @@ export function buildRequestHeaders(accessToken: string): Record<string, string>
  * @param body - Request body that may contain a model field
  * @returns Model name or undefined if not found
  */
-export function extractModelFromBody(
-  body: Record<string, unknown>
-): string | undefined {
+export function extractModelFromBody(body: Record<string, unknown>): string | undefined {
   const model = body.model
-  if (typeof model === "string" && model.trim()) {
+  if (typeof model === 'string' && model.trim()) {
     return model.trim()
   }
   return undefined
@@ -101,7 +99,7 @@ export function extractActionFromUrl(url: string): string | undefined {
  * @returns true if this is a Google Generative Language API request
  */
 export function isGenerativeLanguageRequest(url: string): boolean {
-  return url.includes("generativelanguage.googleapis.com")
+  return url.includes('generativelanguage.googleapis.com')
 }
 
 /**
@@ -115,9 +113,9 @@ export function isGenerativeLanguageRequest(url: string): boolean {
 export function buildAntigravityUrl(
   baseEndpoint: string,
   action: string,
-  streaming: boolean
+  streaming: boolean,
 ): string {
-  const query = streaming ? "?alt=sse" : ""
+  const query = streaming ? '?alt=sse' : ''
   return `${baseEndpoint}/${ANTIGRAVITY_API_VERSION}:${action}${query}`
 }
 
@@ -145,20 +143,20 @@ function generateRequestId(): string {
  * @param wrappedBody - The wrapped request body with request field
  */
 export function injectSystemPrompt(wrappedBody: { request?: unknown }): void {
-  if (!wrappedBody.request || typeof wrappedBody.request !== "object") {
+  if (!wrappedBody.request || typeof wrappedBody.request !== 'object') {
     return
   }
 
   const req = wrappedBody.request as Record<string, unknown>
 
   // Check for duplicate injection - if <identity> marker exists in first part, skip
-  if (req.systemInstruction && typeof req.systemInstruction === "object") {
+  if (req.systemInstruction && typeof req.systemInstruction === 'object') {
     const existing = req.systemInstruction as Record<string, unknown>
     if (existing.parts && Array.isArray(existing.parts)) {
       const firstPart = existing.parts[0]
-      if (firstPart && typeof firstPart === "object" && "text" in firstPart) {
+      if (firstPart && typeof firstPart === 'object' && 'text' in firstPart) {
         const text = (firstPart as { text: string }).text
-        if (text.includes("<identity>")) {
+        if (text.includes('<identity>')) {
           return // Already injected, skip
         }
       }
@@ -169,11 +167,11 @@ export function injectSystemPrompt(wrappedBody: { request?: unknown }): void {
   const newParts: Array<{ text: string }> = [{ text: ANTIGRAVITY_SYSTEM_PROMPT }]
 
   // Prepend existing parts if systemInstruction exists with parts
-  if (req.systemInstruction && typeof req.systemInstruction === "object") {
+  if (req.systemInstruction && typeof req.systemInstruction === 'object') {
     const existing = req.systemInstruction as Record<string, unknown>
     if (existing.parts && Array.isArray(existing.parts)) {
       for (const part of existing.parts) {
-        if (part && typeof part === "object" && "text" in part) {
+        if (part && typeof part === 'object' && 'text' in part) {
           newParts.push(part as { text: string })
         }
       }
@@ -182,7 +180,7 @@ export function injectSystemPrompt(wrappedBody: { request?: unknown }): void {
 
   // Set the new systemInstruction
   req.systemInstruction = {
-    role: "user",
+    role: 'user',
     parts: newParts,
   }
 }
@@ -191,14 +189,14 @@ export function wrapRequestBody(
   body: Record<string, unknown>,
   projectId: string,
   modelName: string,
-  sessionId: string
+  sessionId: string,
 ): AntigravityRequestBody {
   const requestPayload = { ...body }
   delete requestPayload.model
 
   let normalizedModel = modelName
-  if (normalizedModel.startsWith("antigravity-")) {
-    normalizedModel = normalizedModel.substring("antigravity-".length)
+  if (normalizedModel.startsWith('antigravity-')) {
+    normalizedModel = normalizedModel.substring('antigravity-'.length)
   }
   const apiModel = alias2ModelName(normalizedModel)
   debugLog(`[MODEL] input="${modelName}" → normalized="${normalizedModel}" → api="${apiModel}"`)
@@ -207,9 +205,9 @@ export function wrapRequestBody(
     ...requestPayload,
     sessionId,
     toolConfig: {
-      ...(requestPayload.toolConfig as Record<string, unknown> || {}),
+      ...((requestPayload.toolConfig as Record<string, unknown>) || {}),
       functionCallingConfig: {
-        mode: "VALIDATED",
+        mode: 'VALIDATED',
       },
     },
   }
@@ -218,8 +216,8 @@ export function wrapRequestBody(
   const wrappedBody: AntigravityRequestBody = {
     project: projectId,
     model: apiModel,
-    userAgent: "antigravity",
-    requestType: "agent",
+    userAgent: 'antigravity',
+    requestType: 'agent',
     requestId: generateRequestId(),
     request: requestObj,
   }
@@ -242,19 +240,21 @@ interface ContentBlock {
 }
 
 function debugLog(message: string): void {
-  if (process.env.ANTIGRAVITY_DEBUG === "1") {
+  if (process.env.ANTIGRAVITY_DEBUG === '1') {
     console.log(`[antigravity-request] ${message}`)
   }
 }
 
 export function injectThoughtSignatureIntoFunctionCalls(
   body: Record<string, unknown>,
-  signature: string | undefined
+  signature: string | undefined,
 ): Record<string, unknown> {
   // Always use skip validator as fallback (CLIProxyAPI approach)
   const effectiveSignature = signature || SKIP_THOUGHT_SIGNATURE_VALIDATOR
-  debugLog(`[TSIG][INJECT] signature=${effectiveSignature.substring(0, 30)}... (${signature ? "provided" : "default"})`)
-  debugLog(`[TSIG][INJECT] body keys: ${Object.keys(body).join(", ")}`)
+  debugLog(
+    `[TSIG][INJECT] signature=${effectiveSignature.substring(0, 30)}... (${signature ? 'provided' : 'default'})`,
+  )
+  debugLog(`[TSIG][INJECT] body keys: ${Object.keys(body).join(', ')}`)
 
   const contents = body.contents as ContentBlock[] | undefined
   if (!contents || !Array.isArray(contents)) {
@@ -295,13 +295,10 @@ export function injectThoughtSignatureIntoFunctionCalls(
  * @param body - Request body
  * @returns true if streaming is requested
  */
-export function isStreamingRequest(
-  url: string,
-  body: Record<string, unknown>
-): boolean {
+export function isStreamingRequest(url: string, body: Record<string, unknown>): boolean {
   // Check URL action
   const action = extractActionFromUrl(url)
-  if (action === "streamGenerateContent") {
+  if (action === 'streamGenerateContent') {
     return true
   }
 
@@ -337,17 +334,17 @@ export function transformRequest(options: TransformRequestOptions): TransformedR
   } = options
 
   const effectiveModel =
-    modelName || extractModelFromBody(body) || extractModelFromUrl(url) || "gemini-3-pro-high"
+    modelName || extractModelFromBody(body) || extractModelFromUrl(url) || 'gemini-3-pro-high'
 
   const streaming = isStreamingRequest(url, body)
-  const action = streaming ? "streamGenerateContent" : "generateContent"
+  const action = streaming ? 'streamGenerateContent' : 'generateContent'
 
   const endpoint = endpointOverride || getDefaultEndpoint()
   const transformedUrl = buildAntigravityUrl(endpoint, action, streaming)
 
   const headers = buildRequestHeaders(accessToken)
   if (streaming) {
-    headers["Accept"] = "text/event-stream"
+    headers['Accept'] = 'text/event-stream'
   }
 
   const bodyWithSignature = injectThoughtSignatureIntoFunctionCalls(body, thoughtSignature)
@@ -368,11 +365,9 @@ export function transformRequest(options: TransformRequestOptions): TransformedR
  * @param headers - Existing headers object
  * @returns Headers with streaming support
  */
-export function addStreamingHeaders(
-  headers: Record<string, string>
-): Record<string, string> {
+export function addStreamingHeaders(headers: Record<string, string>): Record<string, string> {
   return {
     ...headers,
-    Accept: "text/event-stream",
+    Accept: 'text/event-stream',
   }
 }

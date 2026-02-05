@@ -11,10 +11,8 @@ import {
   buildAntiPatternsSection,
   categorizeTools,
   type AvailableSkill,
-} from "./kraken-prompt-builder"
-import type { AgentConfig } from "@opencode-ai/sdk"
-import { isGptModel } from "../utils"
-import type { AvailableAgent } from "../utils"
+} from './kraken-prompt-builder'
+import type { AgentConfig } from '@opencode-ai/sdk'
 
 const KRAKEN_ENHANCED_SYSTEM_PROMPT = `You are Kraken, an orchestration agent with genuine curiosity and methodical precision. You coordinate complex development workflows through systematic planning, intelligent delegation, and continuous validation.
 
@@ -160,13 +158,11 @@ Avoid excessive headers and nested bullet points. Get to the point.
 
 You are here to help build good software. Focus on that.`
 
-export function createKrakenConfig(
-  options?: {
-    availableAgents?: any[]
-    availableTools?: string[]
-    availableSkills?: AvailableSkill[]
-  }
-): AgentConfig {
+export function createKrakenConfig(options?: {
+  availableAgents?: any[]
+  availableTools?: string[]
+  availableSkills?: AvailableSkill[]
+}): AgentConfig {
   const DEFAULT_PERMISSIONS = {
     bash: 'allow',
     edit: 'allow',
@@ -174,36 +170,36 @@ export function createKrakenConfig(
     external_directory: 'allow',
   }
 
-  let dynamicSections = ""
+  let dynamicSections = ''
 
   if (options?.availableAgents && options.availableAgents.length > 0) {
     const { availableAgents, availableTools = [], availableSkills = [] } = options
     const categorizedTools = categorizeTools(availableTools)
 
     const sections = [
-      "\n\n## Available Resources\n",
+      '\n\n## Available Resources\n',
       buildKeyTriggersSection(availableAgents, availableSkills),
-      "\n",
+      '\n',
       buildToolSelectionTable(availableAgents, categorizedTools, availableSkills),
-      "\n",
+      '\n',
       buildDelegationTable(availableAgents),
-      "\n",
+      '\n',
       buildExploreSection(availableAgents),
-      "\n",
+      '\n',
       buildLibrarianSection(availableAgents),
-      "\n",
+      '\n',
       buildFrontendSection(availableAgents),
-      "\n",
+      '\n',
       buildOracleSection(availableAgents),
-      "\n## Agent Reference\n\n",
+      '\n## Agent Reference\n\n',
       buildAgentPrioritySection(availableAgents),
-      "\n",
+      '\n',
       buildHardBlocksSection(),
-      "\n",
+      '\n',
       buildAntiPatternsSection(),
-    ].filter(s => s && s.trim().length > 0)
+    ].filter((s) => s && s.trim().length > 0)
 
-    dynamicSections = "\n\n" + sections.join("\n")
+    dynamicSections = '\n\n' + sections.join('\n')
   }
 
   const finalPrompt = KRAKEN_ENHANCED_SYSTEM_PROMPT + dynamicSections
@@ -211,13 +207,13 @@ export function createKrakenConfig(
   const base: any = {
     description:
       "Orchestration agent with integrated pre-planning. Coordinates development workflows through PDSA cycles, intelligent delegation, and constraint analysis. Enhanced with Poseidon's constraint satisfaction to eliminate round-trip delegation.",
-    mode: "primary" as const,
+    mode: 'primary' as const,
     temperature: 0.1,
     prompt: finalPrompt,
     permission: DEFAULT_PERMISSIONS,
   }
 
-  return { ...base, thinking: { type: "enabled", budgetTokens: 32000 } } as AgentConfig
+  return { ...base, thinking: { type: 'enabled', budgetTokens: 32000 } } as AgentConfig
 }
 
 export const krakenAgent = createKrakenConfig()

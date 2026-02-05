@@ -1,5 +1,5 @@
-import type { Hooks } from "@opencode-ai/plugin"
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { Hooks } from '@opencode-ai/plugin'
+import type { PluginInput } from '@opencode-ai/plugin'
 
 export interface ClaudeCodeHooksConfig {
   enabled?: boolean
@@ -19,7 +19,7 @@ export interface ClaudeCodeHooksConfig {
 
 export function createClaudeCodeHooks(
   _input: PluginInput,
-  options?: { config?: ClaudeCodeHooksConfig }
+  options?: { config?: ClaudeCodeHooksConfig },
 ): Hooks {
   const config: ClaudeCodeHooksConfig = {
     enabled: options?.config?.enabled ?? true,
@@ -45,16 +45,16 @@ export function createClaudeCodeHooks(
           }
         }
       } catch (error) {
-        console.error("[claude-code-hooks] Error applying config:", error)
+        console.error('[claude-code-hooks] Error applying config:', error)
       }
     },
-    "tool.execute.before": async (input, output) => {
+    'tool.execute.before': async (input, output) => {
       if (!config.enabled || config.hooks === false || config.toggles?.hooks === false) return
-      console.log("[claude-code-hooks] Processing tool execution")
+      console.log('[claude-code-hooks] Processing tool execution')
     },
-    "tool.execute.after": async (input, output) => {
+    'tool.execute.after': async (input, output) => {
       if (!config.enabled || config.hooks === false || config.toggles?.hooks === false) return
-      console.log("[claude-code-hooks] Tool execution completed")
+      console.log('[claude-code-hooks] Tool execution completed')
     },
   }
 }

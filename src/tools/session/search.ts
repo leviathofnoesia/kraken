@@ -1,11 +1,11 @@
-import * as fs from "fs"
-import * as path from "path"
-import * as os from "os"
-import { tool } from "@opencode-ai/plugin"
-import { z } from "zod"
-import { getSessionStorageDir, SessionMetadata } from "./list"
+import * as fs from 'fs'
+import * as path from 'path'
+import * as os from 'os'
+import { tool } from '@opencode-ai/plugin'
+import { z } from 'zod'
+import { getSessionStorageDir, SessionMetadata } from './list'
 
-const SESSION_STORAGE_DIR = path.join(os.homedir(), ".opencode", "sessions")
+const SESSION_STORAGE_DIR = path.join(os.homedir(), '.opencode', 'sessions')
 
 export interface SearchResult {
   sessionID: string
@@ -16,7 +16,7 @@ export interface SearchResult {
 }
 
 export interface MatchLocation {
-  type: "user_message" | "assistant_message"
+  type: 'user_message' | 'assistant_message'
   index: number
   content: string
   context: string
@@ -24,19 +24,19 @@ export interface MatchLocation {
 
 function indexSession(sessionFilePath: string): Map<string, MatchLocation> | null {
   try {
-    const content = fs.readFileSync(sessionFilePath, "utf-8")
+    const content = fs.readFileSync(sessionFilePath, 'utf-8')
     const data = JSON.parse(content)
 
     const index = new Map<string, MatchLocation>()
 
     if (data.messages && Array.isArray(data.messages)) {
       data.messages.forEach((msg: any, idx: number) => {
-        const role = msg.role || "unknown"
-        const content = msg.content || ""
+        const role = msg.role || 'unknown'
+        const content = msg.content || ''
 
-        if (content && typeof content === "string" && content.length > 0) {
+        if (content && typeof content === 'string' && content.length > 0) {
           const location: MatchLocation = {
-            type: role === "user" ? "user_message" : "assistant_message",
+            type: role === 'user' ? 'user_message' : 'assistant_message',
             index: idx,
             content,
             context: content,
@@ -80,14 +80,18 @@ function calculateRelevanceScore(query: string, match: MatchLocation): number {
 
   score += wordMatchCount * 10
 
-  if (match.type === "user_message") {
+  if (match.type === 'user_message') {
     score += 20
   }
 
   return Math.min(score, 100)
 }
 
-function getAllSessionFiles(): { sessionID: string; filePath: string; metadata: SessionMetadata }[] {
+function getAllSessionFiles(): {
+  sessionID: string
+  filePath: string
+  metadata: SessionMetadata
+}[] {
   const sessionsDir = getSessionStorageDir()
   if (!fs.existsSync(sessionsDir)) {
     return []
@@ -99,20 +103,20 @@ function getAllSessionFiles(): { sessionID: string; filePath: string; metadata: 
     const files = fs.readdirSync(sessionsDir)
 
     for (const file of files) {
-      if (!file.endsWith(".json")) continue
+      if (!file.endsWith('.json')) continue
 
       const sessionID = file.slice(0, -5)
       const filePath = path.join(sessionsDir, file)
 
       try {
-        const content = fs.readFileSync(filePath, "utf-8")
+        const content = fs.readFileSync(filePath, 'utf-8')
         const data = JSON.parse(content)
 
         const metadata: SessionMetadata = {
           sessionID,
           created: data.created || data.createdAt || new Date(0).toISOString(),
           lastActive: data.lastActive || data.updatedAt || new Date().toISOString(),
-          messageCount: data.messageCount || (data.messages?.length || 0),
+          messageCount: data.messageCount || data.messages?.length || 0,
           agent: data.agent,
           duration: data.duration,
           fileCount: data.fileCount,
@@ -130,19 +134,25 @@ function getAllSessionFiles(): { sessionID: string; filePath: string; metadata: 
       }
     }
   } catch (error) {
-    console.error("[session-search] Error reading sessions directory:", error)
+    console.error('[session-search] Error reading sessions directory:', error)
   }
 
   return entries
 }
 
 export const session_search = tool({
-  description: "Full-text search across all OpenCode sessions with ranked results.",
+  description: 'Full-text search across all OpenCode sessions with ranked results.',
   args: {
-    q: z.string().describe("Search query text"),
-    limit: z.number().int().min(1).max(100).default(10).describe("Maximum number of results to return"),
-    offset: z.number().int().min(0).default(0).describe("Offset for pagination"),
-    sessionID: z.string().optional().describe("Search within a specific session only"),
+    q: z.string().describe('Search query text'),
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .default(10)
+      .describe('Maximum number of results to return'),
+    offset: z.number().int().min(0).default(0).describe('Offset for pagination'),
+    sessionID: z.string().optional().describe('Search within a specific session only'),
   },
   async execute(args) {
     try {
@@ -151,7 +161,7 @@ export const session_search = tool({
       if (!q || q.trim().length === 0) {
         return JSON.stringify({
           success: false,
-          error: "Query cannot be empty",
+          error: 'Query cannot be empty',
           results: [],
         })
       }
@@ -167,8 +177,8 @@ export const session_search = tool({
             filePath,
             metadata: {
               sessionID,
-              created: "",
-              lastActive: "",
+              created: '',
+              lastActive: '',
               messageCount: 0,
               toolUsage: {},
             },
@@ -195,7 +205,8 @@ export const session_search = tool({
         }
 
         if (matches.length > 0) {
-          const avgScore = matches.reduce((sum, m) => sum + calculateRelevanceScore(q, m), 0) / matches.length
+          const avgScore =
+            matches.reduce((sum, m) => sum + calculateRelevanceScore(q, m), 0) / matches.length
 
           allResults.push({
             sessionID: sessionFile.sessionID,
@@ -224,15 +235,15 @@ export const session_search = tool({
           lastActive: result.metadata.lastActive,
           messageCount: result.metadata.messageCount,
           agent: result.metadata.agent,
-            matches: result.matches.map((m: any) => ({
-              type: m.type,
-              index: m.index,
-              content: m.content.slice(0, 200) + (m.content.length > 200 ? "..." : ""),
-            })),
+          matches: result.matches.map((m: any) => ({
+            type: m.type,
+            index: m.index,
+            content: m.content.slice(0, 200) + (m.content.length > 200 ? '...' : ''),
+          })),
         })),
       })
     } catch (error) {
-      console.error("[session-search] Error:", error)
+      console.error('[session-search] Error:', error)
       return JSON.stringify({
         success: false,
         error: String(error),

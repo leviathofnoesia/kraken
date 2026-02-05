@@ -1,22 +1,22 @@
 export enum LogLevel {
-  DEBUG = "debug",
-  INFO = "info",
-  WARN = "warn",
-  ERROR = "error"
+  DEBUG = 'debug',
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error',
 }
 
 class Logger {
   private isDebug: boolean
 
   constructor(private module: string) {
-    this.isDebug = process.env.ANTIGRAVITY_DEBUG === "1" || process.env.DEBUG === "1"
+    this.isDebug = process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1'
   }
 
   private format(level: LogLevel, ...args: any[]): string {
     const timestamp = new Date().toISOString()
-    return `[${timestamp}] [${this.module}] [${level}] ${args.map(arg => 
-      typeof arg === "object" ? JSON.stringify(arg, null, 2) : arg
-    ).join(" ")}`
+    return `[${timestamp}] [${this.module}] [${level}] ${args
+      .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg))
+      .join(' ')}`
   }
 
   debug(...args: any[]): void {

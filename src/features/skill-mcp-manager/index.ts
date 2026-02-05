@@ -1,9 +1,9 @@
-export * from "./types"
-export * from "./mcp-config-parser"
-export * from "./mcp-manager"
+export * from './types'
+export * from './mcp-config-parser'
+export * from './mcp-manager'
 
-import type { SkillMcpConfig } from "./types"
-import { SkillMcpManager } from "./mcp-manager"
+import type { SkillMcpConfig } from './types'
+import { SkillMcpManager } from './mcp-manager'
 
 let manager: SkillMcpManager | null = null
 
@@ -21,7 +21,7 @@ export function getSkillMcpManager(): SkillMcpManager | null {
 
 export function createSkillMcpServer(
   skillName: string,
-  config: SkillMcpConfig | string
+  config: SkillMcpConfig | string,
 ): { skillName: string; config: SkillMcpConfig | string } {
   return { skillName, config }
 }

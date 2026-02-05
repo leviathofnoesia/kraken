@@ -1,4 +1,4 @@
-import { ensureDirectories } from "../../storage"
+import { ensureDirectories } from '../../storage'
 
 export interface SessionStorageOptions {
   autoInitialize?: boolean

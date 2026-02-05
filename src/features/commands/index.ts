@@ -1,4 +1,3 @@
-
 export type CommandHandler = (...args: any[]) => Promise<any>
 
 export interface Command {

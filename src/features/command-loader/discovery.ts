@@ -1,11 +1,7 @@
-import * as fs from "fs"
-import * as path from "path"
-import * as os from "os"
-import type {
-  LoadedCommand,
-  ParsedFrontmatter,
-  CommandScope,
-} from "./types"
+import * as fs from 'fs'
+import * as path from 'path'
+import * as os from 'os'
+import type { LoadedCommand, ParsedFrontmatter, CommandScope } from './types'
 
 const FRONTMATTER_REGEX = /^---\s*\n([\s\S]*?)\n---\s*\n/
 const HANDOFF_REGEX = /##\s*Handoffs?\s*\n([\s\S]*?)(?=\n##|$)/i
@@ -19,17 +15,17 @@ export function parseFrontmatter(content: string): ParsedFrontmatter {
   const frontmatter = match[1]
   const result: ParsedFrontmatter = {}
 
-  const lines = frontmatter.split("\n")
+  const lines = frontmatter.split('\n')
   for (const line of lines) {
-    const colonIndex = line.indexOf(":")
+    const colonIndex = line.indexOf(':')
     if (colonIndex === -1) continue
 
     const key = line.slice(0, colonIndex).trim()
     const value = line.slice(colonIndex + 1).trim()
 
-    if (key === "true") {
+    if (key === 'true') {
       result[key] = true
-    } else if (key === "false") {
+    } else if (key === 'false') {
       result[key] = false
     } else if (!isNaN(Number(value))) {
       result[key] = Number(value)
@@ -50,10 +46,10 @@ export function parseHandoffs(content: string): string[] {
   const section = match[1]
   const handoffs: string[] = []
 
-  const lines = section.split("\n")
+  const lines = section.split('\n')
   for (const line of lines) {
     const trimmed = line.trim()
-    if (trimmed.startsWith("-")) {
+    if (trimmed.startsWith('-')) {
       handoffs.push(trimmed.slice(1).trim())
     }
   }
@@ -65,7 +61,7 @@ export async function loadCommandsFromDir(
   commandsDir: string,
   scope: CommandScope,
   visited: Set<string> = new Set(),
-  prefix: string = ""
+  prefix: string = '',
 ): Promise<LoadedCommand[]> {
   const commands: LoadedCommand[] = []
 
@@ -87,18 +83,13 @@ export async function loadCommandsFromDir(
 
       if (entry.isDirectory()) {
         const nestedPrefix = prefix ? `${prefix}:${entry.name}` : entry.name
-        const nestedCommands = await loadCommandsFromDir(
-          entryPath,
-          scope,
-          visited,
-          nestedPrefix
-        )
+        const nestedCommands = await loadCommandsFromDir(entryPath, scope, visited, nestedPrefix)
         commands.push(...nestedCommands)
-      } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      } else if (entry.isFile() && entry.name.endsWith('.md')) {
         try {
-          const content = await fs.promises.readFile(entryPath, "utf-8")
+          const content = await fs.promises.readFile(entryPath, 'utf-8')
           const frontmatter = parseFrontmatter(content)
-          const body = content.replace(FRONTMATTER_REGEX, "").trim()
+          const body = content.replace(FRONTMATTER_REGEX, '').trim()
 
           const commandName = entry.name.slice(0, -3)
           const fullName = prefix ? `${prefix}:${commandName}` : commandName
@@ -108,7 +99,7 @@ export async function loadCommandsFromDir(
             path: entryPath,
             definition: {
               name: fullName,
-              description: frontmatter.description || "",
+              description: frontmatter.description || '',
               template: body,
               agent: frontmatter.agent,
               model: frontmatter.model,
@@ -119,18 +110,12 @@ export async function loadCommandsFromDir(
             prefix,
           })
         } catch (error) {
-          console.error(
-            `[command-loader] Error loading command from ${entryPath}:`,
-            error
-          )
+          console.error(`[command-loader] Error loading command from ${entryPath}:`, error)
         }
       }
     }
   } catch (error) {
-    console.error(
-      `[command-loader] Error reading commands directory ${commandsDir}:`,
-      error
-    )
+    console.error(`[command-loader] Error reading commands directory ${commandsDir}:`, error)
   }
 
   return commands
@@ -144,15 +129,15 @@ export function getDefaultCommandPaths(): {
 } {
   const homeDir = os.homedir()
   return {
-    user: path.join(homeDir, ".config", "opencode", "commands"),
-    project: path.join(process.cwd(), ".claude", "commands"),
-    opencodeGlobal: path.join(homeDir, ".config", "opencode", "commands"),
-    opencodeProject: path.join(process.cwd(), ".opencode", "commands"),
+    user: path.join(homeDir, '.config', 'opencode', 'commands'),
+    project: path.join(process.cwd(), '.claude', 'commands'),
+    opencodeGlobal: path.join(homeDir, '.config', 'opencode', 'commands'),
+    opencodeProject: path.join(process.cwd(), '.opencode', 'commands'),
   }
 }
 
 export function expandEnvironmentVars(str: string): string {
   return str.replace(/\$\{([^}]+)\}/g, (_, varName) => {
-    return process.env[varName] || ""
+    return process.env[varName] || ''
   })
 }

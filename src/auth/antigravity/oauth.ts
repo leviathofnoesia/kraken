@@ -5,17 +5,13 @@
 import {
   ANTIGRAVITY_CLIENT_ID,
   ANTIGRAVITY_CLIENT_SECRET,
-  ANTIGRAVITY_REDIRECT_URI,
   ANTIGRAVITY_SCOPES,
   ANTIGRAVITY_CALLBACK_PORT,
   GOOGLE_AUTH_URL,
   GOOGLE_TOKEN_URL,
   GOOGLE_USERINFO_URL,
-} from "./constants"
-import type {
-  AntigravityTokenExchangeResult,
-  AntigravityUserInfo,
-} from "./types"
+} from './constants'
+import type { AntigravityTokenExchangeResult, AntigravityUserInfo } from './types'
 
 /**
  * PKCE code challenge and verifier pair
@@ -23,7 +19,7 @@ import type {
 export interface PKCEChallenge {
   codeVerifier: string
   codeChallenge: string
-  codeChallengeMethod: "S256" | "plain"
+  codeChallengeMethod: 'S256' | 'plain'
 }
 
 /**
@@ -57,12 +53,12 @@ export interface CallbackResult {
 export async function generatePKCEChallenge(): Promise<PKCEChallenge> {
   const array = new Uint8Array(32)
   crypto.getRandomValues(array)
-  
+
   const codeVerifier = btoa(String.fromCharCode(...array))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, '')
-  
+
   const encoder = new TextEncoder()
   const data = encoder.encode(codeVerifier)
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)
@@ -71,7 +67,7 @@ export async function generatePKCEChallenge(): Promise<PKCEChallenge> {
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, '')
-  
+
   return {
     codeVerifier,
     codeChallenge,
@@ -85,26 +81,26 @@ export async function buildAuthURL(
   port: number = ANTIGRAVITY_CALLBACK_PORT,
   usePKCE: boolean = false,
 ): Promise<AuthorizationResult> {
-  const state = crypto.randomUUID().replace(/-/g, "")
-  
+  const state = crypto.randomUUID().replace(/-/g, '')
+
   const redirectUri = `http://localhost:${port}/oauth-callback`
-  
+
   const url = new URL(GOOGLE_AUTH_URL)
-  url.searchParams.set("client_id", clientId)
-  url.searchParams.set("redirect_uri", redirectUri)
-  url.searchParams.set("response_type", "code")
-  url.searchParams.set("scope", ANTIGRAVITY_SCOPES.join(" "))
-  url.searchParams.set("state", state)
-  url.searchParams.set("access_type", "offline")
-  url.searchParams.set("prompt", "consent")
-  
+  url.searchParams.set('client_id', clientId)
+  url.searchParams.set('redirect_uri', redirectUri)
+  url.searchParams.set('response_type', 'code')
+  url.searchParams.set('scope', ANTIGRAVITY_SCOPES.join(' '))
+  url.searchParams.set('state', state)
+  url.searchParams.set('access_type', 'offline')
+  url.searchParams.set('prompt', 'consent')
+
   let pkce: PKCEChallenge | undefined
   if (usePKCE) {
     pkce = await generatePKCEChallenge()
-    url.searchParams.set("code_challenge", pkce.codeChallenge)
-    url.searchParams.set("code_challenge_method", pkce.codeChallengeMethod)
+    url.searchParams.set('code_challenge', pkce.codeChallenge)
+    url.searchParams.set('code_challenge_method', pkce.codeChallengeMethod)
   }
-  
+
   return {
     url: url.toString(),
     state,
@@ -127,16 +123,16 @@ export async function exchangeCode(
   redirectUri: string,
   clientId: string = ANTIGRAVITY_CLIENT_ID,
   clientSecret: string = ANTIGRAVITY_CLIENT_SECRET,
-  codeVerifier?: string
+  codeVerifier?: string,
 ): Promise<AntigravityTokenExchangeResult> {
   if (!codeVerifier && !clientSecret) {
-    throw new Error("ANTIGRAVITY_CLIENT_SECRET is required when PKCE is not enabled.")
+    throw new Error('ANTIGRAVITY_CLIENT_SECRET is required when PKCE is not enabled.')
   }
 
   const params: Record<string, string> = {
     client_id: clientId,
     code,
-    grant_type: "authorization_code",
+    grant_type: 'authorization_code',
     redirect_uri: redirectUri,
   }
 
@@ -147,9 +143,9 @@ export async function exchangeCode(
   }
 
   const response = await fetch(GOOGLE_TOKEN_URL, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: new URLSearchParams(params),
   })
@@ -157,7 +153,7 @@ export async function exchangeCode(
   if (!response.ok) {
     const errorText = await response.text()
     let errorMessage = `Token exchange failed: ${response.status}`
-    
+
     try {
       const errorData = JSON.parse(errorText)
       if (errorData.error) {
@@ -169,7 +165,7 @@ export async function exchangeCode(
     } catch (e) {
       errorMessage += ` - ${errorText}`
     }
-    
+
     throw new Error(errorMessage)
   }
 
@@ -181,16 +177,18 @@ export async function exchangeCode(
   }
 
   if (!data.access_token) {
-    throw new Error("Token exchange failed: No access token in response")
+    throw new Error('Token exchange failed: No access token in response')
   }
 
   if (!data.refresh_token) {
-    console.warn("Token exchange warning: No refresh token received. You may need to re-authenticate soon.")
+    console.warn(
+      'Token exchange warning: No refresh token received. You may need to re-authenticate soon.',
+    )
   }
 
   return {
     access_token: data.access_token,
-    refresh_token: data.refresh_token || "",
+    refresh_token: data.refresh_token || '',
     expires_in: data.expires_in,
     token_type: data.token_type,
   }
@@ -202,9 +200,7 @@ export async function exchangeCode(
  * @param accessToken - Valid access token
  * @returns User info containing email
  */
-export async function fetchUserInfo(
-  accessToken: string
-): Promise<AntigravityUserInfo> {
+export async function fetchUserInfo(accessToken: string): Promise<AntigravityUserInfo> {
   const response = await fetch(`${GOOGLE_USERINFO_URL}?alt=json`, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -222,7 +218,7 @@ export async function fetchUserInfo(
   }
 
   return {
-    email: data.email || "",
+    email: data.email || '',
     name: data.name,
     picture: data.picture,
   }
@@ -235,13 +231,10 @@ export interface CallbackServerHandle {
   close: () => void
 }
 
-export function startCallbackServer(
-  timeoutMs: number = 5 * 60 * 1000
-): CallbackServerHandle {
+export function startCallbackServer(timeoutMs: number = 5 * 60 * 1000): CallbackServerHandle {
   let server: ReturnType<typeof Bun.serve> | null = null
   let timeoutId: ReturnType<typeof setTimeout> | null = null
   let resolveCallback: ((result: CallbackResult) => void) | null = null
-  let rejectCallback: ((error: Error) => void) | null = null
 
   const cleanup = () => {
     if (timeoutId) {
@@ -257,18 +250,18 @@ export function startCallbackServer(
   const fetchHandler = (request: Request): Response => {
     const url = new URL(request.url)
 
-    if (url.pathname === "/oauth-callback") {
-      const code = url.searchParams.get("code") || ""
-      const state = url.searchParams.get("state") || ""
-      const error = url.searchParams.get("error") || undefined
+    if (url.pathname === '/oauth-callback') {
+      const code = url.searchParams.get('code') || ''
+      const state = url.searchParams.get('state') || ''
+      const error = url.searchParams.get('error') || undefined
 
       let responseBody: string
       if (code && !error) {
         responseBody =
-          "<html><body><h1>Login successful</h1><p>You can close this window.</p></body></html>"
+          '<html><body><h1>Login successful</h1><p>You can close this window.</p></body></html>'
       } else {
         responseBody =
-          "<html><body><h1>Login failed</h1><p>Please check the CLI output.</p></body></html>"
+          '<html><body><h1>Login failed</h1><p>Please check the CLI output.</p></body></html>'
       }
 
       setTimeout(() => {
@@ -280,11 +273,11 @@ export function startCallbackServer(
 
       return new Response(responseBody, {
         status: 200,
-        headers: { "Content-Type": "text/html" },
+        headers: { 'Content-Type': 'text/html' },
       })
     }
 
-    return new Response("Not Found", { status: 404 })
+    return new Response('Not Found', { status: 404 })
   }
 
   try {
@@ -303,13 +296,12 @@ export function startCallbackServer(
   const redirectUri = `http://localhost:${actualPort}/oauth-callback`
 
   const waitForCallback = (): Promise<CallbackResult> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       resolveCallback = resolve
-      rejectCallback = reject
 
       timeoutId = setTimeout(() => {
         cleanup()
-        reject(new Error("OAuth callback timeout"))
+        resolve({ code: '', state: '', error: 'timeout' })
       }, timeoutMs)
     })
   }
@@ -327,52 +319,59 @@ export async function performOAuthFlow(
   openBrowser?: (url: string) => Promise<void>,
   clientId: string = ANTIGRAVITY_CLIENT_ID,
   clientSecret: string = ANTIGRAVITY_CLIENT_SECRET,
-  usePKCE: boolean = false
+  usePKCE: boolean = false,
 ): Promise<{
   tokens: AntigravityTokenExchangeResult
   userInfo: AntigravityUserInfo
   state: string
 }> {
   const serverHandle = startCallbackServer()
-  
+
   try {
     const auth = await buildAuthURL(projectId, clientId, serverHandle.port, usePKCE)
-    
+
     console.log(`[google-auth] Opening OAuth URL in browser: ${auth.url.substring(0, 50)}...`)
     console.log(`[google-auth] Using ${usePKCE ? 'PKCE' : 'standard'} OAuth flow`)
-    
+
     if (openBrowser) {
       await openBrowser(auth.url)
     } else {
       console.log(`[google-auth] Please open this URL in your browser:`)
       console.log(auth.url)
     }
-    
+
     console.log(`[google-auth] Waiting for callback on port ${serverHandle.port}...`)
     const callback = await serverHandle.waitForCallback()
-    
+
     if (callback.error) {
-      const error = callback.error === 'access_denied'
-        ? 'Authentication denied by user'
-        : `OAuth error: ${callback.error}`
+      const error =
+        callback.error === 'access_denied'
+          ? 'Authentication denied by user'
+          : `OAuth error: ${callback.error}`
       throw new Error(error)
     }
-    
+
     if (!callback.code) {
-      throw new Error("No authorization code received")
+      throw new Error('No authorization code received')
     }
-    
+
     if (callback.state !== auth.state) {
-      throw new Error("State mismatch - possible CSRF attack")
+      throw new Error('State mismatch - possible CSRF attack')
     }
-    
+
     const redirectUri = `http://localhost:${serverHandle.port}/oauth-callback`
     const codeVerifier = auth.pkce?.codeVerifier
-    const tokens = await exchangeCode(callback.code, redirectUri, clientId, clientSecret, codeVerifier)
+    const tokens = await exchangeCode(
+      callback.code,
+      redirectUri,
+      clientId,
+      clientSecret,
+      codeVerifier,
+    )
     const userInfo = await fetchUserInfo(tokens.access_token)
-    
+
     console.log(`[google-auth] Authentication successful for: ${userInfo.email}`)
-    
+
     return { tokens, userInfo, state: auth.state }
   } catch (err) {
     serverHandle.close()

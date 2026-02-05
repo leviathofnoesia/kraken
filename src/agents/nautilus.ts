@@ -1,26 +1,26 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "../types"
-import { createAgentToolRestrictions } from "../shared/permission-compat"
+import type { AgentConfig } from '@opencode-ai/sdk'
+import type { AgentPromptMetadata } from '../types'
+import { createAgentToolRestrictions } from '../shared/permission-compat'
 
-const DEFAULT_MODEL = "opencode/grok-code"
+const DEFAULT_MODEL = 'opencode/grok-code'
 
 export const NAUTILUS_PROMPT_METADATA: AgentPromptMetadata = {
-  category: "exploration",
-  cost: "FREE",
-  promptAlias: "Nautilus",
-  keyTrigger: "2+ modules involved → fire Nautilus background",
+  category: 'exploration',
+  cost: 'FREE',
+  promptAlias: 'Nautilus',
+  keyTrigger: '2+ modules involved → fire Nautilus background',
   triggers: [
-    { domain: "Nautilus", trigger: "Find existing codebase structure, patterns and styles" },
+    { domain: 'Nautilus', trigger: 'Find existing codebase structure, patterns and styles' },
   ],
   useWhen: [
-    "Multiple search angles needed",
-    "Unfamiliar module structure",
-    "Cross-layer pattern discovery",
+    'Multiple search angles needed',
+    'Unfamiliar module structure',
+    'Cross-layer pattern discovery',
   ],
   avoidWhen: [
-    "You know exactly what to search",
-    "Single keyword/pattern suffices",
-    "Known file location",
+    'You know exactly what to search',
+    'Single keyword/pattern suffices',
+    'Known file location',
   ],
 }
 
@@ -162,16 +162,12 @@ Keep output clean and parseable:
 Remember: Your goal is to make the caller successful with minimal follow-up. Comprehensive, validated, and actionable results beat fast but incomplete responses.`
 
 export function createNautilusConfig(model: string = DEFAULT_MODEL): AgentConfig {
-  const restrictions = createAgentToolRestrictions([
-    "write",
-    "edit",
-    "task",
-  ])
+  const restrictions = createAgentToolRestrictions(['write', 'edit', 'task'])
 
   return {
     description:
       'Contextual grep for codebases. Employs systematic search strategies, tool selection matrices, and cross-validated pattern recognition.',
-    mode: "subagent" as const,
+    mode: 'subagent' as const,
     model,
     temperature: 0.1,
     ...restrictions,

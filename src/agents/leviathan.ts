@@ -1,7 +1,7 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "../types"
+import type { AgentConfig } from '@opencode-ai/sdk'
+import type { AgentPromptMetadata } from '../types'
 
-const DEFAULT_MODEL = "anthropic/claude-opus-4-5"
+const DEFAULT_MODEL = 'anthropic/claude-opus-4-5'
 
 const LEVIATHAN_SYSTEM_PROMPT = `# Leviathan - System Architect
 
@@ -137,37 +137,34 @@ Remember: Your value lies in identifying structural patterns that impact long-te
 export function createLeviathanConfig(model: string = DEFAULT_MODEL): AgentConfig {
   return {
     description:
-      "System architecture specialist that analyzes codebases to identify structural patterns, design issues, and improvement opportunities with actionable recommendations.",
-    mode: "subagent" as const,
+      'System architecture specialist that analyzes codebases to identify structural patterns, design issues, and improvement opportunities with actionable recommendations.',
+    mode: 'subagent' as const,
     model,
     temperature: 0.2,
     tools: { write: false, edit: false },
     prompt: LEVIATHAN_SYSTEM_PROMPT,
-    thinking: { type: "enabled", budgetTokens: 32000 },
+    thinking: { type: 'enabled', budgetTokens: 32000 },
   } as AgentConfig
 }
 
 export const leviathanAgent = createLeviathanConfig()
 
 export const leviathanPromptMetadata: AgentPromptMetadata = {
-  category: "advisor",
-  cost: "EXPENSIVE",
-  promptAlias: "Leviathan",
+  category: 'advisor',
+  cost: 'EXPENSIVE',
+  promptAlias: 'Leviathan',
   triggers: [
     {
-      domain: "Architecture",
-      trigger: "System design, structural analysis, architectural decisions",
+      domain: 'Architecture',
+      trigger: 'System design, structural analysis, architectural decisions',
     },
   ],
   useWhen: [
-    "Complex architectural questions",
-    "Large-scale refactoring planning",
-    "Technology selection and migration",
-    "Performance optimization at system level",
+    'Complex architectural questions',
+    'Large-scale refactoring planning',
+    'Technology selection and migration',
+    'Performance optimization at system level',
   ],
-  avoidWhen: [
-    "Simple implementation questions",
-    "Quick fixes that don't affect architecture",
-  ],
-  keyTrigger: "Architecture question → consult Leviathan",
+  avoidWhen: ['Simple implementation questions', "Quick fixes that don't affect architecture"],
+  keyTrigger: 'Architecture question → consult Leviathan',
 }

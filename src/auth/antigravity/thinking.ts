@@ -18,7 +18,7 @@ import {
   ANTIGRAVITY_MODEL_CONFIGS,
   REASONING_EFFORT_BUDGET_MAP,
   type AntigravityModelConfig,
-} from "./constants"
+} from './constants'
 
 /**
  * Represents a single thinking/reasoning block extracted from Gemini response
@@ -114,19 +114,19 @@ export const DEFAULT_THINKING_BUDGET = 16000
  * @returns True if model should include thinking blocks
  */
 export function shouldIncludeThinking(model: string): boolean {
-  if (!model || typeof model !== "string") {
+  if (!model || typeof model !== 'string') {
     return false
   }
 
   const lowerModel = model.toLowerCase()
 
   // Check for -high suffix (primary indicator of thinking capability)
-  if (lowerModel.endsWith("-high")) {
+  if (lowerModel.endsWith('-high')) {
     return true
   }
 
   // Also check for explicit thinking in model name
-  if (lowerModel.includes("thinking")) {
+  if (lowerModel.includes('thinking')) {
     return true
   }
 
@@ -143,16 +143,16 @@ export function shouldIncludeThinking(model: string): boolean {
  * @returns True if model supports thinking/reasoning
  */
 export function isThinkingCapableModel(model: string): boolean {
-  if (!model || typeof model !== "string") {
+  if (!model || typeof model !== 'string') {
     return false
   }
 
   const lowerModel = model.toLowerCase()
 
   return (
-    lowerModel.includes("thinking") ||
-    lowerModel.includes("gemini-3") ||
-    lowerModel.endsWith("-high")
+    lowerModel.includes('thinking') ||
+    lowerModel.includes('gemini-3') ||
+    lowerModel.endsWith('-high')
   )
 }
 
@@ -172,7 +172,7 @@ function isThinkingPart(part: GeminiPart): boolean {
   }
 
   // Anthropic-style: type field
-  if (part.type === "thinking" || part.type === "reasoning") {
+  if (part.type === 'thinking' || part.type === 'reasoning') {
     return true
   }
 
@@ -195,7 +195,7 @@ function hasValidSignature(part: GeminiPart): boolean {
   }
 
   // Anthropic-style signature
-  if ((part.type === "thinking" || part.type === "reasoning") && part.signature) {
+  if ((part.type === 'thinking' || part.type === 'reasoning') && part.signature) {
     return true
   }
 
@@ -225,13 +225,13 @@ export function extractThinkingBlocks(response: GeminiResponse): ThinkingExtract
 
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i]
-        if (!part || typeof part !== "object") {
+        if (!part || typeof part !== 'object') {
           continue
         }
 
         if (isThinkingPart(part)) {
           const block: ThinkingBlock = {
-            text: part.text || "",
+            text: part.text || '',
             index: thinkingBlocks.length,
           }
 
@@ -252,13 +252,13 @@ export function extractThinkingBlocks(response: GeminiResponse): ThinkingExtract
   if (response.content && Array.isArray(response.content)) {
     for (let i = 0; i < response.content.length; i++) {
       const item = response.content[i]
-      if (!item || typeof item !== "object") {
+      if (!item || typeof item !== 'object') {
         continue
       }
 
-      if (item.type === "thinking" || item.type === "reasoning") {
+      if (item.type === 'thinking' || item.type === 'reasoning') {
         thinkingBlocks.push({
-          text: item.text || "",
+          text: item.text || '',
           signature: item.signature,
           index: thinkingBlocks.length,
         })
@@ -267,7 +267,7 @@ export function extractThinkingBlocks(response: GeminiResponse): ThinkingExtract
   }
 
   // Combine all thinking text
-  const combinedThinking = thinkingBlocks.map((b) => b.text).join("\n\n")
+  const combinedThinking = thinkingBlocks.map((b) => b.text).join('\n\n')
 
   return {
     thinkingBlocks,
@@ -295,15 +295,15 @@ export function extractThinkingBlocks(response: GeminiResponse): ThinkingExtract
  */
 export function formatThinkingForOpenAI(
   thinking: ThinkingBlock[],
-): Array<{ type: "reasoning"; text: string; signature?: string }> {
+): Array<{ type: 'reasoning'; text: string; signature?: string }> {
   if (!thinking || !Array.isArray(thinking) || thinking.length === 0) {
     return []
   }
 
   return thinking.map((block) => {
-    const formatted: { type: "reasoning"; text: string; signature?: string } = {
-      type: "reasoning",
-      text: block.text || "",
+    const formatted: { type: 'reasoning'; text: string; signature?: string } = {
+      type: 'reasoning',
+      text: block.text || '',
     }
 
     if (block.signature) {
@@ -324,23 +324,23 @@ export function formatThinkingForOpenAI(
  * @returns Transformed candidate with reasoning-formatted thinking
  */
 export function transformCandidateThinking(candidate: GeminiCandidate): GeminiCandidate {
-  if (!candidate || typeof candidate !== "object") {
+  if (!candidate || typeof candidate !== 'object') {
     return candidate
   }
 
   const content = candidate.content
-  if (!content || typeof content !== "object" || !Array.isArray(content.parts)) {
+  if (!content || typeof content !== 'object' || !Array.isArray(content.parts)) {
     return candidate
   }
 
   const thinkingTexts: string[] = []
   const transformedParts = content.parts.map((part) => {
-    if (part && typeof part === "object" && part.thought === true) {
-      thinkingTexts.push(part.text || "")
+    if (part && typeof part === 'object' && part.thought === true) {
+      thinkingTexts.push(part.text || '')
       // Transform to reasoning format
       return {
         ...part,
-        type: "reasoning" as const,
+        type: 'reasoning' as const,
         thought: undefined, // Remove Gemini-specific field
       }
     }
@@ -354,7 +354,7 @@ export function transformCandidateThinking(candidate: GeminiCandidate): GeminiCa
 
   // Add combined reasoning content for convenience
   if (thinkingTexts.length > 0) {
-    result.reasoning_content = thinkingTexts.join("\n\n")
+    result.reasoning_content = thinkingTexts.join('\n\n')
   }
 
   return result
@@ -376,10 +376,10 @@ export function transformAnthropicThinking(
   }
 
   return content.map((block) => {
-    if (block && typeof block === "object" && block.type === "thinking") {
+    if (block && typeof block === 'object' && block.type === 'thinking') {
       return {
-        type: "reasoning",
-        text: block.text || "",
+        type: 'reasoning',
+        text: block.text || '',
         ...(block.signature ? { signature: block.signature } : {}),
       }
     }
@@ -402,7 +402,7 @@ export function filterUnsignedThinkingBlocks(parts: GeminiPart[]): GeminiPart[] 
   }
 
   return parts.filter((part) => {
-    if (!part || typeof part !== "object") {
+    if (!part || typeof part !== 'object') {
       return true
     }
 
@@ -426,7 +426,7 @@ export function filterUnsignedThinkingBlocks(parts: GeminiPart[]): GeminiPart[] 
  * @returns Transformed response with standardized reasoning format
  */
 export function transformResponseThinking(response: GeminiResponse): GeminiResponse {
-  if (!response || typeof response !== "object") {
+  if (!response || typeof response !== 'object') {
     return response
   }
 
@@ -464,7 +464,7 @@ export interface ThinkingConfig {
  * @returns Normalized configuration or undefined
  */
 export function normalizeThinkingConfig(config: unknown): ThinkingConfig | undefined {
-  if (!config || typeof config !== "object") {
+  if (!config || typeof config !== 'object') {
     return undefined
   }
 
@@ -473,8 +473,8 @@ export function normalizeThinkingConfig(config: unknown): ThinkingConfig | undef
   const includeRaw = record.includeThoughts ?? record.include_thoughts
 
   const thinkingBudget =
-    typeof budgetRaw === "number" && Number.isFinite(budgetRaw) ? budgetRaw : undefined
-  const includeThoughts = typeof includeRaw === "boolean" ? includeRaw : undefined
+    typeof budgetRaw === 'number' && Number.isFinite(budgetRaw) ? budgetRaw : undefined
+  const includeThoughts = typeof includeRaw === 'boolean' ? includeRaw : undefined
 
   const enableThinking = thinkingBudget !== undefined && thinkingBudget > 0
   const finalInclude = enableThinking ? (includeThoughts ?? false) : false
@@ -519,24 +519,24 @@ export function extractThinkingConfig(
   const thinkingConfig =
     generationConfig?.thinkingConfig ?? extraBody?.thinkingConfig ?? requestPayload.thinkingConfig
 
-  if (thinkingConfig && typeof thinkingConfig === "object") {
+  if (thinkingConfig && typeof thinkingConfig === 'object') {
     const config = thinkingConfig as Record<string, unknown>
     return {
       includeThoughts: Boolean(config.includeThoughts),
       thinkingBudget:
-        typeof config.thinkingBudget === "number" ? config.thinkingBudget : DEFAULT_THINKING_BUDGET,
+        typeof config.thinkingBudget === 'number' ? config.thinkingBudget : DEFAULT_THINKING_BUDGET,
     }
   }
 
   // Convert Anthropic-style "thinking" option: { type: "enabled", budgetTokens: N }
   const anthropicThinking = extraBody?.thinking ?? requestPayload.thinking
-  if (anthropicThinking && typeof anthropicThinking === "object") {
+  if (anthropicThinking && typeof anthropicThinking === 'object') {
     const thinking = anthropicThinking as Record<string, unknown>
-    if (thinking.type === "enabled" || thinking.budgetTokens) {
+    if (thinking.type === 'enabled' || thinking.budgetTokens) {
       return {
         includeThoughts: true,
         thinkingBudget:
-          typeof thinking.budgetTokens === "number"
+          typeof thinking.budgetTokens === 'number'
             ? thinking.budgetTokens
             : DEFAULT_THINKING_BUDGET,
       }
@@ -545,10 +545,10 @@ export function extractThinkingConfig(
 
   // Extract reasoning_effort parameter (maps to thinking budget/level)
   const reasoningEffort = requestPayload.reasoning_effort ?? extraBody?.reasoning_effort
-  if (reasoningEffort && typeof reasoningEffort === "string") {
+  if (reasoningEffort && typeof reasoningEffort === 'string') {
     const budget = REASONING_EFFORT_BUDGET_MAP[reasoningEffort]
     if (budget !== undefined) {
-      if (reasoningEffort === "none") {
+      if (reasoningEffort === 'none') {
         // Special marker: delete thinkingConfig entirely
         return { deleteThinkingConfig: true }
       }
@@ -605,9 +605,7 @@ export function resolveThinkingConfig(
  * @param model - Model identifier string (with or without provider prefix)
  * @returns Thinking configuration or undefined if not found
  */
-export function getModelThinkingConfig(
-  model: string,
-): AntigravityModelConfig | undefined {
+export function getModelThinkingConfig(model: string): AntigravityModelConfig | undefined {
   const normalized = normalizeModelId(model)
 
   // Exact match
@@ -616,20 +614,20 @@ export function getModelThinkingConfig(
   }
 
   // Pattern matching fallback for Gemini 3
-  if (normalized.includes("gemini-3")) {
+  if (normalized.includes('gemini-3')) {
     return {
-      thinkingType: "levels",
+      thinkingType: 'levels',
       min: 128,
       max: 32768,
       zeroAllowed: false,
-      levels: ["low", "high"],
+      levels: ['low', 'high'],
     }
   }
 
   // Pattern matching fallback for Gemini 2.5
-  if (normalized.includes("gemini-2.5")) {
+  if (normalized.includes('gemini-2.5')) {
     return {
-      thinkingType: "numeric",
+      thinkingType: 'numeric',
       min: 0,
       max: 24576,
       zeroAllowed: true,
@@ -637,9 +635,9 @@ export function getModelThinkingConfig(
   }
 
   // Pattern matching fallback for Claude via Antigravity
-  if (normalized.includes("claude")) {
+  if (normalized.includes('claude')) {
     return {
-      thinkingType: "numeric",
+      thinkingType: 'numeric',
       min: 1024,
       max: 200000,
       zeroAllowed: false,
@@ -674,15 +672,15 @@ export function budgetToLevel(budget: number, model: string): string {
 
   // Default fallback
   if (!config?.levels) {
-    return "medium"
+    return 'medium'
   }
 
   // Map budgets to levels
   const budgetMap: Record<number, string> = {
-    512: "minimal",
-    1024: "low",
-    8192: "medium",
-    24576: "high",
+    512: 'minimal',
+    1024: 'low',
+    8192: 'medium',
+    24576: 'high',
   }
 
   // Return matching level or highest available
@@ -690,7 +688,7 @@ export function budgetToLevel(budget: number, model: string): string {
     return budgetMap[budget]
   }
 
-  return config.levels[config.levels.length - 1] || "high"
+  return config.levels[config.levels.length - 1] || 'high'
 }
 
 /**
@@ -713,10 +711,10 @@ export function applyThinkingConfigToRequest(
   config: ThinkingConfigInput,
 ): void {
   // Handle delete marker
-  if ("deleteThinkingConfig" in config && config.deleteThinkingConfig) {
-    if (requestBody.request && typeof requestBody.request === "object") {
+  if ('deleteThinkingConfig' in config && config.deleteThinkingConfig) {
+    if (requestBody.request && typeof requestBody.request === 'object') {
       const req = requestBody.request as Record<string, unknown>
-      if (req.generationConfig && typeof req.generationConfig === "object") {
+      if (req.generationConfig && typeof req.generationConfig === 'object') {
         const genConfig = req.generationConfig as Record<string, unknown>
         delete genConfig.thinkingConfig
       }
@@ -730,11 +728,11 @@ export function applyThinkingConfigToRequest(
   }
 
   // Ensure request.generationConfig.thinkingConfig exists
-  if (!requestBody.request || typeof requestBody.request !== "object") {
+  if (!requestBody.request || typeof requestBody.request !== 'object') {
     return
   }
   const req = requestBody.request as Record<string, unknown>
-  if (!req.generationConfig || typeof req.generationConfig !== "object") {
+  if (!req.generationConfig || typeof req.generationConfig !== 'object') {
     req.generationConfig = {}
   }
   const genConfig = req.generationConfig as Record<string, unknown>
@@ -743,9 +741,9 @@ export function applyThinkingConfigToRequest(
 
   thinkingConfig.include_thoughts = true
 
-  if (modelConfig.thinkingType === "numeric") {
+  if (modelConfig.thinkingType === 'numeric') {
     thinkingConfig.thinkingBudget = (config as ThinkingConfig).thinkingBudget
-  } else if (modelConfig.thinkingType === "levels") {
+  } else if (modelConfig.thinkingType === 'levels') {
     const budget = (config as ThinkingConfig).thinkingBudget ?? DEFAULT_THINKING_BUDGET
     let level = budgetToLevel(budget, model)
     // Convert uppercase to lowercase (think-mode hook sends "HIGH")

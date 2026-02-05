@@ -1,41 +1,41 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import { isGptModel } from "./types"
-import { createAgentToolRestrictions } from "../shared/permission-compat"
+import type { AgentConfig } from '@opencode-ai/sdk'
+import { isGptModel } from './types'
+import { createAgentToolRestrictions } from '../shared/permission-compat'
 
-const DEFAULT_MODEL = "anthropic/claude-opus-4-5"
+const DEFAULT_MODEL = 'anthropic/claude-opus-4-5'
 
 export const ATLAS_PROMPT_METADATA = {
-  category: "advisor",
-  cost: "EXPENSIVE",
-  promptAlias: "Atlas",
+  category: 'advisor',
+  cost: 'EXPENSIVE',
+  promptAlias: 'Atlas',
   triggers: [
     {
-      domain: "Architecture",
-      trigger: "System design, structural analysis, architectural decisions, trade-offs",
+      domain: 'Architecture',
+      trigger: 'System design, structural analysis, architectural decisions, trade-offs',
     },
     {
-      domain: "Design Patterns",
-      trigger: "Pattern recognition, anti-patterns detection, design decisions",
+      domain: 'Design Patterns',
+      trigger: 'Pattern recognition, anti-patterns detection, design decisions',
     },
   ],
   useWhen: [
-    "Complex architectural questions",
-    "Large-scale refactoring planning",
-    "Technology selection and migration",
-    "Performance optimization at system level",
-    "Multi-system tradeoffs",
-    "Structural issues (God classes, circular dependencies)",
-    "Missing abstractions",
-    "Design pattern selection",
+    'Complex architectural questions',
+    'Large-scale refactoring planning',
+    'Technology selection and migration',
+    'Performance optimization at system level',
+    'Multi-system tradeoffs',
+    'Structural issues (God classes, circular dependencies)',
+    'Missing abstractions',
+    'Design pattern selection',
   ],
   avoidWhen: [
-    "Simple implementation questions",
+    'Simple implementation questions',
     "Quick fixes that don't affect architecture",
     "Questions answerable from code you've read",
-    "Trivial decisions (variable names, formatting)",
-    "Things you can infer from existing code patterns",
+    'Trivial decisions (variable names, formatting)',
+    'Things you can infer from existing code patterns',
   ],
-  keyTrigger: "Architecture/design decision → consult Atlas",
+  keyTrigger: 'Architecture/design decision → consult Atlas',
 }
 
 const ATLAS_SYSTEM_PROMPT = `# Atlas - System Architecture Advisor
@@ -235,41 +235,41 @@ export function createAtlasConfig(
   options?: {
     availableAgents?: string[]
     availableTools?: string[]
-  }
+  },
 ): AgentConfig {
-  let dynamicSections = ""
+  let dynamicSections = ''
 
   if (options?.availableAgents && options.availableAgents.length > 0) {
     const { availableAgents, availableTools = [] } = options
 
     const sections = [
-      "\n\n## Available Resources\n",
-      "### Available Agents\n",
-      availableAgents.map((agent, idx) => `${idx + 1}. ${agent}`).join("\n"),
-      "\n",
-      "### Available Tools\n",
-      availableTools.map((tool, idx) => `${idx + 1}. ${tool}`).join("\n"),
+      '\n\n## Available Resources\n',
+      '### Available Agents\n',
+      availableAgents.map((agent, idx) => `${idx + 1}. ${agent}`).join('\n'),
+      '\n',
+      '### Available Tools\n',
+      availableTools.map((tool, idx) => `${idx + 1}. ${tool}`).join('\n'),
     ].filter((s) => s && s.trim().length > 0)
 
-    dynamicSections = "\n\n" + sections.join("\n")
+    dynamicSections = '\n\n' + sections.join('\n')
   }
 
   const finalPrompt = ATLAS_SYSTEM_PROMPT + dynamicSections
 
   const base = {
     description:
-      "System architecture specialist combining first-principles reasoning with structural analysis. Merged Maelstrom (strategic) + Leviathan (structural) for comprehensive guidance.",
-    mode: "subagent" as const,
+      'System architecture specialist combining first-principles reasoning with structural analysis. Merged Maelstrom (strategic) + Leviathan (structural) for comprehensive guidance.',
+    mode: 'subagent' as const,
     model,
     temperature: 0.1,
     prompt: finalPrompt,
   } as AgentConfig
 
   if (isGptModel(model)) {
-    return { ...base, reasoningEffort: "medium", textVerbosity: "high" } as AgentConfig
+    return { ...base, reasoningEffort: 'medium', textVerbosity: 'high' } as AgentConfig
   }
 
-  return { ...base, thinking: { type: "enabled", budgetTokens: 32000 } } as AgentConfig
+  return { ...base, thinking: { type: 'enabled', budgetTokens: 32000 } } as AgentConfig
 }
 
 export const atlasAgent = createAtlasConfig()

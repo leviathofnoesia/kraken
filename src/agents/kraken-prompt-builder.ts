@@ -1,4 +1,4 @@
-import type { AgentPromptMetadata, AgentCategory, AgentCost, DelegationTrigger } from "./types"
+import type { AgentPromptMetadata, AgentCost } from './types'
 
 export interface AvailableAgent {
   name: string
@@ -8,56 +8,37 @@ export interface AvailableAgent {
 
 export interface AvailableTool {
   name: string
-  category: "lsp" | "ast" | "search" | "session" | "command" | "other"
+  category: 'lsp' | 'ast' | 'search' | 'session' | 'command' | 'other'
 }
 
 export interface AvailableSkill {
   name: string
   description: string
-  location: "user" | "project" | "plugin"
+  location: 'user' | 'project' | 'plugin'
 }
 
 export function categorizeTools(toolNames: string[]): AvailableTool[] {
   return toolNames.map((name) => {
-    let category: AvailableTool["category"] = "other"
-    if (name.startsWith("lsp_")) {
-      category = "lsp"
-    } else if (name.startsWith("ast_grep")) {
-      category = "ast"
-    } else if (name === "grep" || name === "glob") {
-      category = "search"
-    } else if (name.startsWith("session_")) {
-      category = "session"
-    } else if (name === "slashcommand") {
-      category = "command"
+    let category: AvailableTool['category'] = 'other'
+    if (name.startsWith('lsp_')) {
+      category = 'lsp'
+    } else if (name.startsWith('ast_grep')) {
+      category = 'ast'
+    } else if (name === 'grep' || name === 'glob') {
+      category = 'search'
+    } else if (name.startsWith('session_')) {
+      category = 'session'
+    } else if (name === 'slashcommand') {
+      category = 'command'
     }
     return { name, category }
   })
 }
 
-function formatToolsForPrompt(tools: AvailableTool[]): string {
-  const lspTools = tools.filter((t) => t.category === "lsp")
-  const astTools = tools.filter((t) => t.category === "ast")
-  const searchTools = tools.filter((t) => t.category === "search")
-
-  const parts: string[] = []
-
-  if (searchTools.length > 0) {
-    parts.push(...searchTools.map((t) => `\`${t.name}\``))
-  }
-
-  if (lspTools.length > 0) {
-    parts.push("`lsp_*`")
-  }
-
-  if (astTools.length > 0) {
-    parts.push("`ast_grep`")
-  }
-
-  return parts.join(", ")
-}
-
-export function buildKeyTriggersSection(agents: AvailableAgent[], skills: AvailableSkill[] = []): string {
+export function buildKeyTriggersSection(
+  agents: AvailableAgent[],
+  skills: AvailableSkill[] = [],
+): string {
   const keyTriggers = agents
     .filter((a) => a.metadata.keyTrigger)
     .map((a) => `- ${a.metadata.keyTrigger}`)
@@ -68,13 +49,13 @@ export function buildKeyTriggersSection(agents: AvailableAgent[], skills: Availa
 
   const allTriggers = [...keyTriggers, ...skillTriggers]
 
-  if (allTriggers.length === 0) return ""
+  if (allTriggers.length === 0) return ''
 
   return `### Key Triggers (Check BEFORE Classification)
 
 **Priority: Skills → Tools → Agents**
 
-${allTriggers.join("\n")}
+${allTriggers.join('\n')}
 - **GitHub mention** → Work request: investigate → implement → create PR`
 }
 
@@ -88,73 +69,73 @@ function extractTriggerFromDescription(description: string): string {
   const useWhenMatch = description.match(/Use (?:this )?when[:\s]+([^.]+)/i)
   if (useWhenMatch) return useWhenMatch[1].trim()
 
-  return description.split(".")[0] || description
+  return description.split('.')[0] || description
 }
 
 export function buildToolSelectionTable(
   agents: AvailableAgent[],
-  tools: AvailableTool[] = [],
-  skills: AvailableSkill[] = []
+  _tools: AvailableTool[] = [],
+  skills: AvailableSkill[] = [],
 ): string {
   const rows: string[] = [
-    "### Tool & Skill Selection:",
-    "",
-    "**Priority Order**: Skills → Direct Tools → Agents",
-    "",
+    '### Tool & Skill Selection:',
+    '',
+    '**Priority Order**: Skills → Direct Tools → Agents',
+    '',
   ]
 
   if (skills.length > 0) {
-    rows.push("#### Skills (Invoke First If Matching)")
-    rows.push("")
-    rows.push("| Skill | When to Use |")
-    rows.push("|-------|-------------|")
+    rows.push('#### Skills (Invoke First If Matching)')
+    rows.push('')
+    rows.push('| Skill | When to Use |')
+    rows.push('|-------|-------------|')
     for (const skill of skills) {
       const shortDesc = extractTriggerFromDescription(skill.description)
       rows.push(`| \`${skill.name}\` | ${shortDesc} |`)
     }
-    rows.push("")
+    rows.push('')
   }
 
-  rows.push("#### Kraken Code Tools")
-  rows.push("")
-  rows.push("| Resource | When to Use |")
-  rows.push("|----------|-------------|")
+  rows.push('#### Kraken Code Tools')
+  rows.push('')
+  rows.push('| Resource | When to Use |')
+  rows.push('|----------|-------------|')
 
   const toolPriority = [
-    { name: "semantic-search", desc: "Natural language code understanding" },
-    { name: "grep", desc: "Pattern/text search" },
-    { name: "glob", desc: "File name patterns" },
-    { name: "read", desc: "Read file contents" },
-    { name: "write/edit", desc: "Create or modify files" },
-    { name: "bash", desc: "Shell commands" },
-    { name: "lsp_*", desc: "Language server navigation" },
-    { name: "ast_grep", desc: "Structural code patterns" },
+    { name: 'semantic-search', desc: 'Natural language code understanding' },
+    { name: 'grep', desc: 'Pattern/text search' },
+    { name: 'glob', desc: 'File name patterns' },
+    { name: 'read', desc: 'Read file contents' },
+    { name: 'write/edit', desc: 'Create or modify files' },
+    { name: 'bash', desc: 'Shell commands' },
+    { name: 'lsp_*', desc: 'Language server navigation' },
+    { name: 'ast_grep', desc: 'Structural code patterns' },
   ]
 
   for (const tool of toolPriority) {
     rows.push(`| \`${tool.name}\` | ${tool.desc} |`)
   }
 
-  rows.push("")
+  rows.push('')
 
   const costOrder: Record<AgentCost, number> = { FREE: 0, CHEAP: 1, EXPENSIVE: 2 }
   const sortedAgents = [...agents]
-    .filter((a) => a.metadata.category !== "utility")
+    .filter((a) => a.metadata.category !== 'utility')
     .sort((a, b) => costOrder[a.metadata.cost] - costOrder[b.metadata.cost])
 
-  rows.push("#### Sea-Themed Agents (Delegate)")
-  rows.push("")
+  rows.push('#### Sea-Themed Agents (Delegate)')
+  rows.push('')
   for (const agent of sortedAgents) {
-    const shortDesc = agent.description.split(".")[0] || agent.description
+    const shortDesc = agent.description.split('.')[0] || agent.description
     rows.push(`| \`${agent.name}\` | ${shortDesc} |`)
   }
 
-  return rows.join("\n")
+  return rows.join('\n')
 }
 
 export function buildExploreSection(agents: AvailableAgent[]): string {
-  const exploreAgent = agents.find((a) => a.metadata.category === "exploration")
-  if (!exploreAgent) return ""
+  const exploreAgent = agents.find((a) => a.metadata.category === 'exploration')
+  if (!exploreAgent) return ''
 
   const useWhen = exploreAgent.metadata.useWhen || []
   const avoidWhen = exploreAgent.metadata.avoidWhen || []
@@ -165,13 +146,13 @@ Use for systematic pattern discovery. Fire liberally for multi-angle searches.
 
 | Use Direct Tools | Use Nautilus Agent |
 |------------------|-------------------|
-${avoidWhen.map((w) => `| ${w} |  |`).join("\n")}
-${useWhen.map((w) => `|  | ${w} |`).join("\n")}`
+${avoidWhen.map((w) => `| ${w} |  |`).join('\n')}
+${useWhen.map((w) => `|  | ${w} |`).join('\n')}`
 }
 
 export function buildLibrarianSection(agents: AvailableAgent[]): string {
-  const librarianAgent = agents.find((a) => a.name === "Abyssal")
-  if (!librarianAgent) return ""
+  const librarianAgent = agents.find((a) => a.name === 'Abyssal')
+  if (!librarianAgent) return ''
 
   const useWhen = librarianAgent.metadata.useWhen || []
 
@@ -189,15 +170,15 @@ Search external references (docs, OSS, web). Fire proactively.
 | | OSS implementation examples |
 
 **Trigger phrases** (fire immediately):
-${useWhen.map((w) => `- "${w}"`).join("\n")}`
+${useWhen.map((w) => `- "${w}"`).join('\n')}`
 }
 
 export function buildDelegationTable(agents: AvailableAgent[]): string {
   const rows: string[] = [
-    "### Delegation Table:",
-    "",
-    "| Domain | Delegate To | Trigger |",
-    "|--------|-------------|---------|",
+    '### Delegation Table:',
+    '',
+    '| Domain | Delegate To | Trigger |',
+    '|--------|-------------|---------|',
   ]
 
   for (const agent of agents) {
@@ -206,12 +187,12 @@ export function buildDelegationTable(agents: AvailableAgent[]): string {
     }
   }
 
-  return rows.join("\n")
+  return rows.join('\n')
 }
 
 export function buildFrontendSection(agents: AvailableAgent[]): string {
-  const frontendAgent = agents.find((a) => a.name === "Coral")
-  if (!frontendAgent) return ""
+  const frontendAgent = agents.find((a) => a.name === 'Coral')
+  if (!frontendAgent) return ''
 
   return `### Visual Changes: Delegate to Coral
 
@@ -238,8 +219,8 @@ style, className, tailwind, color, background, border, shadow, margin, padding, 
 }
 
 export function buildOracleSection(agents: AvailableAgent[]): string {
-  const oracleAgent = agents.find((a) => a.name === "Maelstrom")
-  if (!oracleAgent) return ""
+  const oracleAgent = agents.find((a) => a.name === 'Maelstrom')
+  if (!oracleAgent) return ''
 
   const useWhen = oracleAgent.metadata.useWhen || []
   const avoidWhen = oracleAgent.metadata.avoidWhen || []
@@ -252,11 +233,11 @@ High-quality reasoning for complex decisions. Consultation only - no implementat
 
 | Trigger | Action |
 |---------|--------|
-${useWhen.map((w) => `| ${w} | Maelstrom FIRST, then implement |`).join("\n")}
+${useWhen.map((w) => `| ${w} | Maelstrom FIRST, then implement |`).join('\n')}
 
 #### When NOT to Consult
 
-${avoidWhen.map((w) => `- ${w}`).join("\n")}
+${avoidWhen.map((w) => `- ${w}`).join('\n')}
 
 #### Usage Pattern
 
@@ -289,9 +270,17 @@ export function buildAntiPatternsSection(): string {
 }
 
 export function buildAgentPrioritySection(agents: AvailableAgent[]): string {
-  if (agents.length === 0) return ""
+  if (agents.length === 0) return ''
 
-  const priorityOrder = ["Nautilus", "Abyssal", "Poseidon", "Scylla", "Maelstrom", "Leviathan", "Kraken"]
+  const priorityOrder = [
+    'Nautilus',
+    'Abyssal',
+    'Poseidon',
+    'Scylla',
+    'Maelstrom',
+    'Leviathan',
+    'Kraken',
+  ]
   const sortedAgents = [...agents].sort((a, b) => {
     const aIdx = priorityOrder.indexOf(a.name)
     const bIdx = priorityOrder.indexOf(b.name)
@@ -303,9 +292,9 @@ export function buildAgentPrioritySection(agents: AvailableAgent[]): string {
 
   const lines: string[] = []
   for (const agent of sortedAgents) {
-    const shortDesc = agent.description.split(".")[0] || agent.description
+    const shortDesc = agent.description.split('.')[0] || agent.description
     lines.push(`- **${agent.name}**: ${shortDesc}`)
   }
 
-  return lines.join("\n")
+  return lines.join('\n')
 }

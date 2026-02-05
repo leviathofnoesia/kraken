@@ -1,4 +1,4 @@
-import { confirm, select, isCancel } from "@clack/prompts"
+import { confirm, select, isCancel } from '@clack/prompts'
 
 export async function promptAddAnotherAccount(currentCount: number): Promise<boolean> {
   if (!process.stdout.isTTY) {
@@ -16,21 +16,21 @@ export async function promptAddAnotherAccount(currentCount: number): Promise<boo
   return result
 }
 
-export async function promptAccountTier(): Promise<"free" | "paid"> {
+export async function promptAccountTier(): Promise<'free' | 'paid'> {
   if (!process.stdout.isTTY) {
-    return "free"
+    return 'free'
   }
 
   const tier = await select({
-    message: "Select account tier",
+    message: 'Select account tier',
     options: [
-      { value: "free" as const, label: "Free" },
-      { value: "paid" as const, label: "Paid" },
+      { value: 'free' as const, label: 'Free' },
+      { value: 'paid' as const, label: 'Paid' },
     ],
   })
 
   if (isCancel(tier)) {
-    return "free"
+    return 'free'
   }
 
   return tier

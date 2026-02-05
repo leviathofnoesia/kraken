@@ -10,39 +10,37 @@ import {
   ANTIGRAVITY_API_VERSION,
   ANTIGRAVITY_HEADERS,
   ANTIGRAVITY_DEFAULT_PROJECT_ID,
-} from "./constants"
+} from './constants'
 import type {
   AntigravityProjectContext,
   AntigravityLoadCodeAssistResponse,
   AntigravityOnboardUserPayload,
   AntigravityUserTier,
-} from "./types"
+} from './types'
 
 const projectContextCache = new Map<string, AntigravityProjectContext>()
 
 function debugLog(message: string): void {
-  if (process.env.ANTIGRAVITY_DEBUG === "1") {
+  if (process.env.ANTIGRAVITY_DEBUG === '1') {
     console.log(`[antigravity-project] ${message}`)
   }
 }
 
 const CODE_ASSIST_METADATA = {
-  ideType: "IDE_UNSPECIFIED",
-  platform: "PLATFORM_UNSPECIFIED",
-  pluginType: "GEMINI",
+  ideType: 'IDE_UNSPECIFIED',
+  platform: 'PLATFORM_UNSPECIFIED',
+  pluginType: 'GEMINI',
 } as const
 
-function extractProjectId(
-  project: string | { id: string } | undefined
-): string | undefined {
+function extractProjectId(project: string | { id: string } | undefined): string | undefined {
   if (!project) return undefined
-  if (typeof project === "string") {
+  if (typeof project === 'string') {
     const trimmed = project.trim()
     return trimmed || undefined
   }
-  if (typeof project === "object" && "id" in project) {
+  if (typeof project === 'object' && 'id' in project) {
     const id = project.id
-    if (typeof id === "string") {
+    if (typeof id === 'string') {
       const trimmed = id.trim()
       return trimmed || undefined
     }
@@ -61,7 +59,7 @@ function getDefaultTierId(allowedTiers?: AntigravityUserTier[]): string | undefi
 function isFreeTier(tierId: string | undefined): boolean {
   if (!tierId) return true // No tier = assume free tier (default behavior)
   const lower = tierId.toLowerCase()
-  return lower === "free" || lower === "free-tier" || lower.startsWith("free")
+  return lower === 'free' || lower === 'free-tier' || lower.startsWith('free')
 }
 
 function wait(ms: number): Promise<void> {
@@ -70,7 +68,7 @@ function wait(ms: number): Promise<void> {
 
 async function callLoadCodeAssistAPI(
   accessToken: string,
-  projectId?: string
+  projectId?: string,
 ): Promise<AntigravityLoadCodeAssistResponse | null> {
   const metadata: Record<string, string> = { ...CODE_ASSIST_METADATA }
   if (projectId) metadata.duetProject = projectId
@@ -80,10 +78,10 @@ async function callLoadCodeAssistAPI(
 
   const headers: Record<string, string> = {
     Authorization: `Bearer ${accessToken}`,
-    "Content-Type": "application/json",
-    "User-Agent": ANTIGRAVITY_HEADERS["User-Agent"],
-    "X-Goog-Api-Client": ANTIGRAVITY_HEADERS["X-Goog-Api-Client"],
-    "Client-Metadata": ANTIGRAVITY_HEADERS["Client-Metadata"],
+    'Content-Type': 'application/json',
+    'User-Agent': ANTIGRAVITY_HEADERS['User-Agent'],
+    'X-Goog-Api-Client': ANTIGRAVITY_HEADERS['X-Goog-Api-Client'],
+    'Client-Metadata': ANTIGRAVITY_HEADERS['Client-Metadata'],
   }
 
   for (const baseEndpoint of ANTIGRAVITY_ENDPOINT_FALLBACKS) {
@@ -91,7 +89,7 @@ async function callLoadCodeAssistAPI(
     debugLog(`[loadCodeAssist] Trying: ${url}`)
     try {
       const response = await fetch(url, {
-        method: "POST",
+        method: 'POST',
         headers,
         body: JSON.stringify(requestBody),
       })
@@ -116,10 +114,10 @@ async function onboardManagedProject(
   tierId: string,
   projectId?: string,
   attempts = 10,
-  delayMs = 5000
+  delayMs = 5000,
 ): Promise<string | undefined> {
-  debugLog(`[onboardUser] Starting with tierId=${tierId}, projectId=${projectId || "none"}`)
-  
+  debugLog(`[onboardUser] Starting with tierId=${tierId}, projectId=${projectId || 'none'}`)
+
   const metadata: Record<string, string> = { ...CODE_ASSIST_METADATA }
   if (projectId) metadata.duetProject = projectId
 
@@ -134,10 +132,10 @@ async function onboardManagedProject(
 
   const headers: Record<string, string> = {
     Authorization: `Bearer ${accessToken}`,
-    "Content-Type": "application/json",
-    "User-Agent": ANTIGRAVITY_HEADERS["User-Agent"],
-    "X-Goog-Api-Client": ANTIGRAVITY_HEADERS["X-Goog-Api-Client"],
-    "Client-Metadata": ANTIGRAVITY_HEADERS["Client-Metadata"],
+    'Content-Type': 'application/json',
+    'User-Agent': ANTIGRAVITY_HEADERS['User-Agent'],
+    'X-Goog-Api-Client': ANTIGRAVITY_HEADERS['X-Goog-Api-Client'],
+    'Client-Metadata': ANTIGRAVITY_HEADERS['Client-Metadata'],
   }
 
   debugLog(`[onboardUser] Request body: ${JSON.stringify(requestBody)}`)
@@ -149,12 +147,12 @@ async function onboardManagedProject(
       debugLog(`[onboardUser] Trying: ${url}`)
       try {
         const response = await fetch(url, {
-          method: "POST",
+          method: 'POST',
           headers,
           body: JSON.stringify(requestBody),
         })
         if (!response.ok) {
-          const errorText = await response.text().catch(() => "")
+          const errorText = await response.text().catch(() => '')
           debugLog(`[onboardUser] Failed: ${response.status} ${response.statusText} - ${errorText}`)
           continue
         }
@@ -185,11 +183,9 @@ async function onboardManagedProject(
   return undefined
 }
 
-export async function fetchProjectContext(
-  accessToken: string
-): Promise<AntigravityProjectContext> {
+export async function fetchProjectContext(accessToken: string): Promise<AntigravityProjectContext> {
   debugLog(`[fetchProjectContext] Starting...`)
-  
+
   const cached = projectContextCache.get(accessToken)
   if (cached) {
     debugLog(`[fetchProjectContext] Returning cached result: ${JSON.stringify(cached)}`)
@@ -221,25 +217,33 @@ export async function fetchProjectContext(
       debugLog(`[fetchProjectContext] Using fallback project ID: ${fallbackProjectId}`)
       return result
     }
-    debugLog(`[fetchProjectContext] Fallback also failed, using default: ${ANTIGRAVITY_DEFAULT_PROJECT_ID}`)
+    debugLog(
+      `[fetchProjectContext] Fallback also failed, using default: ${ANTIGRAVITY_DEFAULT_PROJECT_ID}`,
+    )
     return { cloudaicompanionProject: ANTIGRAVITY_DEFAULT_PROJECT_ID }
   }
 
   const currentTierId = loadPayload.currentTier?.id
-  debugLog(`[fetchProjectContext] currentTier: ${currentTierId}, allowedTiers: ${JSON.stringify(loadPayload.allowedTiers)}`)
-  
+  debugLog(
+    `[fetchProjectContext] currentTier: ${currentTierId}, allowedTiers: ${JSON.stringify(loadPayload.allowedTiers)}`,
+  )
+
   if (currentTierId && !isFreeTier(currentTierId)) {
     // PAID tier - still use fallback if no project provided
-    debugLog(`[fetchProjectContext] PAID tier detected (${currentTierId}), using fallback: ${ANTIGRAVITY_DEFAULT_PROJECT_ID}`)
+    debugLog(
+      `[fetchProjectContext] PAID tier detected (${currentTierId}), using fallback: ${ANTIGRAVITY_DEFAULT_PROJECT_ID}`,
+    )
     return { cloudaicompanionProject: ANTIGRAVITY_DEFAULT_PROJECT_ID }
   }
 
   const defaultTierId = getDefaultTierId(loadPayload.allowedTiers)
-  const tierId = defaultTierId ?? "free-tier"
+  const tierId = defaultTierId ?? 'free-tier'
   debugLog(`[fetchProjectContext] Resolved tierId: ${tierId}`)
 
   if (!isFreeTier(tierId)) {
-    debugLog(`[fetchProjectContext] Non-FREE tier (${tierId}) without project, using fallback: ${ANTIGRAVITY_DEFAULT_PROJECT_ID}`)
+    debugLog(
+      `[fetchProjectContext] Non-FREE tier (${tierId}) without project, using fallback: ${ANTIGRAVITY_DEFAULT_PROJECT_ID}`,
+    )
     return { cloudaicompanionProject: ANTIGRAVITY_DEFAULT_PROJECT_ID }
   }
 
@@ -256,7 +260,9 @@ export async function fetchProjectContext(
     return result
   }
 
-  debugLog(`[fetchProjectContext] Failed to get managed project ID, using fallback: ${ANTIGRAVITY_DEFAULT_PROJECT_ID}`)
+  debugLog(
+    `[fetchProjectContext] Failed to get managed project ID, using fallback: ${ANTIGRAVITY_DEFAULT_PROJECT_ID}`,
+  )
   return { cloudaicompanionProject: ANTIGRAVITY_DEFAULT_PROJECT_ID }
 }
 
@@ -270,5 +276,7 @@ export function clearProjectContextCache(accessToken?: string): void {
 
 export function invalidateProjectContextByRefreshToken(_refreshToken: string): void {
   projectContextCache.clear()
-  debugLog(`[invalidateProjectContextByRefreshToken] Cleared all project context cache due to refresh token invalidation`)
+  debugLog(
+    `[invalidateProjectContextByRefreshToken] Cleared all project context cache due to refresh token invalidation`,
+  )
 }

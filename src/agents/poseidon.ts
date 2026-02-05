@@ -1,8 +1,8 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "../types"
-import { createAgentToolRestrictions } from "../shared/permission-compat"
+import type { AgentConfig } from '@opencode-ai/sdk'
+import type { AgentPromptMetadata } from '../types'
+import { createAgentToolRestrictions } from '../shared/permission-compat'
 
-const DEFAULT_MODEL = "anthropic/claude-opus-4-5"
+const DEFAULT_MODEL = 'anthropic/claude-opus-4-5'
 
 const POSEIDON_SYSTEM_PROMPT = `# Poseidon - Pre-Planning Consultant
 
@@ -118,44 +118,38 @@ Output structured requirements for the planner:
 
 Remember: Your value lies in ensuring planners have complete, unambiguous requirements. Better constraint analysis prevents planning failures, scope creep, and implementation surprises.`
 
-const poseidonRestrictions = createAgentToolRestrictions([
-  "write",
-  "edit",
-  "task",
-])
+const poseidonRestrictions = createAgentToolRestrictions(['write', 'edit', 'task'])
 
 export function createPoseidonConfig(model: string = DEFAULT_MODEL): AgentConfig {
   return {
     description:
-      "Pre-planning consultant that analyzes work requests using constraint satisfaction theory to identify requirements, boundaries, and ambiguities before planning begins.",
-    mode: "subagent" as const,
+      'Pre-planning consultant that analyzes work requests using constraint satisfaction theory to identify requirements, boundaries, and ambiguities before planning begins.',
+    mode: 'subagent' as const,
     model,
     temperature: 0.3,
     ...poseidonRestrictions,
     prompt: POSEIDON_SYSTEM_PROMPT,
-    thinking: { type: "enabled", budgetTokens: 32000 },
+    thinking: { type: 'enabled', budgetTokens: 32000 },
   } as AgentConfig
 }
 
 export const poseidonAgent: AgentConfig = createPoseidonConfig()
 
 export const poseidonPromptMetadata: AgentPromptMetadata = {
-  category: "advisor",
-  cost: "EXPENSIVE",
+  category: 'advisor',
+  cost: 'EXPENSIVE',
   triggers: [
     {
-      domain: "Pre-planning analysis",
-      trigger: "Complex task requiring scope clarification, ambiguous requirements",
+      domain: 'Pre-planning analysis',
+      trigger: 'Complex task requiring scope clarification, ambiguous requirements',
     },
   ],
   useWhen: [
-    "Before planning non-trivial tasks",
-    "When user request is ambiguous or open-ended",
-    "To prevent AI over-engineering patterns",
+    'Before planning non-trivial tasks',
+    'When user request is ambiguous or open-ended',
+    'To prevent AI over-engineering patterns',
   ],
-  avoidWhen: [
-    "Simple, well-defined tasks",
-  ],
-  promptAlias: "Poseidon",
-  keyTrigger: "Ambiguous or complex request → consult Poseidon before planner",
+  avoidWhen: ['Simple, well-defined tasks'],
+  promptAlias: 'Poseidon',
+  keyTrigger: 'Ambiguous or complex request → consult Poseidon before planner',
 }

@@ -9,7 +9,7 @@
  * - Usage metadata extraction from x-antigravity-* headers
  */
 
-import type { AntigravityError, AntigravityUsage } from "./types"
+import type { AntigravityError, AntigravityUsage } from './types'
 
 /**
  * Usage metadata extracted from Antigravity response headers
@@ -44,10 +44,10 @@ export interface TransformResult {
  * @returns Usage metadata if found
  */
 export function extractUsageFromHeaders(headers: Headers): AntigravityUsageMetadata | undefined {
-  const cached = headers.get("x-antigravity-cached-content-token-count")
-  const total = headers.get("x-antigravity-total-token-count")
-  const prompt = headers.get("x-antigravity-prompt-token-count")
-  const candidates = headers.get("x-antigravity-candidates-token-count")
+  const cached = headers.get('x-antigravity-cached-content-token-count')
+  const total = headers.get('x-antigravity-total-token-count')
+  const prompt = headers.get('x-antigravity-prompt-token-count')
+  const candidates = headers.get('x-antigravity-candidates-token-count')
 
   // Return undefined if no usage headers found
   if (!cached && !total && !prompt && !candidates) {
@@ -111,7 +111,7 @@ export function extractRetryAfterMs(
   errorBody?: Record<string, unknown>,
 ): number | undefined {
   // First, check standard Retry-After header
-  const retryAfterHeader = response.headers.get("Retry-After")
+  const retryAfterHeader = response.headers.get('Retry-After')
   if (retryAfterHeader) {
     const seconds = parseFloat(retryAfterHeader)
     if (!isNaN(seconds) && seconds > 0) {
@@ -120,7 +120,7 @@ export function extractRetryAfterMs(
   }
 
   // Check retry-after-ms header (set by some transformers)
-  const retryAfterMsHeader = response.headers.get("retry-after-ms")
+  const retryAfterMsHeader = response.headers.get('retry-after-ms')
   if (retryAfterMsHeader) {
     const ms = parseInt(retryAfterMsHeader, 10)
     if (!isNaN(ms) && ms > 0) {
@@ -139,10 +139,10 @@ export function extractRetryAfterMs(
   }
 
   const retryInfo = (error.details as Array<Record<string, unknown>>).find(
-    (detail) => detail["@type"] === "type.googleapis.com/google.rpc.RetryInfo",
+    (detail) => detail['@type'] === 'type.googleapis.com/google.rpc.RetryInfo',
   )
 
-  if (!retryInfo?.retryDelay || typeof retryInfo.retryDelay !== "string") {
+  if (!retryInfo?.retryDelay || typeof retryInfo.retryDelay !== 'string') {
     return undefined
   }
 
@@ -169,17 +169,17 @@ export function parseErrorBody(text: string): AntigravityError | undefined {
     const parsed = JSON.parse(text) as Record<string, unknown>
 
     // Handle error wrapper
-    if (parsed.error && typeof parsed.error === "object") {
+    if (parsed.error && typeof parsed.error === 'object') {
       const errorObj = parsed.error as Record<string, unknown>
       return {
-        message: String(errorObj.message || "Unknown error"),
+        message: String(errorObj.message || 'Unknown error'),
         type: errorObj.type ? String(errorObj.type) : undefined,
         code: errorObj.code as string | number | undefined,
       }
     }
 
     // Handle direct error message
-    if (parsed.message && typeof parsed.message === "string") {
+    if (parsed.message && typeof parsed.message === 'string') {
       return {
         message: parsed.message,
         type: parsed.type ? String(parsed.type) : undefined,
@@ -191,7 +191,7 @@ export function parseErrorBody(text: string): AntigravityError | undefined {
   } catch {
     // If not valid JSON, return generic error
     return {
-      message: text || "Unknown error",
+      message: text || 'Unknown error',
     }
   }
 }
@@ -233,8 +233,8 @@ export async function transformResponse(response: Response): Promise<TransformRe
 
     // Set retry headers if found
     if (retryMs) {
-      headers.set("Retry-After", String(Math.ceil(retryMs / 1000)))
-      headers.set("retry-after-ms", String(retryMs))
+      headers.set('Retry-After', String(Math.ceil(retryMs / 1000)))
+      headers.set('retry-after-ms', String(retryMs))
     }
 
     return {
@@ -250,8 +250,8 @@ export async function transformResponse(response: Response): Promise<TransformRe
   }
 
   // Handle successful response
-  const contentType = response.headers.get("content-type") ?? ""
-  const isJson = contentType.includes("application/json")
+  const contentType = response.headers.get('content-type') ?? ''
+  const isJson = contentType.includes('application/json')
 
   if (!isJson) {
     // Return non-JSON responses as-is
@@ -296,12 +296,12 @@ export async function transformResponse(response: Response): Promise<TransformRe
  * @returns Transformed line
  */
 function transformSseLine(line: string): string {
-  if (!line.startsWith("data:")) {
+  if (!line.startsWith('data:')) {
     return line
   }
 
   const json = line.slice(5).trim()
-  if (!json || json === "[DONE]") {
+  if (!json || json === '[DONE]') {
     return line
   }
 
@@ -333,26 +333,23 @@ function transformSseLine(line: string): string {
  * @returns Transformed SSE payload
  */
 export function transformStreamingPayload(payload: string): string {
-  return payload
-    .split("\n")
-    .map(transformSseLine)
-    .join("\n")
+  return payload.split('\n').map(transformSseLine).join('\n')
 }
 
 function createSseTransformStream(): TransformStream<Uint8Array, Uint8Array> {
   const decoder = new TextDecoder()
   const encoder = new TextEncoder()
-  let buffer = ""
+  let buffer = ''
 
   return new TransformStream({
     transform(chunk, controller) {
       buffer += decoder.decode(chunk, { stream: true })
-      const lines = buffer.split("\n")
-      buffer = lines.pop() || ""
+      const lines = buffer.split('\n')
+      buffer = lines.pop() || ''
 
       for (const line of lines) {
         const transformed = transformSseLine(line)
-        controller.enqueue(encoder.encode(transformed + "\n"))
+        controller.enqueue(encoder.encode(transformed + '\n'))
       }
     },
     flush(controller) {
@@ -392,8 +389,8 @@ export async function transformStreamingResponse(response: Response): Promise<Tr
     const retryAfterMs = extractRetryAfterMs(response, errorBody)
 
     if (retryAfterMs) {
-      headers.set("Retry-After", String(Math.ceil(retryAfterMs / 1000)))
-      headers.set("retry-after-ms", String(retryAfterMs))
+      headers.set('Retry-After', String(Math.ceil(retryAfterMs / 1000)))
+      headers.set('retry-after-ms', String(retryAfterMs))
     }
 
     return {
@@ -409,9 +406,9 @@ export async function transformStreamingResponse(response: Response): Promise<Tr
   }
 
   // Check content type
-  const contentType = response.headers.get("content-type") ?? ""
+  const contentType = response.headers.get('content-type') ?? ''
   const isEventStream =
-    contentType.includes("text/event-stream") || response.url.includes("alt=sse")
+    contentType.includes('text/event-stream') || response.url.includes('alt=sse')
 
   if (!isEventStream) {
     // Not SSE, delegate to non-streaming transform
@@ -447,9 +444,9 @@ export async function transformStreamingResponse(response: Response): Promise<Tr
     return { response, usage }
   }
 
-  headers.delete("content-length")
-  headers.delete("content-encoding")
-  headers.set("content-type", "text/event-stream; charset=utf-8")
+  headers.delete('content-length')
+  headers.delete('content-encoding')
+  headers.set('content-type', 'text/event-stream; charset=utf-8')
 
   const transformStream = createSseTransformStream()
   const transformedBody = response.body.pipeThrough(transformStream)
@@ -471,8 +468,8 @@ export async function transformStreamingResponse(response: Response): Promise<Tr
  * @returns True if response is SSE stream
  */
 export function isStreamingResponse(response: Response): boolean {
-  const contentType = response.headers.get("content-type") ?? ""
-  return contentType.includes("text/event-stream") || response.url.includes("alt=sse")
+  const contentType = response.headers.get('content-type') ?? ''
+  return contentType.includes('text/event-stream') || response.url.includes('alt=sse')
 }
 
 /**
@@ -487,16 +484,16 @@ export function isStreamingResponse(response: Response): boolean {
  * @returns Last thought signature if found
  */
 export function extractSignatureFromSsePayload(payload: string): string | undefined {
-  const lines = payload.split("\n")
+  const lines = payload.split('\n')
   let lastSignature: string | undefined
 
   for (const line of lines) {
-    if (!line.startsWith("data:")) {
+    if (!line.startsWith('data:')) {
       continue
     }
 
     const json = line.slice(5).trim()
-    if (!json || json === "[DONE]") {
+    if (!json || json === '[DONE]') {
       continue
     }
 
@@ -515,7 +512,7 @@ export function extractSignatureFromSsePayload(payload: string): string | undefi
           if (parts && Array.isArray(parts)) {
             for (const part of parts) {
               const sig = (part.thoughtSignature || part.thought_signature) as string | undefined
-              if (sig && typeof sig === "string") {
+              if (sig && typeof sig === 'string') {
                 lastSignature = sig
               }
             }
@@ -540,15 +537,15 @@ export function extractSignatureFromSsePayload(payload: string): string | undefi
  * @returns Usage if found
  */
 export function extractUsageFromSsePayload(payload: string): AntigravityUsage | undefined {
-  const lines = payload.split("\n")
+  const lines = payload.split('\n')
 
   for (const line of lines) {
-    if (!line.startsWith("data:")) {
+    if (!line.startsWith('data:')) {
       continue
     }
 
     const json = line.slice(5).trim()
-    if (!json || json === "[DONE]") {
+    if (!json || json === '[DONE]') {
       continue
     }
 
@@ -556,37 +553,37 @@ export function extractUsageFromSsePayload(payload: string): AntigravityUsage | 
       const parsed = JSON.parse(json) as Record<string, unknown>
 
       // Check for usageMetadata at top level
-      if (parsed.usageMetadata && typeof parsed.usageMetadata === "object") {
+      if (parsed.usageMetadata && typeof parsed.usageMetadata === 'object') {
         const meta = parsed.usageMetadata as Record<string, unknown>
         return {
-          prompt_tokens: typeof meta.promptTokenCount === "number" ? meta.promptTokenCount : 0,
+          prompt_tokens: typeof meta.promptTokenCount === 'number' ? meta.promptTokenCount : 0,
           completion_tokens:
-            typeof meta.candidatesTokenCount === "number" ? meta.candidatesTokenCount : 0,
-          total_tokens: typeof meta.totalTokenCount === "number" ? meta.totalTokenCount : 0,
+            typeof meta.candidatesTokenCount === 'number' ? meta.candidatesTokenCount : 0,
+          total_tokens: typeof meta.totalTokenCount === 'number' ? meta.totalTokenCount : 0,
         }
       }
 
       // Check for usage in response wrapper
-      if (parsed.response && typeof parsed.response === "object") {
+      if (parsed.response && typeof parsed.response === 'object') {
         const resp = parsed.response as Record<string, unknown>
-        if (resp.usageMetadata && typeof resp.usageMetadata === "object") {
+        if (resp.usageMetadata && typeof resp.usageMetadata === 'object') {
           const meta = resp.usageMetadata as Record<string, unknown>
           return {
-            prompt_tokens: typeof meta.promptTokenCount === "number" ? meta.promptTokenCount : 0,
+            prompt_tokens: typeof meta.promptTokenCount === 'number' ? meta.promptTokenCount : 0,
             completion_tokens:
-              typeof meta.candidatesTokenCount === "number" ? meta.candidatesTokenCount : 0,
-            total_tokens: typeof meta.totalTokenCount === "number" ? meta.totalTokenCount : 0,
+              typeof meta.candidatesTokenCount === 'number' ? meta.candidatesTokenCount : 0,
+            total_tokens: typeof meta.totalTokenCount === 'number' ? meta.totalTokenCount : 0,
           }
         }
       }
 
       // Check for standard OpenAI-style usage
-      if (parsed.usage && typeof parsed.usage === "object") {
+      if (parsed.usage && typeof parsed.usage === 'object') {
         const u = parsed.usage as Record<string, unknown>
         return {
-          prompt_tokens: typeof u.prompt_tokens === "number" ? u.prompt_tokens : 0,
-          completion_tokens: typeof u.completion_tokens === "number" ? u.completion_tokens : 0,
-          total_tokens: typeof u.total_tokens === "number" ? u.total_tokens : 0,
+          prompt_tokens: typeof u.prompt_tokens === 'number' ? u.prompt_tokens : 0,
+          completion_tokens: typeof u.completion_tokens === 'number' ? u.completion_tokens : 0,
+          total_tokens: typeof u.total_tokens === 'number' ? u.total_tokens : 0,
         }
       }
     } catch {

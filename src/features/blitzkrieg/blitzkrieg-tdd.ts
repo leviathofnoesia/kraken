@@ -134,10 +134,7 @@ export function isImplementationFile(filePath: string): boolean {
 /**
  * Check if a code operation appears to be a refactor
  */
-export function isRefactorOperation(
-  content: string,
-  previousContent?: string
-): boolean {
+export function isRefactorOperation(content: string, previousContent?: string): boolean {
   if (!previousContent) return false
 
   // Look for refactor keywords in the content
@@ -151,14 +148,12 @@ export function isRefactorOperation(
   ]
 
   // Check if there are refactor-related comments or patterns
-  const hasRefactorKeywords = refactorKeywords.some((pattern) =>
-    pattern.test(content)
-  )
+  const hasRefactorKeywords = refactorKeywords.some((pattern) => pattern.test(content))
 
   // Check if operation preserves similar structure (within 80-150% of original)
   // Relaxed from 80-120% to allow for comment additions
-  const isStructuralChange = content.length > previousContent.length * 0.8 &&
-    content.length < previousContent.length * 1.5
+  const isStructuralChange =
+    content.length > previousContent.length * 0.8 && content.length < previousContent.length * 1.5
 
   return hasRefactorKeywords && isStructuralChange
 }
@@ -170,7 +165,7 @@ export function evaluateTddCompliance(
   operation: FileOperationContext,
   session: TddSession,
   config: TddEnforcementConfig = DEFAULT_TDD_ENFORCEMENT_CONFIG,
-  previousContent?: string
+  previousContent?: string,
 ): TddComplianceResult {
   const violations: TddViolation[] = []
   const suggestions: string[] = []

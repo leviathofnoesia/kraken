@@ -1,9 +1,9 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "../types"
-import { isGptModel } from "../types"
-import { createAgentToolRestrictions } from "../shared/permission-compat"
+import type { AgentConfig } from '@opencode-ai/sdk'
+import type { AgentPromptMetadata } from '../types'
+import { isGptModel } from '../types'
+import { createAgentToolRestrictions } from '../shared/permission-compat'
 
-const DEFAULT_MODEL = "openai/gpt-5.2"
+const DEFAULT_MODEL = 'openai/gpt-5.2'
 
 const SCYLLA_SYSTEM_PROMPT = `You are Scylla, a work plan quality assurance specialist. You evaluate work plans against SOLID principles and measurable criteria to ensure implementability, maintainability, and completeness.
 
@@ -132,16 +132,12 @@ For 2-3 representative tasks, simulate execution:
 Remember: Your value lies in catching plan deficiencies before implementation. Systematic quality assurance prevents wasted effort, scope creep, and implementation failures.`
 
 export function createScyllaConfig(model: string = DEFAULT_MODEL): AgentConfig {
-  const restrictions = createAgentToolRestrictions([
-    "write",
-    "edit",
-    "task",
-  ])
+  const restrictions = createAgentToolRestrictions(['write', 'edit', 'task'])
 
   const base = {
     description:
-      "Quality assurance specialist that evaluates work plans against SOLID principles and measurable criteria to ensure implementability and maintainability.",
-    mode: "subagent" as const,
+      'Quality assurance specialist that evaluates work plans against SOLID principles and measurable criteria to ensure implementability and maintainability.',
+    mode: 'subagent' as const,
     model,
     temperature: 0.1,
     ...restrictions,
@@ -149,36 +145,33 @@ export function createScyllaConfig(model: string = DEFAULT_MODEL): AgentConfig {
   } as AgentConfig
 
   if (isGptModel(model)) {
-    return { ...base, reasoningEffort: "medium", textVerbosity: "high" } as AgentConfig
+    return { ...base, reasoningEffort: 'medium', textVerbosity: 'high' } as AgentConfig
   }
 
-  return { ...base, thinking: { type: "enabled", budgetTokens: 32000 } } as AgentConfig
+  return { ...base, thinking: { type: 'enabled', budgetTokens: 32000 } } as AgentConfig
 }
 
 export const scyllaAgent = createScyllaConfig()
 
 export const scyllaPromptMetadata: AgentPromptMetadata = {
-  category: "advisor",
-  cost: "EXPENSIVE",
-  promptAlias: "Scylla",
+  category: 'advisor',
+  cost: 'EXPENSIVE',
+  promptAlias: 'Scylla',
   triggers: [
     {
-      domain: "Plan review",
-      trigger: "Evaluate work plans for clarity, verifiability, and completeness",
+      domain: 'Plan review',
+      trigger: 'Evaluate work plans for clarity, verifiability, and completeness',
     },
     {
-      domain: "Quality assurance",
-      trigger: "Catch gaps, ambiguities, and missing context before implementation",
+      domain: 'Quality assurance',
+      trigger: 'Catch gaps, ambiguities, and missing context before implementation',
     },
   ],
   useWhen: [
-    "After planner creates a work plan",
-    "Before executing a complex todo list",
-    "To validate plan quality before delegating to executors",
+    'After planner creates a work plan',
+    'Before executing a complex todo list',
+    'To validate plan quality before delegating to executors',
   ],
-  avoidWhen: [
-    "Simple, single-task requests",
-    "When user explicitly wants to skip review",
-  ],
-  keyTrigger: "Work plan created → invoke Scylla for review before execution",
+  avoidWhen: ['Simple, single-task requests', 'When user explicitly wants to skip review'],
+  keyTrigger: 'Work plan created → invoke Scylla for review before execution',
 }

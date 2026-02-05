@@ -1,8 +1,8 @@
-import type { LoadedCommand, CommandDefinition, CommandTemplateContext } from "./types"
+import type { LoadedCommand, CommandDefinition, CommandTemplateContext } from './types'
 
 export function processCommandTemplate(
   command: LoadedCommand,
-  context: CommandTemplateContext = {}
+  context: CommandTemplateContext = {},
 ): string {
   const { definition } = command
   let template = definition.template
@@ -14,10 +14,10 @@ export function processCommandTemplate(
   }
 
   for (const [key, value] of Object.entries(context)) {
-    if (key === "arguments") continue
+    if (key === 'arguments') continue
 
     const placeholder = `\$\{${key}\}`
-    template = template.replace(new RegExp(placeholder, "g"), String(value))
+    template = template.replace(new RegExp(placeholder, 'g'), String(value))
   }
 
   return template
@@ -26,7 +26,7 @@ export function processCommandTemplate(
 export function wrapCommandForExecution(
   command: LoadedCommand,
   userRequest: string,
-  context: CommandTemplateContext = {}
+  context: CommandTemplateContext = {},
 ): {
   instruction: string
   agent?: string
@@ -51,7 +51,7 @@ export function getArgumentPlaceholder(command: LoadedCommand): string {
   if (command.definition.argumentHint) {
     return command.definition.argumentHint
   }
-  return "[arguments]"
+  return '[arguments]'
 }
 
 export function formatCommandHelp(command: LoadedCommand): string {
@@ -69,13 +69,10 @@ export function formatCommandHelp(command: LoadedCommand): string {
     parts.push(`(model: ${definition.model})`)
   }
 
-  return parts.join(" ")
+  return parts.join(' ')
 }
 
-export function parseUserRequest(
-  userInput: string,
-  commandPrefix: string
-): string | null {
+export function parseUserRequest(userInput: string, commandPrefix: string): string | null {
   const trimmedInput = userInput.trim()
 
   if (!trimmedInput.startsWith(`/${commandPrefix}`)) {
@@ -88,7 +85,7 @@ export function parseUserRequest(
 
 export function detectCommandInInput(
   userInput: string,
-  availableCommands: LoadedCommand[]
+  availableCommands: LoadedCommand[],
 ): LoadedCommand | null {
   const trimmedInput = userInput.trim()
 
@@ -98,7 +95,7 @@ export function detectCommandInInput(
     if (trimmedInput.startsWith(prefix)) {
       const afterPrefix = trimmedInput.slice(prefix.length)
 
-      if (afterPrefix === "" || afterPrefix.startsWith(" ")) {
+      if (afterPrefix === '' || afterPrefix.startsWith(' ')) {
         return command
       }
     }

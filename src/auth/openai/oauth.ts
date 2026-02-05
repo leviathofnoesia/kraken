@@ -1,17 +1,13 @@
 import {
   OPENAI_CLIENT_ID,
   OPENAI_CLIENT_SECRET,
-  OPENAI_REDIRECT_URI,
   OPENAI_SCOPES,
   OPENAI_CALLBACK_PORT,
   OPENAI_AUTH_URL,
   OPENAI_TOKEN_URL,
   OPENAI_USERINFO_URL,
 } from './constants'
-import type {
-  OpenAITokenExchangeResult,
-  OpenAIUserInfo,
-} from './types'
+import type { OpenAITokenExchangeResult, OpenAIUserInfo } from './types'
 
 export interface AuthorizationResult {
   url: string
@@ -25,15 +21,19 @@ export interface CallbackResult {
   error?: string
 }
 
-export async function generatePKCEChallenge(): Promise<{ codeVerifier: string; codeChallenge: string; codeChallengeMethod: 'S256' | 'plain' }> {
+export async function generatePKCEChallenge(): Promise<{
+  codeVerifier: string
+  codeChallenge: string
+  codeChallengeMethod: 'S256' | 'plain'
+}> {
   const array = new Uint8Array(32)
   crypto.getRandomValues(array)
-  
+
   const codeVerifier = btoa(String.fromCharCode(...array))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, '')
-  
+
   const encoder = new TextEncoder()
   const data = encoder.encode(codeVerifier)
   const hashBuffer = await crypto.subtle.digest('SHA-256', data)
@@ -42,7 +42,7 @@ export async function generatePKCEChallenge(): Promise<{ codeVerifier: string; c
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, '')
-  
+
   return {
     codeVerifier,
     codeChallenge,
@@ -53,12 +53,12 @@ export async function generatePKCEChallenge(): Promise<{ codeVerifier: string; c
 export async function buildAuthURL(
   clientId: string = OPENAI_CLIENT_ID,
   port: number = OPENAI_CALLBACK_PORT,
-  usePKCE: boolean = true
+  usePKCE: boolean = true,
 ): Promise<AuthorizationResult> {
   const state = crypto.randomUUID().replace(/-/g, '')
-  
+
   const redirectUri = `http://localhost:${port}/oauth-callback`
-  
+
   const url = new URL(OPENAI_AUTH_URL)
   url.pathname += '/authorize'
   url.searchParams.set('client_id', clientId)
@@ -66,14 +66,16 @@ export async function buildAuthURL(
   url.searchParams.set('response_type', 'code')
   url.searchParams.set('scope', OPENAI_SCOPES.join(' '))
   url.searchParams.set('state', state)
-  
-  let pkce: { codeVerifier: string; codeChallenge: string; codeChallengeMethod: 'S256' | 'plain' } | undefined
+
+  let pkce:
+    | { codeVerifier: string; codeChallenge: string; codeChallengeMethod: 'S256' | 'plain' }
+    | undefined
   if (usePKCE) {
     pkce = await generatePKCEChallenge()
     url.searchParams.set('code_challenge', pkce.codeChallenge)
     url.searchParams.set('code_challenge_method', pkce.codeChallengeMethod)
   }
-  
+
   return {
     url: url.toString(),
     state,
@@ -86,7 +88,7 @@ export async function exchangeCode(
   redirectUri: string,
   clientId: string = OPENAI_CLIENT_ID,
   clientSecret: string = OPENAI_CLIENT_SECRET,
-  codeVerifier?: string
+  codeVerifier?: string,
 ): Promise<OpenAITokenExchangeResult> {
   const params: Record<string, string> = {
     client_id: clientId,
@@ -112,7 +114,7 @@ export async function exchangeCode(
   if (!response.ok) {
     const errorText = await response.text()
     let errorMessage = `Token exchange failed: ${response.status}`
-    
+
     try {
       const errorData = JSON.parse(errorText)
       if (errorData.error) {
@@ -124,7 +126,7 @@ export async function exchangeCode(
     } catch {
       errorMessage += ` - ${errorText}`
     }
-    
+
     throw new Error(errorMessage)
   }
 
@@ -140,7 +142,9 @@ export async function exchangeCode(
   }
 
   if (!data.refresh_token) {
-    console.warn('Token exchange warning: No refresh token received. You may need to re-authenticate soon.')
+    console.warn(
+      'Token exchange warning: No refresh token received. You may need to re-authenticate soon.',
+    )
   }
 
   return {
@@ -151,9 +155,7 @@ export async function exchangeCode(
   }
 }
 
-export async function fetchUserInfo(
-  accessToken: string
-): Promise<OpenAIUserInfo> {
+export async function fetchUserInfo(accessToken: string): Promise<OpenAIUserInfo> {
   const response = await fetch(OPENAI_USERINFO_URL, {
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -184,14 +186,11 @@ export interface CallbackServerHandle {
   close: () => void
 }
 
-export function startCallbackServer(
-  timeoutMs: number = 5 * 60 * 1000
-): CallbackServerHandle {
+export function startCallbackServer(timeoutMs: number = 5 * 60 * 1000): CallbackServerHandle {
   let server: ReturnType<typeof Bun.serve> | null = null
   let timeoutId: ReturnType<typeof setTimeout> | null = null
   let resolveCallback: ((result: CallbackResult) => void) | null = null
-  let rejectCallback: ((error: Error) => void) | null = null
-  
+
   const cleanup = () => {
     if (timeoutId) {
       clearTimeout(timeoutId)
@@ -202,38 +201,40 @@ export function startCallbackServer(
       server = null
     }
   }
-  
+
   const fetchHandler = (request: Request): Response => {
     const url = new URL(request.url)
-    
+
     if (url.pathname === '/oauth-callback') {
       const code = url.searchParams.get('code') || ''
       const state = url.searchParams.get('state') || ''
       const error = url.searchParams.get('error') || undefined
-      
+
       let responseBody: string
       if (code && !error) {
-        responseBody = '<html><body><h1>Login successful</h1><p>You can close this window.</p></body></html>'
+        responseBody =
+          '<html><body><h1>Login successful</h1><p>You can close this window.</p></body></html>'
       } else {
-        responseBody = '<html><body><h1>Login failed</h1><p>Please check the CLI output.</p></body></html>'
+        responseBody =
+          '<html><body><h1>Login failed</h1><p>Please check the CLI output.</p></body></html>'
       }
-      
+
       setTimeout(() => {
         cleanup()
         if (resolveCallback) {
           resolveCallback({ code, state, error })
         }
       }, 100)
-      
+
       return new Response(responseBody, {
         status: 200,
         headers: { 'Content-Type': 'text/html' },
       })
     }
-    
+
     return new Response('Not Found', { status: 404 })
   }
-  
+
   try {
     server = Bun.serve({
       port: OPENAI_CALLBACK_PORT,
@@ -245,22 +246,21 @@ export function startCallbackServer(
       fetch: fetchHandler,
     })
   }
-  
+
   const actualPort = server.port as number
   const redirectUri = `http://localhost:${actualPort}/oauth-callback`
-  
+
   const waitForCallback = (): Promise<CallbackResult> => {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       resolveCallback = resolve
-      rejectCallback = reject
-      
+
       timeoutId = setTimeout(() => {
         cleanup()
-        reject(new Error('OAuth callback timeout'))
+        resolve({ code: '', state: '', error: 'timeout' })
       }, timeoutMs)
     })
   }
-  
+
   return {
     port: actualPort,
     redirectUri,
@@ -273,52 +273,59 @@ export async function performOAuthFlow(
   openBrowser?: (url: string) => Promise<void>,
   clientId: string = OPENAI_CLIENT_ID,
   clientSecret: string = OPENAI_CLIENT_SECRET,
-  usePKCE: boolean = true
+  usePKCE: boolean = true,
 ): Promise<{
   tokens: OpenAITokenExchangeResult
   userInfo: OpenAIUserInfo
   state: string
 }> {
   const serverHandle = startCallbackServer()
-  
+
   try {
     const auth = await buildAuthURL(clientId, serverHandle.port, usePKCE)
-    
+
     console.log(`[openai-auth] Opening OAuth URL in browser: ${auth.url.substring(0, 50)}...`)
     console.log(`[openai-auth] Using ${usePKCE ? 'PKCE' : 'standard'} OAuth flow`)
-    
+
     if (openBrowser) {
       await openBrowser(auth.url)
     } else {
       console.log(`[openai-auth] Please open this URL in your browser:`)
       console.log(auth.url)
     }
-    
+
     console.log(`[openai-auth] Waiting for callback on port ${serverHandle.port}...`)
     const callback = await serverHandle.waitForCallback()
-    
+
     if (callback.error) {
-      const error = callback.error === 'access_denied'
-        ? 'Authentication denied by user'
-        : `OAuth error: ${callback.error}`
+      const error =
+        callback.error === 'access_denied'
+          ? 'Authentication denied by user'
+          : `OAuth error: ${callback.error}`
       throw new Error(error)
     }
-    
+
     if (!callback.code) {
       throw new Error('No authorization code received')
     }
-    
+
     if (callback.state !== auth.state) {
       throw new Error('State mismatch - possible CSRF attack')
     }
-    
+
     const redirectUri = `http://localhost:${serverHandle.port}/oauth-callback`
     const codeVerifier = auth.pkce?.codeVerifier
-    const tokens = await exchangeCode(callback.code, redirectUri, clientId, clientSecret, codeVerifier)
+    const tokens = await exchangeCode(
+      callback.code,
+      redirectUri,
+      clientId,
+      clientSecret,
+      codeVerifier,
+    )
     const userInfo = await fetchUserInfo(tokens.access_token)
-    
+
     console.log(`[openai-auth] Authentication successful for: ${userInfo.email}`)
-    
+
     return { tokens, userInfo, state: auth.state }
   } catch (err) {
     serverHandle.close()

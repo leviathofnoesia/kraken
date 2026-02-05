@@ -1,16 +1,16 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
+import type { AgentConfig } from '@opencode-ai/sdk'
 
 export type AgentFactory = (model?: string) => AgentConfig
 
 /**
  * Agent category for grouping in Kraken prompt sections
  */
-export type AgentCategory = "exploration" | "specialist" | "advisor" | "utility"
+export type AgentCategory = 'exploration' | 'specialist' | 'advisor' | 'utility'
 
 /**
  * Cost classification for Tool Selection table
  */
-export type AgentCost = "FREE" | "CHEAP" | "EXPENSIVE"
+export type AgentCost = 'FREE' | 'CHEAP' | 'EXPENSIVE'
 
 /**
  * Delegation trigger for Kraken prompt's Delegation Table
@@ -53,25 +53,22 @@ export interface AgentPromptMetadata {
 }
 
 export function isGptModel(model: string): boolean {
-  return model.startsWith("openai/") || model.startsWith("github-copilot/gpt-")
+  return model.startsWith('openai/') || model.startsWith('github-copilot/gpt-')
 }
 
 export type BuiltinAgentName =
-  | "Kraken"
-  | "Maelstrom"
-  | "Abyssal"
-  | "Nautilus"
-  | "Coral"
-  | "Siren"
-  | "Leviathan"
-  | "Poseidon (Plan Consultant)"
-  | "Scylla (Plan Reviewer)"
-  | "orchestrator-kraken"
+  | 'Kraken'
+  | 'Maelstrom'
+  | 'Abyssal'
+  | 'Nautilus'
+  | 'Coral'
+  | 'Siren'
+  | 'Leviathan'
+  | 'Poseidon (Plan Consultant)'
+  | 'Scylla (Plan Reviewer)'
+  | 'orchestrator-kraken'
 
-export type OverridableAgentName =
-  | "build"
-  | "plan"
-  | BuiltinAgentName
+export type OverridableAgentName = 'build' | 'plan' | BuiltinAgentName
 
 export type AgentName = BuiltinAgentName
 

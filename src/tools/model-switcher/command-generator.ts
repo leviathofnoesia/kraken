@@ -1,5 +1,5 @@
-import { writeFile, mkdir } from "fs/promises"
-import { join } from "path"
+import { writeFile, mkdir } from 'fs/promises'
+import { join } from 'path'
 
 const COMMAND_TEMPLATES: Record<string, string> = {
   'models.md': `---
@@ -148,18 +148,18 @@ For each model show:
 - Max context window
 - Capabilities
 </command-instruction>
-`
+`,
 }
 
 export async function ensureCommands(worktree: string): Promise<void> {
   const commandDir = join(worktree, '.opencode', 'command')
-  
+
   try {
     await mkdir(commandDir, { recursive: true })
   } catch {
     // Directory already exists
   }
-  
+
   for (const [filename, content] of Object.entries(COMMAND_TEMPLATES)) {
     const filePath = join(commandDir, filename)
     await writeFile(filePath, content)

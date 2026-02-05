@@ -1,13 +1,6 @@
-import type { Hooks, PluginInput } from "@opencode-ai/plugin"
-import type { Part } from "@opencode-ai/sdk"
-import {
-  getStateFilePath,
-  readState,
-  writeState,
-  clearState,
-  incrementIteration,
-  RalphLoopState
-} from "../../storage"
+import type { Hooks, PluginInput } from '@opencode-ai/plugin'
+import type { Part } from '@opencode-ai/sdk'
+import { readState, writeState, RalphLoopState } from '../../storage'
 
 export interface RalphConfig {
   maxIterations?: number
@@ -31,7 +24,7 @@ const DEFAULT_MAX_ITERATIONS = 24
 
 export function createRalphLoopHook(
   _input: PluginInput,
-  options?: { config?: RalphConfig }
+  options?: { config?: RalphConfig },
 ): Hooks {
   const config = options?.config ?? {
     enabled: true,
@@ -46,7 +39,7 @@ export function createRalphLoopHook(
     const promise = promiseMatch[1].trim()
 
     const taskMatch = text.match(/<user-task>\s*([\s\S]*?)\s*<\/user-task>/i)
-    const task = taskMatch ? taskMatch[1].trim() : text.split("<promise>")[0].trim()
+    const task = taskMatch ? taskMatch[1].trim() : text.split('<promise>')[0].trim()
 
     return { promise, task }
   }
@@ -55,7 +48,7 @@ export function createRalphLoopHook(
     sessionID: string,
     promise: string,
     task: string,
-    maxIterations: number = DEFAULT_MAX_ITERATIONS
+    maxIterations: number = DEFAULT_MAX_ITERATIONS,
   ): RalphLoopState {
     const session: RalphLoopState = {
       sessionID,
@@ -63,7 +56,7 @@ export function createRalphLoopHook(
       task,
       maxIterations,
       currentIteration: 0,
-      status: "active",
+      status: 'active',
       transcript: [],
       startTime: Date.now(),
     }
@@ -73,33 +66,30 @@ export function createRalphLoopHook(
 
   function formatIterations(session: RalphLoopState): string {
     if (session.currentIteration === 0) {
-      return "No previous iterations."
+      return 'No previous iterations.'
     }
 
-    const iterations = session.transcript
-      .slice(-session.currentIteration * 2)
-      .join("\n---\n")
+    const iterations = session.transcript.slice(-session.currentIteration * 2).join('\n---\n')
 
     return iterations || `Iteration ${session.currentIteration} completed.`
   }
 
   function generateIterationPrompt(session: RalphLoopState): string {
-    return RALPH_SYSTEM_PROMPT
-      .replace("{prompt}", session.task)
-      .replace("{promise}", session.promise)
-      .replace("{iterations}", formatIterations(session))
+    return RALPH_SYSTEM_PROMPT.replace('{prompt}', session.task)
+      .replace('{promise}', session.promise)
+      .replace('{iterations}', formatIterations(session))
   }
 
   function getTextFromParts(parts: Part[]): string {
     return parts
-      .filter((p): p is Extract<Part, { type: "text" }> => p.type === "text")
-      .map(p => "text" in p ? p.text : "")
-      .join("\n")
+      .filter((p): p is Extract<Part, { type: 'text' }> => p.type === 'text')
+      .map((p) => ('text' in p ? p.text : ''))
+      .join('\n')
       .trim()
   }
 
   return {
-    "chat.message": async (input, output) => {
+    'chat.message': async (input, output) => {
       if (!config.enabled) return
 
       const { sessionID } = input
@@ -113,24 +103,34 @@ export function createRalphLoopHook(
 
       const existingSession = readState(sessionID)
 
-      if (existingSession && existingSession.status === "active") {
+      if (existingSession && existingSession.status === 'active') {
         existingSession.currentIteration++
-        existingSession.transcript.push(`Iteration ${existingSession.currentIteration}:\n${promptText}\n`)
+        existingSession.transcript.push(
+          `Iteration ${existingSession.currentIteration}:\n${promptText}\n`,
+        )
 
         if (existingSession.currentIteration >= existingSession.maxIterations) {
-          existingSession.status = "maxed_out"
-          console.log(`[ralph-loop] Session ${sessionID} reached max iterations (${existingSession.maxIterations})`)
+          existingSession.status = 'maxed_out'
+          console.log(
+            `[ralph-loop] Session ${sessionID} reached max iterations (${existingSession.maxIterations})`,
+          )
         }
 
         writeState(sessionID, existingSession)
 
-        console.log(`[ralph-loop] Continuing iteration ${existingSession.currentIteration}/${existingSession.maxIterations} for session ${sessionID}`)
-        console.log(`[ralph-loop] Next prompt: ${generateIterationPrompt(existingSession).substring(0, 100)}...`)
+        console.log(
+          `[ralph-loop] Continuing iteration ${existingSession.currentIteration}/${existingSession.maxIterations} for session ${sessionID}`,
+        )
+        console.log(
+          `[ralph-loop] Next prompt: ${generateIterationPrompt(existingSession).substring(0, 100)}...`,
+        )
       } else {
         const maxIterations = config.maxIterations ?? DEFAULT_MAX_ITERATIONS
         const newSession = createSession(sessionID, promise, task, maxIterations)
 
-        console.log(`[ralph-loop] Starting new session ${sessionID} with promise: "${promise.substring(0, 50)}..."`)
+        console.log(
+          `[ralph-loop] Starting new session ${sessionID} with promise: "${promise.substring(0, 50)}..."`,
+        )
         writeState(sessionID, newSession)
         sessions.set(sessionID, newSession)
       }

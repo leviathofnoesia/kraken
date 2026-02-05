@@ -5,9 +5,9 @@ import type {
   CheckResult,
   DoctorSummary,
   CheckCategory,
-} from "./types"
-import { getAllCheckDefinitions } from "./checks"
-import { EXIT_CODES, CATEGORY_NAMES } from "./constants"
+} from './types'
+import { getAllCheckDefinitions } from './checks'
+import { EXIT_CODES, CATEGORY_NAMES } from './constants'
 import {
   formatHeader,
   formatCategoryHeader,
@@ -15,7 +15,7 @@ import {
   formatSummary,
   formatFooter,
   formatJsonOutput,
-} from "./formatter"
+} from './formatter'
 
 export async function runCheck(check: CheckDefinition): Promise<CheckResult> {
   const start = performance.now()
@@ -24,7 +24,7 @@ export async function runCheck(check: CheckDefinition): Promise<CheckResult> {
     result.duration = Math.round(performance.now() - start)
     return result
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : "Unknown error"
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error'
     const errorStack = err instanceof Error ? err.stack : undefined
 
     console.error(`[doctor] Check "${check.name}" failed:`, errorMessage)
@@ -34,7 +34,7 @@ export async function runCheck(check: CheckDefinition): Promise<CheckResult> {
 
     return {
       name: check.name,
-      status: "fail",
+      status: 'fail',
       message: errorMessage,
       duration: Math.round(performance.now() - start),
     }
@@ -44,29 +44,29 @@ export async function runCheck(check: CheckDefinition): Promise<CheckResult> {
 export function calculateSummary(results: CheckResult[], duration: number): DoctorSummary {
   return {
     total: results.length,
-    passed: results.filter((r) => r.status === "pass").length,
-    failed: results.filter((r) => r.status === "fail").length,
-    warnings: results.filter((r) => r.status === "warn").length,
-    skipped: results.filter((r) => r.status === "skip").length,
+    passed: results.filter((r) => r.status === 'pass').length,
+    failed: results.filter((r) => r.status === 'fail').length,
+    warnings: results.filter((r) => r.status === 'warn').length,
+    skipped: results.filter((r) => r.status === 'skip').length,
     duration: Math.round(duration),
   }
 }
 
 export function determineExitCode(results: CheckResult[]): number {
-  const hasFailures = results.some((r) => r.status === "fail")
+  const hasFailures = results.some((r) => r.status === 'fail')
   return hasFailures ? EXIT_CODES.FAILURE : EXIT_CODES.SUCCESS
 }
 
 export function filterChecksByCategory(
   checks: CheckDefinition[],
-  category?: CheckCategory
+  category?: CheckCategory,
 ): CheckDefinition[] {
   if (!category) return checks
   return checks.filter((c) => c.category === category)
 }
 
 export function groupChecksByCategory(
-  checks: CheckDefinition[]
+  checks: CheckDefinition[],
 ): Map<CheckCategory, CheckDefinition[]> {
   const groups = new Map<CheckCategory, CheckDefinition[]>()
 
@@ -80,12 +80,12 @@ export function groupChecksByCategory(
 }
 
 const CATEGORY_ORDER: CheckCategory[] = [
-  "installation",
-  "configuration",
-  "authentication",
-  "dependencies",
-  "tools",
-  "updates",
+  'installation',
+  'configuration',
+  'authentication',
+  'dependencies',
+  'tools',
+  'updates',
 ]
 
 export async function runDoctor(options: DoctorOptions): Promise<DoctorResult> {
@@ -131,7 +131,7 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorResult> {
   if (options.json) {
     console.log(formatJsonOutput(doctorResult))
   } else {
-    console.log("")
+    console.log('')
     console.log(formatSummary(summary))
     console.log(formatFooter(summary))
   }

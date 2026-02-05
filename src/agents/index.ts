@@ -1,14 +1,14 @@
-import { krakenAgent } from "./kraken"
-import { atlasAgent } from "./atlas"
-import { nautilusAgent } from "./nautilus"
-import { abyssalAgent } from "./abyssal"
-import { coralAgent } from "./coral"
-import { sirenAgent } from "./siren"
-import { scyllaAgent } from "./scylla"
-import { pearlAgent } from "./pearl"
-import { maelstromAgent } from "./maelstrom"
-import { leviathanAgent } from "./leviathan"
-import { poseidonAgent } from "./poseidon"
+import { krakenAgent } from './kraken'
+import { atlasAgent } from './atlas'
+import { nautilusAgent } from './nautilus'
+import { abyssalAgent } from './abyssal'
+import { coralAgent } from './coral'
+import { sirenAgent } from './siren'
+import { scyllaAgent } from './scylla'
+import { pearlAgent } from './pearl'
+import { maelstromAgent } from './maelstrom'
+import { leviathanAgent } from './leviathan'
+import { poseidonAgent } from './poseidon'
 
 export const agents = {
   Kraken: krakenAgent,
@@ -26,4 +26,16 @@ export const agents = {
 
 export type AgentName = keyof typeof agents
 
-export { krakenAgent, atlasAgent, nautilusAgent, abyssalAgent, coralAgent, sirenAgent, scyllaAgent, pearlAgent, maelstromAgent, leviathanAgent, poseidonAgent }
+export {
+  krakenAgent,
+  atlasAgent,
+  nautilusAgent,
+  abyssalAgent,
+  coralAgent,
+  sirenAgent,
+  scyllaAgent,
+  pearlAgent,
+  maelstromAgent,
+  leviathanAgent,
+  poseidonAgent,
+}

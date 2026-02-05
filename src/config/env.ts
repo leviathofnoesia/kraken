@@ -1,8 +1,8 @@
-import { z } from "zod"
+import { z } from 'zod'
 
 const EnvironmentSchema = z.object({
-  ANTIGRAVITY_DEBUG: z.enum(["0", "1"]).optional(),
-  DEBUG: z.enum(["1", "true"]).optional(),
+  ANTIGRAVITY_DEBUG: z.enum(['0', '1']).optional(),
+  DEBUG: z.enum(['1', 'true']).optional(),
   CI: z.string().optional(),
   EXA_API_KEY: z.string().min(20).optional(),
   CONTEXT7_API_KEY: z.string().min(20).optional(),
@@ -28,22 +28,20 @@ export function getEnv(): Environment {
 
 export function validateEnv(): { valid: boolean; errors: string[] } {
   const result = EnvironmentSchema.safeParse(process.env)
-  
+
   if (result.success) {
     return { valid: true, errors: [] }
   }
-  
+
   const issues: z.ZodIssue[] = (result.error as any).issues || []
-  const errors = issues.map((err) => 
-    `Environment variable ${err.path.join(".")}: ${err.message}`
-  )
-  
+  const errors = issues.map((err) => `Environment variable ${err.path.join('.')}: ${err.message}`)
+
   return { valid: false, errors }
 }
 
 export function getEnvVar<T extends keyof Environment>(
   key: T,
-  defaultValue: Required<Environment>[T]
+  defaultValue: Required<Environment>[T],
 ): Required<Environment>[T] {
   const env = getEnv()
   return (env[key] ?? defaultValue) as Required<Environment>[T]

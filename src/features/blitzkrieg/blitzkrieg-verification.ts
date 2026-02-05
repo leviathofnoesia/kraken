@@ -221,10 +221,7 @@ export class BuildOutputParser {
    * Count warnings in build output
    */
   private countWarnings(output: string): number {
-    const warningPatterns = [
-      /(warning|Warning|WARNING)[:\s]+/g,
-      /warn[:\s]+/gi,
-    ]
+    const warningPatterns = [/(warning|Warning|WARNING)[:\s]+/g, /warn[:\s]+/gi]
     let count = 0
     for (const pattern of warningPatterns) {
       const matches = output.match(pattern)
@@ -306,9 +303,7 @@ export class TestOutputParser {
     const covered: string[] = []
     for (const pattern of edgeCaseIndicators) {
       if (pattern.test(output)) {
-        const name = pattern.source
-          .replace(/^\^?|\\b|\\/gi, '')
-          .substring(0, 30)
+        const name = pattern.source.replace(/^\^?|\\b|\\/gi, '').substring(0, 30)
         if (!covered.includes(name)) {
           covered.push(name)
         }
@@ -397,7 +392,7 @@ export class CoverageOutputParser {
    */
   private checkThreshold(
     coverage: { statement: number; branch: number; function: number; line: number },
-    threshold: number
+    threshold: number,
   ): boolean {
     const coverages = [coverage.statement, coverage.branch, coverage.function, coverage.line]
     const validCoverages = coverages.filter((c) => c > 0)
@@ -428,14 +423,14 @@ export class BlitzkriegVerification {
     testOutput: string,
     coverageOutput: string,
     config: EvidenceConfig,
-    options: VerificationOptions = DEFAULT_VERIFICATION_OPTIONS
+    options: VerificationOptions = DEFAULT_VERIFICATION_OPTIONS,
   ): VerificationResult {
     const evidence = this.collectEvidence(
       buildOutput,
       buildExitCode,
       testOutput,
       coverageOutput,
-      options.coverageThreshold
+      options.coverageThreshold,
     )
 
     const violations: EvidenceViolation[] = []
@@ -467,7 +462,7 @@ export class BlitzkriegVerification {
     buildExitCode: number,
     testOutput: string,
     coverageOutput: string,
-    coverageThreshold: number
+    coverageThreshold: number,
   ): CollectedEvidence {
     const buildEvidence = this.buildParser.parse(buildOutput, buildExitCode)
     const testEvidence = this.testParser.parse(testOutput)
@@ -487,7 +482,7 @@ export class BlitzkriegVerification {
   private checkBuildEvidence(
     evidence: BuildEvidence,
     violations: EvidenceViolation[],
-    warnings: EvidenceWarning[]
+    warnings: EvidenceWarning[],
   ): void {
     if (!evidence.success) {
       violations.push({
@@ -516,7 +511,7 @@ export class BlitzkriegVerification {
     config: EvidenceConfig,
     violations: EvidenceViolation[],
     warnings: EvidenceWarning[],
-    options: VerificationOptions
+    options: VerificationOptions,
   ): void {
     if (config.requireTestExecutionEvidence && evidence.executionLog === undefined) {
       violations.push({
@@ -553,7 +548,7 @@ export class BlitzkriegVerification {
     config: EvidenceConfig,
     violations: EvidenceViolation[],
     warnings: EvidenceWarning[],
-    options: VerificationOptions
+    options: VerificationOptions,
   ): void {
     if (!evidence.coverageOutput) {
       warnings.push({
@@ -594,7 +589,7 @@ export class BlitzkriegVerification {
   private generateSummary(
     evidence: CollectedEvidence,
     violations: EvidenceViolation[],
-    warnings: EvidenceWarning[]
+    warnings: EvidenceWarning[],
   ): VerificationSummary {
     const testOutput = evidence.testEvidence.executionLog || ''
 
@@ -641,7 +636,7 @@ export class BlitzkriegVerification {
     coverageOutput: string,
     testPlanState: TestPlanState,
     config: BlitzkriegConfig,
-    options: VerificationOptions = DEFAULT_VERIFICATION_OPTIONS
+    options: VerificationOptions = DEFAULT_VERIFICATION_OPTIONS,
   ): VerificationResult {
     const result = this.verify(
       buildOutput,
@@ -649,7 +644,7 @@ export class BlitzkriegVerification {
       testOutput,
       coverageOutput,
       config.evidence,
-      options
+      options,
     )
 
     const testPlanSummary = generateTestPlanSummary(testPlanState)
@@ -661,7 +656,7 @@ export class BlitzkriegVerification {
         coverageThresholdPercent: config.testPlan.coverageThresholdPercent,
         requiredBeforeImplementation: config.testPlan.requiredBeforeImplementation,
       },
-      DEFAULT_TEST_PLAN_VALIDATION_OPTIONS
+      DEFAULT_TEST_PLAN_VALIDATION_OPTIONS,
     )
 
     if (!testPlanResult.valid && options.strictMode) {
@@ -702,7 +697,7 @@ export function verifyEvidence(
   testOutput: string,
   coverageOutput: string,
   config: EvidenceConfig,
-  options?: VerificationOptions
+  options?: VerificationOptions,
 ): VerificationResult {
   const verification = createBlitzkriegVerification()
   return verification.verify(
@@ -711,7 +706,7 @@ export function verifyEvidence(
     testOutput,
     coverageOutput,
     config,
-    options
+    options,
   )
 }
 
@@ -725,7 +720,7 @@ export function verifyWithBlitzkriegConfig(
   coverageOutput: string,
   testPlanState: TestPlanState,
   blitzkriegConfig: BlitzkriegConfig,
-  options?: VerificationOptions
+  options?: VerificationOptions,
 ): VerificationResult {
   const verification = createBlitzkriegVerification()
   return verification.verifyWithTestPlan(
@@ -735,17 +730,14 @@ export function verifyWithBlitzkriegConfig(
     coverageOutput,
     testPlanState,
     blitzkriegConfig,
-    options
+    options,
   )
 }
 
 /**
  * Parse build output to evidence
  */
-export function parseBuildEvidence(
-  output: string,
-  exitCode: number
-): BuildEvidence {
+export function parseBuildEvidence(output: string, exitCode: number): BuildEvidence {
   const parser = new BuildOutputParser()
   return parser.parse(output, exitCode)
 }
@@ -761,10 +753,7 @@ export function parseTestEvidence(output: string): TestEvidence {
 /**
  * Parse coverage output to evidence
  */
-export function parseCoverageEvidence(
-  output: string,
-  threshold: number = 80
-): CoverageEvidence {
+export function parseCoverageEvidence(output: string, threshold: number = 80): CoverageEvidence {
   const parser = new CoverageOutputParser()
   return parser.parse(output, threshold)
 }
@@ -825,8 +814,14 @@ export function createEvidenceReport(testFilePaths: string[] = []): EvidenceRepo
 
 export function legacyVerifyEvidence(
   report: EvidenceReport,
-  requirements: EvidenceRequirements
-): { passed: boolean; missingEvidence: string[]; confidenceScore: number; warnings: string[]; coverageMet?: boolean } {
+  requirements: EvidenceRequirements,
+): {
+  passed: boolean
+  missingEvidence: string[]
+  confidenceScore: number
+  warnings: string[]
+  coverageMet?: boolean
+} {
   const missingEvidence: string[] = []
   const warnings: string[] = []
   let confidenceScore = 100
@@ -857,11 +852,15 @@ export function legacyVerifyEvidence(
     confidenceScore -= 20
   }
 
-  const coverageMet = !requirements.coverageThreshold ||
-    (report.coveragePercent !== undefined && report.coveragePercent >= requirements.coverageThreshold)
+  const coverageMet =
+    !requirements.coverageThreshold ||
+    (report.coveragePercent !== undefined &&
+      report.coveragePercent >= requirements.coverageThreshold)
 
   if (!coverageMet && report.coveragePercent !== undefined) {
-    warnings.push(`Coverage (${report.coveragePercent}%) is below threshold (${requirements.coverageThreshold}%)`)
+    warnings.push(
+      `Coverage (${report.coveragePercent}%) is below threshold (${requirements.coverageThreshold}%)`,
+    )
     confidenceScore -= 15
   }
 
@@ -876,9 +875,10 @@ export function legacyVerifyEvidence(
   }
 }
 
-export function extractDeficiencies(
-  result: { missingEvidence: string[]; warnings: string[] }
-): EvidenceDeficiency[] {
+export function extractDeficiencies(result: {
+  missingEvidence: string[]
+  warnings: string[]
+}): EvidenceDeficiency[] {
   const deficiencies: EvidenceDeficiency[] = []
 
   for (const missing of result.missingEvidence) {
@@ -933,14 +933,18 @@ export function extractDeficiencies(
 
 export function isVerificationSufficient(
   result: { passed: boolean; confidenceScore: number },
-  minConfidenceScore: number = 70
+  minConfidenceScore: number = 70,
 ): boolean {
   return result.passed && result.confidenceScore >= minConfidenceScore
 }
 
-export function generateVerificationSummary(
-  result: { passed: boolean; missingEvidence: string[]; warnings: string[]; coverageMet?: boolean; confidenceScore?: number }
-): string {
+export function generateVerificationSummary(result: {
+  passed: boolean
+  missingEvidence: string[]
+  warnings: string[]
+  coverageMet?: boolean
+  confidenceScore?: number
+}): string {
   const lines: string[] = []
 
   lines.push(`Verification ${result.passed ? 'PASSED' : 'FAILED'}`)
@@ -968,5 +972,3 @@ export function generateVerificationSummary(
 
   return lines.join('\n')
 }
-
-

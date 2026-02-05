@@ -24,30 +24,25 @@
  * ```
  */
 
-import type { Auth, Provider } from "@opencode-ai/sdk"
-import type { AuthHook, AuthOuathResult, PluginInput } from "@opencode-ai/plugin"
+import type { Auth, Provider } from '@opencode-ai/sdk'
+import type { AuthHook, AuthOuathResult, PluginInput } from '@opencode-ai/plugin'
 
-import { ANTIGRAVITY_CLIENT_ID, ANTIGRAVITY_CLIENT_SECRET } from "./constants"
-import {
-  buildAuthURL,
-  exchangeCode,
-  startCallbackServer,
-  fetchUserInfo,
-} from "./oauth"
-import { createAntigravityFetch } from "./fetch"
-import { fetchProjectContext } from "./project"
-import { formatTokenForStorage, parseStoredToken } from "./token"
-import { AccountManager } from "./accounts"
-import { loadAccounts } from "./storage"
-import { promptAddAnotherAccount, promptAccountTier } from "./cli"
-import { openBrowserURL } from "./browser"
-import type { AccountTier, AntigravityRefreshParts } from "./types"
+import { ANTIGRAVITY_CLIENT_ID, ANTIGRAVITY_CLIENT_SECRET } from './constants'
+import { buildAuthURL, exchangeCode, startCallbackServer, fetchUserInfo } from './oauth'
+import { createAntigravityFetch } from './fetch'
+import { fetchProjectContext } from './project'
+import { formatTokenForStorage, parseStoredToken } from './token'
+import { AccountManager } from './accounts'
+import { loadAccounts } from './storage'
+import { promptAddAnotherAccount, promptAccountTier } from './cli'
+import { openBrowserURL } from './browser'
+import type { AccountTier, AntigravityRefreshParts } from './types'
 
 /**
  * Provider ID for Google models
  * Antigravity is an auth method for Google, not a separate provider
  */
-const GOOGLE_PROVIDER_ID = "google"
+const GOOGLE_PROVIDER_ID = 'google'
 
 /**
  * Maximum number of Google accounts that can be added
@@ -58,9 +53,9 @@ const MAX_ACCOUNTS = 10
  * Type guard to check if auth is OAuth type
  */
 function isOAuthAuth(
-  auth: Auth
-): auth is { type: "oauth"; access: string; refresh: string; expires: number } {
-  return auth.type === "oauth"
+  auth: Auth,
+): auth is { type: 'oauth'; access: string; refresh: string; expires: number } {
+  return auth.type === 'oauth'
 }
 
 /**
@@ -106,25 +101,25 @@ export async function createGoogleAntigravityAuthPlugin({
      */
     loader: async (
       auth: () => Promise<Auth>,
-      provider: Provider
+      provider: Provider,
     ): Promise<Record<string, unknown>> => {
       const currentAuth = await auth()
-      
-      if (process.env.ANTIGRAVITY_DEBUG === "1") {
-        console.log("[antigravity-plugin] loader called")
-        console.log("[antigravity-plugin] auth type:", currentAuth?.type)
-        console.log("[antigravity-plugin] auth keys:", Object.keys(currentAuth || {}))
+
+      if (process.env.ANTIGRAVITY_DEBUG === '1') {
+        console.log('[antigravity-plugin] loader called')
+        console.log('[antigravity-plugin] auth type:', currentAuth?.type)
+        console.log('[antigravity-plugin] auth keys:', Object.keys(currentAuth || {}))
       }
-      
+
       if (!isOAuthAuth(currentAuth)) {
-        if (process.env.ANTIGRAVITY_DEBUG === "1") {
-          console.log("[antigravity-plugin] NOT OAuth auth, returning empty")
+        if (process.env.ANTIGRAVITY_DEBUG === '1') {
+          console.log('[antigravity-plugin] NOT OAuth auth, returning empty')
         }
         return {}
       }
-      
-      if (process.env.ANTIGRAVITY_DEBUG === "1") {
-        console.log("[antigravity-plugin] OAuth auth detected, creating custom fetch")
+
+      if (process.env.ANTIGRAVITY_DEBUG === '1') {
+        console.log('[antigravity-plugin] OAuth auth detected, creating custom fetch')
       }
 
       let accountManager: AccountManager | null = null
@@ -132,62 +127,64 @@ export async function createGoogleAntigravityAuthPlugin({
         const storedAccounts = await loadAccounts()
         if (storedAccounts) {
           accountManager = new AccountManager(currentAuth, storedAccounts)
-          if (process.env.ANTIGRAVITY_DEBUG === "1") {
-            console.log(`[antigravity-plugin] Loaded ${accountManager.getAccountCount()} accounts from storage`)
+          if (process.env.ANTIGRAVITY_DEBUG === '1') {
+            console.log(
+              `[antigravity-plugin] Loaded ${accountManager.getAccountCount()} accounts from storage`,
+            )
           }
-        } else if (currentAuth.refresh.includes("|||")) {
-          const tokens = currentAuth.refresh.split("|||")
-          const firstToken = tokens[0]!
+        } else if (currentAuth.refresh.includes('|||')) {
+          const tokens = currentAuth.refresh.split('|||')
+          const firstToken = tokens[0]
           accountManager = new AccountManager(
-            { refresh: firstToken, access: currentAuth.access || "", expires: currentAuth.expires || 0 },
-            null
+            {
+              refresh: firstToken,
+              access: currentAuth.access || '',
+              expires: currentAuth.expires || 0,
+            },
+            null,
           )
           for (let i = 1; i < tokens.length; i++) {
-            const parts = parseStoredToken(tokens[i]!)
+            const parts = parseStoredToken(tokens[i])
             accountManager.addAccount(parts)
           }
           await accountManager.save()
-          if (process.env.ANTIGRAVITY_DEBUG === "1") {
-            console.log("[antigravity-plugin] Migrated multi-account auth to storage")
+          if (process.env.ANTIGRAVITY_DEBUG === '1') {
+            console.log('[antigravity-plugin] Migrated multi-account auth to storage')
           }
         }
       } catch (error) {
-        if (process.env.ANTIGRAVITY_DEBUG === "1") {
+        if (process.env.ANTIGRAVITY_DEBUG === '1') {
           console.error(
             `[antigravity-plugin] Failed to load accounts: ${
-              error instanceof Error ? error.message : "Unknown error"
-            }`
+              error instanceof Error ? error.message : 'Unknown error'
+            }`,
           )
         }
       }
 
-      cachedClientId =
-        (provider.options?.clientId as string) || ANTIGRAVITY_CLIENT_ID
-      cachedClientSecret =
-        (provider.options?.clientSecret as string) || ANTIGRAVITY_CLIENT_SECRET
+      cachedClientId = (provider.options?.clientId as string) || ANTIGRAVITY_CLIENT_ID
+      cachedClientSecret = (provider.options?.clientSecret as string) || ANTIGRAVITY_CLIENT_SECRET
 
       // Log if using custom credentials (for debugging)
       if (
-        process.env.ANTIGRAVITY_DEBUG === "1" &&
+        process.env.ANTIGRAVITY_DEBUG === '1' &&
         (cachedClientId !== ANTIGRAVITY_CLIENT_ID ||
           cachedClientSecret !== ANTIGRAVITY_CLIENT_SECRET)
       ) {
-        console.log(
-          "[antigravity-plugin] Using custom credentials from provider.options"
-        )
+        console.log('[antigravity-plugin] Using custom credentials from provider.options')
       }
 
       // Create adapter for client.auth.set that matches fetch.ts AuthClient interface
       const authClient = {
         set: async (
           providerId: string,
-          authData: { access?: string; refresh?: string; expires?: number }
+          authData: { access?: string; refresh?: string; expires?: number },
         ) => {
           await client.auth.set({
             body: {
-              type: "oauth",
-              access: authData.access || "",
-              refresh: authData.refresh || "",
+              type: 'oauth',
+              access: authData.access || '',
+              refresh: authData.refresh || '',
               expires: authData.expires || 0,
             },
             path: { id: providerId },
@@ -217,12 +214,12 @@ export async function createGoogleAntigravityAuthPlugin({
         authClient,
         GOOGLE_PROVIDER_ID,
         cachedClientId,
-        cachedClientSecret
+        cachedClientSecret,
       )
 
       return {
         fetch: antigravityFetch,
-        apiKey: "antigravity-oauth",
+        apiKey: 'antigravity-oauth',
         accountManager,
       }
     },
@@ -233,8 +230,8 @@ export async function createGoogleAntigravityAuthPlugin({
      */
     methods: [
       {
-        type: "oauth",
-        label: "OAuth with Google (Antigravity)",
+        type: 'oauth',
+        label: 'OAuth with Google (Antigravity)',
         // NO prompts - credentials come from provider.options or defaults
         // OAuth flow starts immediately when user selects this method
 
@@ -247,7 +244,11 @@ export async function createGoogleAntigravityAuthPlugin({
          */
         authorize: async (): Promise<AuthOuathResult> => {
           const serverHandle = startCallbackServer()
-          const { url, state: expectedState } = await buildAuthURL(undefined, cachedClientId, serverHandle.port)
+          const { url, state: expectedState } = await buildAuthURL(
+            undefined,
+            cachedClientId,
+            serverHandle.port,
+          )
 
           const browserOpened = await openBrowserURL(url)
 
@@ -255,50 +256,55 @@ export async function createGoogleAntigravityAuthPlugin({
             url,
             instructions: browserOpened
               ? "Opening browser for sign-in. We'll automatically detect when you're done."
-              : "Please open the URL above in your browser to sign in.",
-            method: "auto",
+              : 'Please open the URL above in your browser to sign in.',
+            method: 'auto',
 
             callback: async () => {
               try {
                 const result = await serverHandle.waitForCallback()
 
                 if (result.error) {
-                  if (process.env.ANTIGRAVITY_DEBUG === "1") {
+                  if (process.env.ANTIGRAVITY_DEBUG === '1') {
                     console.error(`[antigravity-plugin] OAuth error: ${result.error}`)
                   }
-                  return { type: "failed" as const }
+                  return { type: 'failed' as const }
                 }
 
                 if (!result.code) {
-                  if (process.env.ANTIGRAVITY_DEBUG === "1") {
-                    console.error("[antigravity-plugin] No authorization code received")
+                  if (process.env.ANTIGRAVITY_DEBUG === '1') {
+                    console.error('[antigravity-plugin] No authorization code received')
                   }
-                  return { type: "failed" as const }
+                  return { type: 'failed' as const }
                 }
 
                 if (result.state !== expectedState) {
-                  if (process.env.ANTIGRAVITY_DEBUG === "1") {
-                    console.error("[antigravity-plugin] State mismatch - possible CSRF attack")
+                  if (process.env.ANTIGRAVITY_DEBUG === '1') {
+                    console.error('[antigravity-plugin] State mismatch - possible CSRF attack')
                   }
-                  return { type: "failed" as const }
+                  return { type: 'failed' as const }
                 }
 
                 const redirectUri = `http://localhost:${serverHandle.port}/oauth-callback`
-                const tokens = await exchangeCode(result.code, redirectUri, cachedClientId, cachedClientSecret)
+                const tokens = await exchangeCode(
+                  result.code,
+                  redirectUri,
+                  cachedClientId,
+                  cachedClientSecret,
+                )
 
                 if (!tokens.refresh_token) {
                   serverHandle.close()
-                  if (process.env.ANTIGRAVITY_DEBUG === "1") {
-                    console.error("[antigravity-plugin] OAuth response missing refresh_token")
+                  if (process.env.ANTIGRAVITY_DEBUG === '1') {
+                    console.error('[antigravity-plugin] OAuth response missing refresh_token')
                   }
-                  return { type: "failed" as const }
+                  return { type: 'failed' as const }
                 }
 
                 let email: string | undefined
                 try {
                   const userInfo = await fetchUserInfo(tokens.access_token)
                   email = userInfo.email
-                  if (process.env.ANTIGRAVITY_DEBUG === "1") {
+                  if (process.env.ANTIGRAVITY_DEBUG === '1') {
                     console.log(`[antigravity-plugin] Authenticated as: ${email}`)
                   }
                 } catch {
@@ -306,7 +312,7 @@ export async function createGoogleAntigravityAuthPlugin({
                 }
 
                 const projectContext = await fetchProjectContext(tokens.access_token)
-                const projectId = projectContext.cloudaicompanionProject || ""
+                const projectId = projectContext.cloudaicompanionProject || ''
                 const tier = await promptAccountTier()
 
                 const expires = Date.now() + tokens.expires_in * 1000
@@ -317,23 +323,25 @@ export async function createGoogleAntigravityAuthPlugin({
                   email?: string
                   tier: AccountTier
                   projectId: string
-                }> = [{
-                  parts: {
-                    refreshToken: tokens.refresh_token,
+                }> = [
+                  {
+                    parts: {
+                      refreshToken: tokens.refresh_token,
+                      projectId,
+                      managedProjectId: projectContext.managedProjectId,
+                    },
+                    access: tokens.access_token,
+                    expires,
+                    email,
+                    tier,
                     projectId,
-                    managedProjectId: projectContext.managedProjectId,
                   },
-                  access: tokens.access_token,
-                  expires,
-                  email,
-                  tier,
-                  projectId,
-                }]
+                ]
 
                 await client.tui.showToast({
                   body: {
-                    message: `Account 1 authenticated${email ? ` (${email})` : ""}`,
-                    variant: "success",
+                    message: `Account 1 authenticated${email ? ` (${email})` : ''}`,
+                    variant: 'success',
                   },
                 })
 
@@ -345,7 +353,7 @@ export async function createGoogleAntigravityAuthPlugin({
                   const { url: additionalUrl, state: expectedAdditionalState } = await buildAuthURL(
                     undefined,
                     cachedClientId,
-                    additionalServerHandle.port
+                    additionalServerHandle.port,
                   )
 
                   const additionalBrowserOpened = await openBrowserURL(additionalUrl)
@@ -353,7 +361,7 @@ export async function createGoogleAntigravityAuthPlugin({
                     await client.tui.showToast({
                       body: {
                         message: `Please open in browser: ${additionalUrl}`,
-                        variant: "warning",
+                        variant: 'warning',
                       },
                     })
                   }
@@ -365,8 +373,8 @@ export async function createGoogleAntigravityAuthPlugin({
                       additionalServerHandle.close()
                       await client.tui.showToast({
                         body: {
-                          message: "Skipping this account...",
-                          variant: "warning",
+                          message: 'Skipping this account...',
+                          variant: 'warning',
                         },
                       })
                       continue
@@ -376,8 +384,8 @@ export async function createGoogleAntigravityAuthPlugin({
                       additionalServerHandle.close()
                       await client.tui.showToast({
                         body: {
-                          message: "State mismatch, skipping...",
-                          variant: "warning",
+                          message: 'State mismatch, skipping...',
+                          variant: 'warning',
                         },
                       })
                       continue
@@ -388,18 +396,20 @@ export async function createGoogleAntigravityAuthPlugin({
                       additionalResult.code,
                       additionalRedirectUri,
                       cachedClientId,
-                      cachedClientSecret
+                      cachedClientSecret,
                     )
 
                     if (!additionalTokens.refresh_token) {
                       additionalServerHandle.close()
-                      if (process.env.ANTIGRAVITY_DEBUG === "1") {
-                        console.error("[antigravity-plugin] Additional account OAuth response missing refresh_token")
+                      if (process.env.ANTIGRAVITY_DEBUG === '1') {
+                        console.error(
+                          '[antigravity-plugin] Additional account OAuth response missing refresh_token',
+                        )
                       }
                       await client.tui.showToast({
                         body: {
-                          message: "Account missing refresh token, skipping...",
-                          variant: "warning",
+                          message: 'Account missing refresh token, skipping...',
+                          variant: 'warning',
                         },
                       })
                       continue
@@ -413,8 +423,11 @@ export async function createGoogleAntigravityAuthPlugin({
                       // User info is optional
                     }
 
-                    const additionalProjectContext = await fetchProjectContext(additionalTokens.access_token)
-                    const additionalProjectId = additionalProjectContext.cloudaicompanionProject || ""
+                    const additionalProjectContext = await fetchProjectContext(
+                      additionalTokens.access_token,
+                    )
+                    const additionalProjectId =
+                      additionalProjectContext.cloudaicompanionProject || ''
                     const additionalTier = await promptAccountTier()
 
                     const additionalExpires = Date.now() + additionalTokens.expires_in * 1000
@@ -436,52 +449,52 @@ export async function createGoogleAntigravityAuthPlugin({
 
                     await client.tui.showToast({
                       body: {
-                        message: `Account ${accounts.length} authenticated${additionalEmail ? ` (${additionalEmail})` : ""}`,
-                        variant: "success",
+                        message: `Account ${accounts.length} authenticated${additionalEmail ? ` (${additionalEmail})` : ''}`,
+                        variant: 'success',
                       },
                     })
                   } catch (error) {
                     additionalServerHandle.close()
-                    if (process.env.ANTIGRAVITY_DEBUG === "1") {
+                    if (process.env.ANTIGRAVITY_DEBUG === '1') {
                       console.error(
                         `[antigravity-plugin] Additional account OAuth failed: ${
-                          error instanceof Error ? error.message : "Unknown error"
-                        }`
+                          error instanceof Error ? error.message : 'Unknown error'
+                        }`,
                       )
                     }
                     await client.tui.showToast({
                       body: {
-                        message: "Failed to authenticate additional account, skipping...",
-                        variant: "warning",
+                        message: 'Failed to authenticate additional account, skipping...',
+                        variant: 'warning',
                       },
                     })
                     continue
                   }
                 }
 
-                const firstAccount = accounts[0]!
+                const firstAccount = accounts[0]
                 try {
                   const accountManager = new AccountManager(
                     {
                       refresh: formatTokenForStorage(
                         firstAccount.parts.refreshToken,
                         firstAccount.projectId,
-                        firstAccount.parts.managedProjectId
+                        firstAccount.parts.managedProjectId,
                       ),
                       access: firstAccount.access,
                       expires: firstAccount.expires,
                     },
-                    null
+                    null,
                   )
 
                   for (let i = 1; i < accounts.length; i++) {
-                    const acc = accounts[i]!
+                    const acc = accounts[i]
                     accountManager.addAccount(
                       acc.parts,
                       acc.access,
                       acc.expires,
                       acc.email,
-                      acc.tier
+                      acc.tier,
                     )
                   }
 
@@ -493,43 +506,45 @@ export async function createGoogleAntigravityAuthPlugin({
 
                   await accountManager.save()
 
-                  if (process.env.ANTIGRAVITY_DEBUG === "1") {
+                  if (process.env.ANTIGRAVITY_DEBUG === '1') {
                     console.log(`[antigravity-plugin] Saved ${accounts.length} accounts to storage`)
                   }
                 } catch (error) {
-                  if (process.env.ANTIGRAVITY_DEBUG === "1") {
+                  if (process.env.ANTIGRAVITY_DEBUG === '1') {
                     console.error(
                       `[antigravity-plugin] Failed to save accounts: ${
-                        error instanceof Error ? error.message : "Unknown error"
-                      }`
+                        error instanceof Error ? error.message : 'Unknown error'
+                      }`,
                     )
                   }
                 }
 
                 const allRefreshTokens = accounts
-                  .map((acc) => formatTokenForStorage(
-                    acc.parts.refreshToken,
-                    acc.projectId,
-                    acc.parts.managedProjectId
-                  ))
-                  .join("|||")
+                  .map((acc) =>
+                    formatTokenForStorage(
+                      acc.parts.refreshToken,
+                      acc.projectId,
+                      acc.parts.managedProjectId,
+                    ),
+                  )
+                  .join('|||')
 
                 return {
-                  type: "success" as const,
+                  type: 'success' as const,
                   access: firstAccount.access,
                   refresh: allRefreshTokens,
                   expires: firstAccount.expires,
                 }
               } catch (error) {
                 serverHandle.close()
-                if (process.env.ANTIGRAVITY_DEBUG === "1") {
+                if (process.env.ANTIGRAVITY_DEBUG === '1') {
                   console.error(
                     `[antigravity-plugin] OAuth flow failed: ${
-                      error instanceof Error ? error.message : "Unknown error"
-                    }`
+                      error instanceof Error ? error.message : 'Unknown error'
+                    }`,
                   )
                 }
-                return { type: "failed" as const }
+                return { type: 'failed' as const }
               }
             },
           }
