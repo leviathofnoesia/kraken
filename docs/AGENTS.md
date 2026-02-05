@@ -134,7 +134,7 @@ Kraken Code provides a suite of sea-themed AI agents, each specialized for speci
 
 ### Decision Tree
 
-```
+```text
 Task Type?
 ├─ Visual/UI Design? → Coral
 ├─ External Library/API Research? → Abyssal
@@ -145,7 +145,7 @@ Task Type?
 ├─ Codebase Search (>2 modules)? → Nautilus
 ├─ Pre-Planning/Requirements Analysis? → Poseidon
 ├─ Complex Multi-Step Planning? → Cartographer
-└─ Default/Orchestration → Kraken
+└─ Default Orchestration → Kraken
 ```
 
 ### When to Use Multiple Agents

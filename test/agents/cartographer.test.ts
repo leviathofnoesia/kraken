@@ -37,11 +37,14 @@ describe('Cartographer', () => {
       })
     })
 
-    it('should NOT have write/edit/task restrictions', () => {
+    it('should have planning-only tool restrictions', () => {
       const config = createCartographerConfig()
       expect(config).toBeDefined()
-      // Cartographer can delegate to subagents, so should have access to tools
+      // Cartographer can delegate to subagents, but cannot write/edit/task
       // Only prevents loops to other planning agents
+      expect(config.tools?.write).toBe('deny')
+      expect(config.tools?.edit).toBe('deny')
+      expect(config.tools?.task).toBe('deny')
     })
   })
 
