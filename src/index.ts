@@ -82,6 +82,7 @@ import { createPreemptiveCompaction } from './hooks/preemptive-compaction'
 import { createSessionRecovery } from './hooks/session-recovery'
 import { createThinkingBlockValidator } from './hooks/thinking-block-validator'
 import { createCommentChecker } from './hooks/comment-checker'
+import { createMemoryGuard, createToolThrottle, createSessionLifecycle } from './hooks'
 import { createBlitzkriegTestPlanEnforcerHook } from './hooks/blitzkrieg-test-plan-enforcer'
 import { createBlitzkriegTddWorkflowHook } from './hooks/blitzkrieg-tdd-workflow'
 import { createBlitzkriegEvidenceVerifierHook } from './hooks/blitzkrieg-evidence-verifier'
@@ -249,7 +250,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
             await initializeCommandLoader()
             logger.debug('Command loader initialized')
           } catch (e) {
-            if (process.env.ANTIGRAVITY_DEBUG === "1" || process.env.DEBUG === "1") {
+            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
               logger.error('Error initializing command loader:', e)
             }
           }
@@ -259,7 +260,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
             await initializeSkillMcpManager()
             logger.debug('Skill MCP manager initialized')
           } catch (e) {
-            if (process.env.ANTIGRAVITY_DEBUG === "1" || process.env.DEBUG === "1") {
+            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
               logger.error('Error initializing skill MCP manager:', e)
             }
           }
@@ -270,7 +271,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
             await initializeAllMcpServers(mcpConfig)
             logger.debug('MCP servers initialized')
           } catch (e) {
-            if (process.env.ANTIGRAVITY_DEBUG === "1" || process.env.DEBUG === "1") {
+            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
               logger.error('Error initializing MCP servers:', e)
             }
           }
@@ -280,7 +281,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
             await initializeLearning()
             logger.debug('Learning system initialized')
           } catch (e) {
-            if (process.env.ANTIGRAVITY_DEBUG === "1" || process.env.DEBUG === "1") {
+            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
               logger.error('Error initializing learning system:', e)
             }
           }
@@ -312,12 +313,18 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     hooks.push(createSessionRecovery(input))
     hooks.push(createThinkingBlockValidator(input))
     hooks.push(createCommentChecker(input))
+
+    // Memory leak prevention hooks - ensure these are ordered appropriately
+    hooks.push(createMemoryGuard(input))
+    hooks.push(createToolThrottle(input))
+    hooks.push(createSessionLifecycle(input))
+
     hooks.push(createBlitzkriegTestPlanEnforcerHook())
     hooks.push(createBlitzkriegTddWorkflowHook())
     hooks.push(createBlitzkriegEvidenceVerifierHook())
     hooks.push(createBlitzkriegPlannerConstraintsHook())
   } catch (e) {
-    if (process.env.ANTIGRAVITY_DEBUG === "1" || process.env.DEBUG === "1") {
+    if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
       logger.error('Error initializing hooks:', e)
     }
   }
@@ -334,7 +341,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         await recordToolUse(sessionID, tool, output.output.toolInput, output.output.toolOutput)
       }
 
-      if (sessionID && (process.env.ANTIGRAVITY_DEBUG === "1" || process.env.DEBUG === "1")) {
+      if (sessionID && (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1')) {
         console.log(`[storage-hooks] Tool ${tool} completed for session ${sessionID}`)
       }
     },
