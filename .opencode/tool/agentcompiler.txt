@@ -1,0 +1,21 @@
+Use this tool to manage AGENTS.md documentation indexes via AgentCompiler.
+
+AgentCompiler detects frameworks in the repository, fetches version-matched documentation, compresses it into indexes, and injects them into AGENTS.md between managed markers. This ensures agents always have access to up-to-date framework documentation.
+
+Commands:
+- compile (default): Scan project and generate/update AGENTS.md documentation indexes
+- check: Verify AGENTS.md indexes are current (no staleness)
+- watch: Monitor for framework changes and auto-regenerate indexes
+- sync: Sync installed skills.sh skills to AGENTS.md
+- suggest: Suggest skills.sh skills based on your project
+
+Use this tool when:
+- You need to update AGENTS.md after adding new dependencies
+- AGENTS.md indexes appear stale or missing
+- You want to verify the documentation pipeline is working
+
+Examples:
+- Regenerate all indexes: agentcompiler { "command": "compile" }
+- Check for staleness: agentcompiler { "command": "compile", "check": true }
+- Monitor for changes: agentcompiler { "command": "watch" }
+- Suggest new skills: agentcompiler { "command": "suggest" }
