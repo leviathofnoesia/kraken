@@ -38,7 +38,7 @@ async function runAstGrep(
   }
 
   try {
-    const { stdout, stderr } = await execFileAsync("ast-grep", args, {
+    const { stdout, stderr } = await execFileAsync("sg", args, {
       maxBuffer: 10 * 1024 * 1024,
       timeout: 30000,
     })

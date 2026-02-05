@@ -45,7 +45,13 @@
     "format:check": "prettier --check \"src/**/*.ts\"",
     "test": "bun test",
     "test:watch": "bun test --watch",
-    "install:curl": "bash scripts/install-curl.sh"
+    "install:curl": "bash scripts/install-curl.sh",
+    "agent:docs": "npx skill-compiler compile",
+    "agent:docs:watch": "npx skill-compiler watch",
+    "agent:docs:check": "npx skill-compiler compile --check",
+    "agent:docs:suggest": "npx skill-compiler suggest",
+    "agent:docs:sync": "npx skill-compiler sync",
+    "postinstall": "npx skill-compiler compile --silent"
   },
   "keywords": [
     "opencode",
@@ -112,6 +118,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "prettier": "^3.0.0",
+    "skill-compiler": "latest",
     "typescript": "^5.9.3",
     "typescript-language-server": "^5.1.3"
   },
