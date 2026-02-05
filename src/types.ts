@@ -66,6 +66,7 @@ export type BuiltinAgentName =
   | 'Leviathan'
   | 'Poseidon (Plan Consultant)'
   | 'Scylla (Plan Reviewer)'
+  | 'Cartographer'
   | 'orchestrator-kraken'
 
 export type OverridableAgentName = 'build' | 'plan' | BuiltinAgentName

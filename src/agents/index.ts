@@ -9,6 +9,7 @@ import { pearlAgent } from './pearl'
 import { maelstromAgent } from './maelstrom'
 import { leviathanAgent } from './leviathan'
 import { poseidonAgent } from './poseidon'
+import { cartographerAgent } from './cartographer'
 
 export const agents = {
   Kraken: krakenAgent,
@@ -22,6 +23,7 @@ export const agents = {
   Maelstrom: maelstromAgent,
   Leviathan: leviathanAgent,
   Poseidon: poseidonAgent,
+  Cartographer: cartographerAgent,
 }
 
 export type AgentName = keyof typeof agents
@@ -38,4 +40,5 @@ export {
   maelstromAgent,
   leviathanAgent,
   poseidonAgent,
+  cartographerAgent,
 }

@@ -21,7 +21,7 @@ Kraken is a professional OpenCode plugin that adds intelligent agent orchestrati
 
 ## Features
 
-- **11 Specialized Agents** - Intelligent routing to context-aware specialists (Atlas, Nautilus, Abyssal, Coral, Siren, Scylla, Pearl, Maelstrom, Leviathan, Poseidon, and Kraken for orchestration)
+- **12 Specialized Agents** - Intelligent routing to context-aware specialists (Atlas, Nautilus, Abyssal, Coral, Siren, Scylla, Pearl, Maelstrom, Leviathan, Poseidon, Cartographer, and Kraken for orchestration)
 - **Production Workflows** - Blitzkrieg TDD enforcement, test planning, and evidence verification
 - **Learning Memory** - Persistent experiences, knowledge graphs, and pattern detection across sessions
 - **MCP Integration** - Built-in web search, documentation lookup, and code search servers

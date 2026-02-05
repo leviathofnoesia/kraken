@@ -17,6 +17,7 @@ import {
   maelstromAgent,
   leviathanAgent,
   poseidonAgent,
+  cartographerAgent,
 } from './agents'
 
 // Tools
@@ -118,6 +119,7 @@ function getSeaThemedAgents(): Record<string, AgentConfig> {
     Maelstrom: maelstromAgent,
     Leviathan: leviathanAgent,
     Poseidon: poseidonAgent,
+    Cartographer: cartographerAgent,
   }
 }
 
