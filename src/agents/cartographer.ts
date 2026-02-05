@@ -466,7 +466,7 @@ export function createCartographerConfig(model: string = DEFAULT_MODEL): AgentCo
   return {
     description:
       'Advanced planning agent combining hierarchical task decomposition, graph-based modeling, and subagent delegation in fixed order. Integrates bleeding-edge AI planning research with static analysis.',
-    mode: 'subagent' as const,
+    mode: 'primary' as const,
     model,
     temperature: 0.2,
     prompt: CARTOGRAPHER_SYSTEM_PROMPT,

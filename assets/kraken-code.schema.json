@@ -178,6 +178,134 @@
             }
           }
         },
+        "Cartographer": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "temperature": {
+              "type": "number"
+            },
+            "top_p": {
+              "type": "number"
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "prompt_append": {
+              "type": "string"
+            },
+            "tools": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "boolean"
+              }
+            },
+            "disable": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "subagent",
+                "primary",
+                "all"
+              ]
+            },
+            "color": {
+              "type": "string"
+            },
+            "permission": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string",
+                    "enum": [
+                      "allow",
+                      "ask",
+                      "deny"
+                    ]
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "edit": {
+                      "type": "string",
+                      "enum": [
+                        "allow",
+                        "ask",
+                        "deny"
+                      ]
+                    },
+                    "bash": {
+                      "anyOf": [
+                        {
+                          "type": "string",
+                          "enum": [
+                            "allow",
+                            "ask",
+                            "deny"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "additionalProperties": {
+                            "type": "string",
+                            "enum": [
+                              "allow",
+                              "ask",
+                              "deny"
+                            ]
+                          }
+                        }
+                      ]
+                    },
+                    "webfetch": {
+                      "type": "string",
+                      "enum": [
+                        "allow",
+                        "ask",
+                        "deny"
+                      ]
+                    },
+                    "doom_loop": {
+                      "type": "string",
+                      "enum": [
+                        "allow",
+                        "ask",
+                        "deny"
+                      ]
+                    },
+                    "external_directory": {
+                      "type": "string",
+                      "enum": [
+                        "allow",
+                        "ask",
+                        "deny"
+                      ]
+                    }
+                  },
+                  "additionalProperties": {}
+                }
+              ]
+            }
+          }
+        },
         "Maelstrom": {
           "type": "object",
           "properties": {

@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const OpenCodeXBuiltinAgentNameSchema = z.enum([
   'Kraken',
+  'Cartographer',
   'Maelstrom',
   'Nautilus',
   'Abyssal',
@@ -72,6 +73,7 @@ export const AgentOverrideConfigSchema = z.object({
 
 export const AgentOverridesSchema = z.object({
   Kraken: AgentOverrideConfigSchema.optional(),
+  Cartographer: AgentOverrideConfigSchema.optional(),
   Maelstrom: AgentOverrideConfigSchema.optional(),
   Nautilus: AgentOverrideConfigSchema.optional(),
   Abyssal: AgentOverrideConfigSchema.optional(),

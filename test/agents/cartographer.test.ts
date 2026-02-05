@@ -19,9 +19,9 @@ describe('Cartographer', () => {
       expect(config.model).toBe(customModel)
     })
 
-    it('should set subagent mode', () => {
+    it('should set primary mode', () => {
       const config = createCartographerConfig()
-      expect(config.mode).toBe('subagent')
+      expect(config.mode).toBe('primary')
     })
 
     it('should set temperature for precision planning', () => {

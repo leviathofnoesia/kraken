@@ -22,6 +22,23 @@ bun test -t "should export"             # Run with filter
 - `bun install` - Install dependencies
 - `bun run dev` - Start development server
 
+## File Editing Rules
+
+**CRITICAL**: The Edit tool requires a fresh Read before every edit operation, even if you previously read the file in the same conversation.
+
+- **Always read immediately before editing**: Use `@read` on the target file right before calling `@edit`
+- **No exceptions**: Even if you read the file 2 messages ago, read it again before editing
+- **This is enforced**: The tool will error with "You must read file ... before overwriting it" if violated
+
+Example correct workflow:
+
+```
+1. @read src/file.ts
+2. @edit src/file.ts (change A)
+3. @read src/file.ts    ← Must read again
+4. @edit src/file.ts (change B)
+```
+
 ## Code Style Guidelines
 
 ### Imports & Organization
