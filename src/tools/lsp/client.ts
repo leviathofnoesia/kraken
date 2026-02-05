@@ -1,5 +1,11 @@
 import { spawn, ChildProcess } from 'node:child_process'
-import type { Diagnostic } from './types'
+import type {
+  Diagnostic,
+  ResolvedServer,
+  JSONRPCResponse,
+  JSONRPCNotification,
+  JSONRPCRequest,
+} from './types'
 
 export class LSPClient {
   private root: string
