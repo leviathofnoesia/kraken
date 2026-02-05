@@ -14,7 +14,7 @@ declare module 'bun' {
 
   interface ChildProcess {
     readonly pid: number
-    readonly exited: boolean
+    readonly exited: Promise<number>
     readonly exitCode: number | null
     readonly signalCode: number | null
     stdout: ReadableStream<Uint8Array> | null

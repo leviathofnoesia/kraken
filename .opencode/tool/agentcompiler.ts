@@ -1,5 +1,6 @@
 /// <reference path="../env.d.ts" />
 import { tool } from '@opencode-ai/plugin'
+
 import DESCRIPTION from './agentcompiler.txt'
 
 interface ToolResult {
@@ -10,23 +11,33 @@ interface ToolResult {
 }
 
 async function runSkillCompiler(args: string[]): Promise<ToolResult> {
-  const command = 'npx'
-  const proc = Bun.spawn([command, 'skill-compiler', ...args], {
-    cwd: process.cwd(),
-    env: { ...process.env, FORCE_COLOR: '0' },
-    stdout: 'pipe',
-    stderr: 'pipe',
-  })
+  try {
+    const command = 'npx'
+    const proc = Bun.spawn([command, 'skill-compiler', ...args], {
+      cwd: process.cwd(),
+      env: { ...process.env, FORCE_COLOR: '0' },
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
 
-  const [stdout, stderr] = await Promise.all([proc.stdout.text(), proc.stderr.text()])
+    const [stdout, stderr] = await Promise.all([proc.stdout.text(), proc.stderr.text()])
 
-  const exitCode = await proc.exited
+    const exitCode = await proc.exited
 
-  return {
-    ok: exitCode === 0,
-    exitCode,
-    stdout,
-    stderr,
+    return {
+      ok: exitCode === 0,
+      exitCode,
+      stdout,
+      stderr,
+    }
+  } catch (error) {
+    console.error('[agentcompiler] Error running skill-compiler:', error)
+    return {
+      ok: false,
+      exitCode: 1,
+      stdout: '',
+      stderr: error instanceof Error ? error.stack || String(error) : String(error),
+    }
   }
 }
 

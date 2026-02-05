@@ -316,7 +316,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     hooks.push(createThinkingBlockValidator(input))
     hooks.push(createCommentChecker(input))
 
-    // Memory leak prevention hooks (order matters - these run first)
+    // Memory leak prevention hooks - ensure these are ordered appropriately
     hooks.push(createMemoryGuard(input))
     hooks.push(createToolThrottle(input))
     hooks.push(createSessionLifecycle(input))

@@ -50,9 +50,9 @@
     "agent:docs:watch": "npx skill-compiler watch",
     "agent:docs:check": "npx skill-compiler compile --check",
     "agent:docs:suggest": "npx skill-compiler suggest",
-    "agent:docs:sync": "npx skill-compiler sync"
+    "agent:docs:sync": "npx skill-compiler sync",
+    "postinstall": "npx skill-compiler compile --silent"
   },
-  "postinstall": "npx skill-compiler compile --silent",
   "keywords": [
     "opencode",
     "kraken-code",
