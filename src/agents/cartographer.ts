@@ -465,16 +465,16 @@ Remember: Your value lies in creating plans that enable efficient execution. A C
 export function createCartographerConfig(model: string = DEFAULT_MODEL): AgentConfig {
   return {
     description:
-      'Advanced planning agent combining hierarchical task decomposition, graph-based modeling, and subagent delegation for optimal work plans. Integrates bleeding-edge AI planning research with static analysis.',
+      'Advanced planning agent combining hierarchical task decomposition, graph-based modeling, and subagent delegation in fixed order. Integrates bleeding-edge AI planning research with static analysis.',
     mode: 'subagent' as const,
     model,
     temperature: 0.2,
     prompt: CARTOGRAPHER_SYSTEM_PROMPT,
     thinking: { type: 'enabled', budgetTokens: 64000 },
     tools: {
-      write: 'deny',
-      edit: 'deny',
-      task: 'deny',
+      write: false,
+      edit: false,
+      task: false,
     },
   } as AgentConfig
 }
