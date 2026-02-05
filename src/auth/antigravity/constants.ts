@@ -19,8 +19,9 @@
 
 // OAuth 2.0 Client Credentials
 export const ANTIGRAVITY_CLIENT_ID =
-  "1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com"
-export const ANTIGRAVITY_CLIENT_SECRET = "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"
+  process.env.ANTIGRAVITY_CLIENT_ID ??
+  '1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com'
+export const ANTIGRAVITY_CLIENT_SECRET = process.env.ANTIGRAVITY_CLIENT_SECRET ?? ''
 
 // OAuth Callback
 export const ANTIGRAVITY_CALLBACK_PORT = 51121
@@ -28,51 +29,49 @@ export const ANTIGRAVITY_REDIRECT_URI = `http://localhost:${ANTIGRAVITY_CALLBACK
 
 // OAuth Scopes
 export const ANTIGRAVITY_SCOPES = [
-  "https://www.googleapis.com/auth/cloud-platform",
-  "https://www.googleapis.com/auth/userinfo.email",
-  "https://www.googleapis.com/auth/userinfo.profile",
-  "https://www.googleapis.com/auth/cclog",
-  "https://www.googleapis.com/auth/experimentsandconfigs",
+  'https://www.googleapis.com/auth/cloud-platform',
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+  'https://www.googleapis.com/auth/cclog',
+  'https://www.googleapis.com/auth/experimentsandconfigs',
 ] as const
 
 // API Endpoint Fallbacks - matches CLIProxyAPI antigravity_executor.go:1192-1201
 // Claude models only available on SANDBOX endpoints (429 quota vs 404 not found)
 export const ANTIGRAVITY_ENDPOINT_FALLBACKS = [
-  "https://daily-cloudcode-pa.sandbox.googleapis.com",
-  "https://daily-cloudcode-pa.googleapis.com",
-  "https://cloudcode-pa.googleapis.com",
+  'https://daily-cloudcode-pa.sandbox.googleapis.com',
+  'https://daily-cloudcode-pa.googleapis.com',
+  'https://cloudcode-pa.googleapis.com',
 ] as const
 
 // API Version
-export const ANTIGRAVITY_API_VERSION = "v1internal"
+export const ANTIGRAVITY_API_VERSION = 'v1internal'
 
 // Request Headers
 export const ANTIGRAVITY_HEADERS = {
-  "User-Agent": "google-api-nodejs-client/9.15.1",
-  "X-Goog-Api-Client": "google-cloud-sdk vscode_cloudshelleditor/0.1",
-  "Client-Metadata": JSON.stringify({
-    ideType: "IDE_UNSPECIFIED",
-    platform: "PLATFORM_UNSPECIFIED",
-    pluginType: "GEMINI",
+  'User-Agent': 'google-api-nodejs-client/9.15.1',
+  'X-Goog-Api-Client': 'google-cloud-sdk vscode_cloudshelleditor/0.1',
+  'Client-Metadata': JSON.stringify({
+    ideType: 'IDE_UNSPECIFIED',
+    platform: 'PLATFORM_UNSPECIFIED',
+    pluginType: 'GEMINI',
   }),
 } as const
 
 // Default Project ID (fallback when loadCodeAssist API fails)
 // From opencode-antigravity-auth reference implementation
-export const ANTIGRAVITY_DEFAULT_PROJECT_ID = "rising-fact-p41fc"
-
-
+export const ANTIGRAVITY_DEFAULT_PROJECT_ID = 'rising-fact-p41fc'
 
 // Google OAuth endpoints
-export const GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
-export const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
-export const GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v1/userinfo"
+export const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
+export const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
+export const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v1/userinfo'
 
 // Token refresh buffer (refresh 60 seconds before expiry)
 export const ANTIGRAVITY_TOKEN_REFRESH_BUFFER_MS = 60_000
 
 // Default thought signature to skip validation (CLIProxyAPI approach)
-export const SKIP_THOUGHT_SIGNATURE_VALIDATOR = "skip_thought_signature_validator"
+export const SKIP_THOUGHT_SIGNATURE_VALIDATOR = 'skip_thought_signature_validator'
 
 // ============================================================================
 // System Prompt - Sourced from CLIProxyAPI antigravity_executor.go:1049-1050
@@ -137,7 +136,7 @@ export const REASONING_EFFORT_BUDGET_MAP: Record<string, number> = {
  * - false: Minimum budget enforced (cannot disable thinking)
  */
 export interface AntigravityModelConfig {
-  thinkingType: "numeric" | "levels"
+  thinkingType: 'numeric' | 'levels'
   min: number
   max: number
   zeroAllowed: boolean
@@ -154,46 +153,46 @@ export interface AntigravityModelConfig {
  * - includes("claude") → Claude via Antigravity (numeric)
  */
 export const ANTIGRAVITY_MODEL_CONFIGS: Record<string, AntigravityModelConfig> = {
-  "gemini-2.5-flash": {
-    thinkingType: "numeric",
+  'gemini-2.5-flash': {
+    thinkingType: 'numeric',
     min: 0,
     max: 24576,
     zeroAllowed: true,
   },
-  "gemini-2.5-flash-lite": {
-    thinkingType: "numeric",
+  'gemini-2.5-flash-lite': {
+    thinkingType: 'numeric',
     min: 0,
     max: 24576,
     zeroAllowed: true,
   },
-  "gemini-2.5-computer-use-preview-10-2025": {
-    thinkingType: "numeric",
+  'gemini-2.5-computer-use-preview-10-2025': {
+    thinkingType: 'numeric',
     min: 128,
     max: 32768,
     zeroAllowed: false,
   },
-  "gemini-3-pro-preview": {
-    thinkingType: "levels",
+  'gemini-3-pro-preview': {
+    thinkingType: 'levels',
     min: 128,
     max: 32768,
     zeroAllowed: false,
-    levels: ["low", "high"],
+    levels: ['low', 'high'],
   },
-  "gemini-3-flash-preview": {
-    thinkingType: "levels",
+  'gemini-3-flash-preview': {
+    thinkingType: 'levels',
     min: 128,
     max: 32768,
     zeroAllowed: false,
-    levels: ["minimal", "low", "medium", "high"],
+    levels: ['minimal', 'low', 'medium', 'high'],
   },
-  "gemini-claude-sonnet-4-5-thinking": {
-    thinkingType: "numeric",
+  'gemini-claude-sonnet-4-5-thinking': {
+    thinkingType: 'numeric',
     min: 1024,
     max: 200000,
     zeroAllowed: false,
   },
-  "gemini-claude-opus-4-5-thinking": {
-    thinkingType: "numeric",
+  'gemini-claude-opus-4-5-thinking': {
+    thinkingType: 'numeric',
     min: 1024,
     max: 200000,
     zeroAllowed: false,
@@ -222,30 +221,30 @@ export function normalizeModelId(model: string): string {
   let normalized = model
 
   // 1. Strip provider prefix (e.g., "google/")
-  if (normalized.includes("/")) {
-    normalized = normalized.split("/").pop() || normalized
+  if (normalized.includes('/')) {
+    normalized = normalized.split('/').pop() || normalized
   }
 
   // 2. Strip "antigravity-" prefix
-  if (normalized.startsWith("antigravity-")) {
-    normalized = normalized.substring("antigravity-".length)
+  if (normalized.startsWith('antigravity-')) {
+    normalized = normalized.substring('antigravity-'.length)
   }
 
   // 3. Strip UI variant suffixes (-high, -low, -thinking-*)
-  normalized = normalized.replace(/-thinking-(low|medium|high)$/, "")
-  normalized = normalized.replace(/-(high|low)$/, "")
+  normalized = normalized.replace(/-thinking-(low|medium|high)$/, '')
+  normalized = normalized.replace(/-(high|low)$/, '')
 
   return normalized
 }
 
 export const ANTIGRAVITY_SUPPORTED_MODELS = [
-  "gemini-2.5-flash",
-  "gemini-2.5-flash-lite",
-  "gemini-2.5-computer-use-preview-10-2025",
-  "gemini-3-pro-preview",
-  "gemini-3-flash-preview",
-  "gemini-claude-sonnet-4-5-thinking",
-  "gemini-claude-opus-4-5-thinking",
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-computer-use-preview-10-2025',
+  'gemini-3-pro-preview',
+  'gemini-3-flash-preview',
+  'gemini-claude-sonnet-4-5-thinking',
+  'gemini-claude-opus-4-5-thinking',
 ] as const
 
 // ============================================================================
@@ -260,8 +259,8 @@ export const ANTIGRAVITY_SUPPORTED_MODELS = [
  * Claude models return 404 on all endpoints (may require special access/quota).
  */
 export function alias2ModelName(modelName: string): string {
-  if (modelName.startsWith("gemini-claude-")) {
-    return modelName.substring("gemini-".length)
+  if (modelName.startsWith('gemini-claude-')) {
+    return modelName.substring('gemini-'.length)
   }
   return modelName
 }

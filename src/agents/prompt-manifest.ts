@@ -87,17 +87,17 @@ export function preloadCache(keys: string[]): void {
 
 // Preload common prompts on module load
 preloadCache([
-  '247d',   // ORACLE
-  '03f3',   // METIS
-  'b2fc',   // MOMUS
-  'a899',   // KRAKEN
-  '5432',   // PROMETHEUS
-  'f9a5',   // PLAN
-  '3cbb',   // KRAKEN_JUNIOR
-  '32ad',   // CONTINUATION
-  'e01b',   // SUMMARIZE_CONTEXT
-  '33dd',   // KRAKEN_CONTINUATION
-  '319d',   // ANTIGRAVITY
-  '0cc1',   // MAELSTROM
-  'f97d',   // BUILD_SYSTEM
+  '247d', // ORACLE
+  '03f3', // METIS
+  'b2fc', // MOMUS
+  'a899', // KRAKEN
+  '5432', // PROMETHEUS
+  'f9a5', // PLAN
+  '3cbb', // KRAKEN_JUNIOR
+  '32ad', // CONTINUATION
+  'e01b', // SUMMARIZE_CONTEXT
+  '33dd', // KRAKEN_CONTINUATION
+  '319d', // ANTIGRAVITY
+  '0cc1', // MAELSTROM
+  'f97d', // BUILD_SYSTEM
 ])

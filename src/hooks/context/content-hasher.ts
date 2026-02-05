@@ -1,14 +1,11 @@
-import { createHash } from "crypto"
+import { createHash } from 'crypto'
 
 const CONTENT_HASHES = new Map<string, string>()
 
 export function hashContent(content: string): string {
-  const normalizedContent = content
-    .replace(/\s+/g, " ")
-    .replace(/\n\s+/g, "\n")
-    .trim()
+  const normalizedContent = content.replace(/\s+/g, ' ').replace(/\n\s+/g, '\n').trim()
 
-  return createHash("sha256").update(normalizedContent).digest("hex")
+  return createHash('sha256').update(normalizedContent).digest('hex')
 }
 
 export function getOrComputeHash(content: string): { hash: string; isNew: boolean } {

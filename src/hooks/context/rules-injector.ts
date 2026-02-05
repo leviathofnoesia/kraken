@@ -1,11 +1,11 @@
-import * as fs from "fs"
-import * as path from "path"
-import type { Hooks, PluginInput } from "@opencode-ai/plugin"
-import type { Part } from "@opencode-ai/sdk"
-import { z } from "zod"
+import * as fs from 'fs'
+import * as path from 'path'
+import type { Hooks, PluginInput } from '@opencode-ai/plugin'
+import type { Part } from '@opencode-ai/sdk'
+import { z } from 'zod'
 
-const RULE_EXTENSION = ".md"
-const RULE_EXTENSIONS = [".md", ".mdc"]
+const RULE_EXTENSION = '.md'
+const RULE_EXTENSIONS = ['.md', '.mdc']
 
 export interface RuleFile {
   path: string
@@ -43,25 +43,25 @@ function parseRuleFrontmatter(content: string): RuleFrontmatter {
   const frontmatter = frontmatterMatch[1]
   const result: RuleFrontmatter = {}
 
-    const lines = frontmatter.split("\n")
+  const lines = frontmatter.split('\n')
 
-    for (const line of lines) {
-      const colonIndex = line.indexOf(":")
-      if (colonIndex === -1) continue
+  for (const line of lines) {
+    const colonIndex = line.indexOf(':')
+    if (colonIndex === -1) continue
 
-      const key = line.slice(0, colonIndex).trim()
-      const value = line.slice(colonIndex + 1).trim()
+    const key = line.slice(0, colonIndex).trim()
+    const value = line.slice(colonIndex + 1).trim()
 
-      if (key === "alwaysApply" && value === "true") {
-        result.alwaysApply = true
-      } else if (key === "alwaysApply" && value === "false") {
-        result.alwaysApply = false
-      } else if (key && !isNaN(Number(value))) {
-        (result as any)[key] = Number(value)
-      } else if (key) {
-        (result as any)[key] = value
-      }
+    if (key === 'alwaysApply' && value === 'true') {
+      result.alwaysApply = true
+    } else if (key === 'alwaysApply' && value === 'false') {
+      result.alwaysApply = false
+    } else if (key && !isNaN(Number(value))) {
+      ;(result as any)[key] = Number(value)
+    } else if (key) {
+      ;(result as any)[key] = value
     }
+  }
 
   return result
 }
@@ -91,9 +91,9 @@ function extractRules(content: string): string[] {
 function matchGlob(pattern: string, filePath: string): boolean {
   const relativePath = path.relative(process.cwd(), filePath)
 
-  const globPattern = pattern.replace(/\*\*/g, "*").replace(/\?/g, "?")
+  const globPattern = pattern.replace(/\*\*/g, '*').replace(/\?/g, '?')
 
-  const parts = globPattern.split("/")
+  const parts = globPattern.split('/')
 
   const pathParts = relativePath.split(path.sep)
 
@@ -103,9 +103,9 @@ function matchGlob(pattern: string, filePath: string): boolean {
     const part = parts[i]
     const pathPart = pathParts[i]
 
-    if (part === "**") {
+    if (part === '**') {
       matchCount++
-    } else if (part === "*") {
+    } else if (part === '*') {
       matchCount++
     } else if (part === pathPart) {
       matchCount++
@@ -135,7 +135,7 @@ function loadRuleFiles(directory: string): RuleFile[] {
 
         if (RULE_EXTENSIONS.includes(ext)) {
           try {
-            const content = fs.readFileSync(fullPath, "utf-8")
+            const content = fs.readFileSync(fullPath, 'utf-8')
             const frontmatter = parseRuleFrontmatter(content)
             const rules = extractRules(content)
 
@@ -164,7 +164,7 @@ function calculateDistance(rulePath: string, targetPath: string): number {
   let distance = 0
 
   for (const part of parts) {
-    if (part.startsWith(".")) {
+    if (part.startsWith('.')) {
       distance++
     } else if (part.includes(path.sep)) {
       distance += part.split(path.sep).length
@@ -178,7 +178,7 @@ function calculateDistance(rulePath: string, targetPath: string): number {
 
 export function createRulesInjector(
   _input: PluginInput,
-  options?: { config?: ContextInjectorConfig }
+  options?: { config?: ContextInjectorConfig },
 ): Hooks {
   const config = options?.config ?? {
     enabled: true,
@@ -194,10 +194,10 @@ export function createRulesInjector(
     }
 
     const ruleDirectories = [
-      path.join(process.cwd(), "rules"),
-      path.join(process.cwd(), ".opencode", "rules"),
-      path.join(path.dirname(targetPath), "rules"),
-      path.join(path.dirname(targetPath), ".opencode", "rules"),
+      path.join(process.cwd(), 'rules'),
+      path.join(process.cwd(), '.opencode', 'rules'),
+      path.join(path.dirname(targetPath), 'rules'),
+      path.join(path.dirname(targetPath), '.opencode', 'rules'),
     ]
 
     const allRules: RuleFile[] = []
@@ -225,7 +225,7 @@ export function createRulesInjector(
       if (frontmatter.alwaysApply) {
         matches.push({
           ruleFile,
-          matchedPattern: "always_apply",
+          matchedPattern: 'always_apply',
           priority: 0,
         })
         continue
@@ -236,7 +236,7 @@ export function createRulesInjector(
           if (matchGlob(glob, targetPath)) {
             let priority = 100
 
-            if (typeof frontmatter.distance === "number") {
+            if (typeof frontmatter.distance === 'number') {
               priority = frontmatter.distance
             } else {
               priority = calculateDistance(ruleFile.path, targetPath)
@@ -260,14 +260,14 @@ export function createRulesInjector(
 
   function getTextFromParts(parts: Part[]): string {
     return parts
-      .filter((p) => p.type === "text")
-      .map((p: any) => p.text || "")
-      .join("\n")
+      .filter((p) => p.type === 'text')
+      .map((p: any) => p.text || '')
+      .join('\n')
       .trim()
   }
 
   return {
-    "chat.message": async (input, output) => {
+    'chat.message': async (input, output) => {
       if (!config.enabled) return
 
       const parts = output.parts || []
@@ -287,18 +287,24 @@ export function createRulesInjector(
 
       const rulesText = rulesToInject
         .map((m) => {
-          const rules = m.ruleFile.rules.slice(0, 5).join("\n  ")
+          const rules = m.ruleFile.rules.slice(0, 5).join('\n  ')
           return `<rule source="${m.ruleFile.path}">
 ${rules}
 </rule>`
         })
-        .join("\n\n")
+        .join('\n\n')
 
       const existingText = text
       const newText = `${rulesText}\n\n${existingText}`
 
       output.parts = [
-        { type: "text" as const, text: newText, id: `rule-${Date.now()}`, sessionID: "", messageID: "" },
+        {
+          type: 'text' as const,
+          text: newText,
+          id: `rule-${Date.now()}`,
+          sessionID: '',
+          messageID: '',
+        },
       ]
     },
   }

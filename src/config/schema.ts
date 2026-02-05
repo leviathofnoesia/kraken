@@ -40,18 +40,21 @@ export const OpenCodeXHookNameSchema = z.enum([
 
 export const OpenCodeXBuiltinCommandNameSchema = z.enum(['init-deep'])
 
-export const AgentPermissionSchema = z.object({
-  edit: z.enum(['allow', 'ask', 'deny']).default('ask'),
-  bash: z
-    .union([
-      z.enum(['allow', 'ask', 'deny']),
-      z.record(z.string(), z.enum(['allow', 'ask', 'deny'])),
-    ])
-    .default('ask'),
-  webfetch: z.enum(['allow', 'ask', 'deny']).default('ask'),
-  doom_loop: z.enum(['allow', 'ask', 'deny']).default('ask'),
-  external_directory: z.enum(['allow', 'ask', 'deny']).default('ask'),
-})
+const PermissionValueSchema = z.enum(['allow', 'ask', 'deny'])
+const PermissionMapSchema = z.record(z.string(), PermissionValueSchema)
+
+export const AgentPermissionSchema = z.union([
+  PermissionMapSchema,
+  z
+    .object({
+      edit: PermissionValueSchema.optional(),
+      bash: z.union([PermissionValueSchema, PermissionMapSchema]).optional(),
+      webfetch: PermissionValueSchema.optional(),
+      doom_loop: PermissionValueSchema.optional(),
+      external_directory: PermissionValueSchema.optional(),
+    })
+    .passthrough(),
+])
 
 export const AgentOverrideConfigSchema = z.object({
   model: z.string().optional(),
@@ -176,10 +179,48 @@ export const MCPConfigSchema = z.object({
   grep_app: GrepAppMCPConfigSchema.optional(),
 })
 
-export const KratosConfigSchema = z.object({
+export const MemoryConfigSchema = z.object({
   enabled: z.boolean().default(true),
   autoSave: z.boolean().default(true),
-  storagePath: z.string().default('~/.kratos'),
+  storagePath: z.string().default('~/.kraken/memory'),
+})
+
+export const ExperienceStoreConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  maxEntries: z.number().int().min(10).default(2000),
+})
+
+export const KnowledgeGraphConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  maxNodes: z.number().int().min(10).default(5000),
+})
+
+export const PatternDetectionConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  minConfidence: z.number().min(0).max(1).default(0.6),
+  maxPatterns: z.number().int().min(1).default(500),
+})
+
+export const SpacedRepetitionConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  initialIntervalDays: z.number().min(1).default(1),
+  easeFactor: z.number().min(1.3).max(3).default(2.5),
+  maxIntervalDays: z.number().min(1).default(365),
+})
+
+export const StateMachinesConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+})
+
+export const LearningConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  autoSave: z.boolean().default(true),
+  storagePath: z.string().default('~/.kraken/learning'),
+  experienceStore: ExperienceStoreConfigSchema.optional(),
+  knowledgeGraph: KnowledgeGraphConfigSchema.optional(),
+  patternDetection: PatternDetectionConfigSchema.optional(),
+  spacedRepetition: SpacedRepetitionConfigSchema.optional(),
+  stateMachines: StateMachinesConfigSchema.optional(),
 })
 
 export const LSPConfigSchema = z.object({
@@ -299,7 +340,8 @@ export const OpenCodeXConfigSchema = z.object({
   compression: CompressionConfigSchema.optional(),
   blitzkrieg: BlitzkriegConfigSchema.optional(),
   mcp: MCPConfigSchema.optional(),
-  kratos: KratosConfigSchema.optional(),
+  memory: MemoryConfigSchema.optional(),
+  learning: LearningConfigSchema.optional(),
   lsp: LSPConfigSchema.optional(),
   notifications: NotificationsConfigSchema.optional(),
   enhanced: z
@@ -332,7 +374,13 @@ export type WebsearchMCPConfig = z.infer<typeof WebsearchMCPConfigSchema>
 export type Context7MCPConfig = z.infer<typeof Context7MCPConfigSchema>
 export type GrepAppMCPConfig = z.infer<typeof GrepAppMCPConfigSchema>
 export type MCPConfig = z.infer<typeof MCPConfigSchema>
-export type KratosConfig = z.infer<typeof KratosConfigSchema>
+export type MemoryConfig = z.infer<typeof MemoryConfigSchema>
+export type ExperienceStoreConfig = z.infer<typeof ExperienceStoreConfigSchema>
+export type KnowledgeGraphConfig = z.infer<typeof KnowledgeGraphConfigSchema>
+export type PatternDetectionConfig = z.infer<typeof PatternDetectionConfigSchema>
+export type SpacedRepetitionConfig = z.infer<typeof SpacedRepetitionConfigSchema>
+export type StateMachinesConfig = z.infer<typeof StateMachinesConfigSchema>
+export type LearningConfig = z.infer<typeof LearningConfigSchema>
 export type LSPConfig = z.infer<typeof LSPConfigSchema>
 export type ModesConfig = z.infer<typeof ModesConfigSchema>
 export type SkillMcpConfig = z.infer<typeof SkillMcpConfigSchema>

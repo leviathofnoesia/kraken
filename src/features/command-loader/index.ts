@@ -1,9 +1,9 @@
-export * from "./types"
-export * from "./discovery"
-export * from "./loader"
-export * from "./processor"
+export * from './types'
+export * from './discovery'
+export * from './loader'
+export * from './processor'
 
-import { CommandLoader } from "./loader"
+import { CommandLoader } from './loader'
 
 let loader: CommandLoader | null = null
 
@@ -13,6 +13,11 @@ export async function initializeCommandLoader() {
     await loader.loadAll()
   }
   return loader
+}
+
+export async function getCommands() {
+  const commandLoader = await initializeCommandLoader()
+  return commandLoader.listCommands()
 }
 
 export function getCommandLoader(): CommandLoader | null {

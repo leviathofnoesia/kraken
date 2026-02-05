@@ -1,9 +1,9 @@
-import * as fs from "fs"
-import * as path from "path"
-import * as os from "os"
+import * as fs from 'fs'
+import * as path from 'path'
+import * as os from 'os'
 
-const STORAGE_DIR = path.join(os.homedir(), ".opencode", "kraken-code")
-const SESSIONS_DIR = path.join(STORAGE_DIR, "sessions")
+const STORAGE_DIR = path.join(os.homedir(), '.opencode', 'kraken-code')
+const SESSIONS_DIR = path.join(STORAGE_DIR, 'sessions')
 
 export interface RalphLoopState {
   sessionID: string
@@ -11,7 +11,7 @@ export interface RalphLoopState {
   task: string
   maxIterations: number
   currentIteration: number
-  status: "active" | "maxed_out" | "cancelled" | "completed"
+  status: 'active' | 'maxed_out' | 'cancelled' | 'completed'
   transcript: string[]
   startTime: number
 }
@@ -38,7 +38,7 @@ export function readState(sessionID: string): RalphLoopState | null {
     if (!fs.existsSync(filePath)) {
       return null
     }
-    const data = fs.readFileSync(filePath, "utf-8")
+    const data = fs.readFileSync(filePath, 'utf-8')
     return JSON.parse(data) as RalphLoopState
   } catch (error) {
     console.error(`[storage] Error reading state for session ${sessionID}:`, error)
@@ -77,15 +77,10 @@ export function incrementIteration(sessionID: string): RalphLoopState | null {
   return state
 }
 
-export * from "./types"
+export * from './types'
 
 // Kraken storage (session-based, in .kraken/)
-export {
-  loadKrakenTodos,
-  saveKrakenTodos,
-  deleteKrakenTodos,
-  cleanupOldTodos,
-} from "./kraken-todo"
+export { loadKrakenTodos, saveKrakenTodos, deleteKrakenTodos, cleanupOldTodos } from './kraken-todo'
 
 export {
   loadTranscript as loadKrakenTranscript,
@@ -95,7 +90,7 @@ export {
   recordAssistantMessage as recordKrakenAssistantMessage,
   deleteTranscript as deleteKrakenTranscript,
   deleteTempTranscript as deleteKrakenTempTranscript,
-} from "./kraken-transcript"
+} from './kraken-transcript'
 
 export {
   getKrakenDir,
@@ -104,9 +99,9 @@ export {
   getKrakenTodoPath,
   getKrakenTranscriptPath,
   getTempTranscriptPath,
-} from "./kraken-paths"
+} from './kraken-paths'
 
 // OpenCode/Claude Code storage (settings-based, in .opencode/)
-export * from "./todo-manager"
-export * from "./transcript-manager"
-export * from "./paths"
+export * from './todo-manager'
+export * from './transcript-manager'
+export * from './paths'

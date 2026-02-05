@@ -1,18 +1,29 @@
 import { describe, it, expect } from "bun:test"
-import { memory } from "../../src/features/memory"
+import { addExperience, initializeLearning, searchExperiences } from "../../src/features/memory"
 
-describe("Memory Feature", () => {
-  describe("memory.kratos", () => {
-    it("should be exported", () => {
-      expect(memory.kratos).toBeDefined()
+describe("Learning Feature", () => {
+  describe("initializeLearning", () => {
+    it("should initialize unified learning", async () => {
+      const result = await initializeLearning()
+      expect(result).toBeDefined()
     })
 
-    it("should have store method", () => {
-      expect(typeof memory.kratos.store).toBe("function")
+  describe("addExperience", () => {
+    it("should save experience", async () => {
+      const result = await addExperience({
+        summary: "Test experience",
+        details: "Test details",
+        tags: ["test"],
+        outcome: "ok",
+        confidence: 0.7
+      })
+      expect(result).toBeDefined()
     })
 
-    it("should have retrieve method", () => {
-      expect(typeof memory.kratos.retrieve).toBe("function")
+  describe("searchExperiences", () => {
+    it("should search experiences", () => {
+      const results = searchExperiences("test")
+      expect(Array.isArray(results)).toBe(true)
     })
   })
 })

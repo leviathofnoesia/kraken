@@ -1,6 +1,6 @@
-import type { Hooks, PluginInput } from "@opencode-ai/plugin"
-import type { Part } from "@opencode-ai/sdk"
-import * as path from "path"
+import type { Hooks, PluginInput } from '@opencode-ai/plugin'
+import type { Part } from '@opencode-ai/sdk'
+import * as path from 'path'
 
 export interface PrioritySystemConfig {
   enabled?: boolean
@@ -38,7 +38,10 @@ function calculateDirectoryDistance(from: string, to: string): number {
   return upSteps + downSteps
 }
 
-function assignPriorities(rules: Array<{ path: string; content: string }>, maxDistance: number): RuleWithPriority[] {
+function assignPriorities(
+  rules: Array<{ path: string; content: string }>,
+  maxDistance: number,
+): RuleWithPriority[] {
   const rulesWithPriority: RuleWithPriority[] = []
 
   for (const rule of rules) {
@@ -57,7 +60,7 @@ function assignPriorities(rules: Array<{ path: string; content: string }>, maxDi
 
 export function createPrioritySystemHook(
   _input: PluginInput,
-  options?: { config?: PrioritySystemConfig }
+  options?: { config?: PrioritySystemConfig },
 ): Hooks {
   const config = options?.config ?? {
     enabled: true,
@@ -68,14 +71,14 @@ export function createPrioritySystemHook(
 
   function getTextFromParts(parts: Part[]): string {
     return parts
-      .filter((p) => p.type === "text")
-      .map((p: any) => p.text || "")
-      .join("\n")
+      .filter((p) => p.type === 'text')
+      .map((p: any) => p.text || '')
+      .join('\n')
       .trim()
   }
 
   return {
-    "chat.message": async (input, output) => {
+    'chat.message': async (input, output) => {
       if (!config.enabled) return
 
       const parts = output.parts || []
@@ -83,7 +86,7 @@ export function createPrioritySystemHook(
 
       if (!text) return
 
-      const lines = text.split("\n")
+      const lines = text.split('\n')
       const rulesSectionRegex = /<rule[^>]*source="([^"]+)"[^>]*>/gi
       const rules: Array<{ path: string; content: string }> = []
 
@@ -92,11 +95,11 @@ export function createPrioritySystemHook(
         if (match) {
           rules.push({
             path: match[1],
-            content: "",
+            content: '',
           })
         } else if (rules.length > 0) {
           const lastRule = rules[rules.length - 1]
-          lastRule.content += "\n" + line
+          lastRule.content += '\n' + line
         }
       }
 
@@ -109,19 +112,19 @@ export function createPrioritySystemHook(
       if (sortedRules.length > 1) {
         const prioritizedText = sortedRules
           .map((r) => {
-            const ruleLines = r.content.split("\n")
+            const ruleLines = r.content.split('\n')
             const truncatedLines = ruleLines.slice(0, 10)
 
             return `<rule source="${r.path}" priority="${r.priority}">
-${truncatedLines.join("\n")}
+${truncatedLines.join('\n')}
 </rule>`
           })
-          .join("\n\n")
+          .join('\n\n')
 
-        const existingText = text.replace(/<rule[^>]*>[\s\S]*?<\/rule>/gi, "")
+        const existingText = text.replace(/<rule[^>]*>[\s\S]*?<\/rule>/gi, '')
 
         output.parts = [
-          { type: "text" as const, text: `${prioritizedText}\n\n${existingText}` } as any,
+          { type: 'text' as const, text: `${prioritizedText}\n\n${existingText}` } as any,
         ]
       }
     },

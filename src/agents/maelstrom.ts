@@ -1,33 +1,33 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "../types"
-import { isGptModel } from "../utils"
-import { createAgentToolRestrictions } from "../shared/permission-compat"
+import type { AgentConfig } from '@opencode-ai/sdk'
+import type { AgentPromptMetadata } from '../types'
+import { isGptModel } from '../utils'
+import { createAgentToolRestrictions } from '../shared/permission-compat'
 
-const DEFAULT_MODEL = "openai/gpt-5.2"
+const DEFAULT_MODEL = 'openai/gpt-5.2'
 
 export const MAELSTROM_PROMPT_METADATA: AgentPromptMetadata = {
-  category: "advisor",
-  cost: "EXPENSIVE",
-  promptAlias: "Maelstrom",
+  category: 'advisor',
+  cost: 'EXPENSIVE',
+  promptAlias: 'Maelstrom',
   triggers: [
-    { domain: "Architecture decisions", trigger: "Multi-system tradeoffs, unfamiliar patterns" },
-    { domain: "Self-review", trigger: "After completing significant implementation" },
-    { domain: "Hard debugging", trigger: "After 2+ failed fix attempts" },
+    { domain: 'Architecture decisions', trigger: 'Multi-system tradeoffs, unfamiliar patterns' },
+    { domain: 'Self-review', trigger: 'After completing significant implementation' },
+    { domain: 'Hard debugging', trigger: 'After 2+ failed fix attempts' },
   ],
   useWhen: [
-    "Complex architecture design",
-    "After completing significant work",
-    "2+ failed fix attempts",
-    "Unfamiliar code patterns",
-    "Security/performance concerns",
-    "Multi-system tradeoffs",
+    'Complex architecture design',
+    'After completing significant work',
+    '2+ failed fix attempts',
+    'Unfamiliar code patterns',
+    'Security/performance concerns',
+    'Multi-system tradeoffs',
   ],
   avoidWhen: [
-    "Simple file operations (use direct tools)",
-    "First attempt at any fix (try yourself first)",
+    'Simple file operations (use direct tools)',
+    'First attempt at any fix (try yourself first)',
     "Questions answerable from code you've read",
-    "Trivial decisions (variable names, formatting)",
-    "Things you can infer from existing code patterns",
+    'Trivial decisions (variable names, formatting)',
+    'Things you can infer from existing code patterns',
   ],
 }
 
@@ -140,16 +140,12 @@ Before presenting any recommendation:
 Remember: Your value lies in reducing uncertainty through systematic analysis, not in producing solutions faster. Better decisions from deeper reasoning beat faster decisions from surface thinking. When in doubt, show your reasoning framework explicitly.`
 
 export function createMaelstromConfig(model: string = DEFAULT_MODEL): AgentConfig {
-  const restrictions = createAgentToolRestrictions([
-    "write",
-    "edit",
-    "task",
-  ])
+  const restrictions = createAgentToolRestrictions(['write', 'edit', 'task'])
 
   const base = {
     description:
-      "Read-only consultation agent. Employs first-principles reasoning, trade-off analysis, and evidence-based decision making for complex architecture challenges.",
-    mode: "subagent" as const,
+      'Read-only consultation agent. Employs first-principles reasoning, trade-off analysis, and evidence-based decision making for complex architecture challenges.',
+    mode: 'subagent' as const,
     model,
     temperature: 0.1,
     ...restrictions,
@@ -157,10 +153,10 @@ export function createMaelstromConfig(model: string = DEFAULT_MODEL): AgentConfi
   } as AgentConfig
 
   if (isGptModel(model)) {
-    return { ...base, reasoningEffort: "medium", textVerbosity: "high" } as AgentConfig
+    return { ...base, reasoningEffort: 'medium', textVerbosity: 'high' } as AgentConfig
   }
 
-  return { ...base, thinking: { type: "enabled", budgetTokens: 32000 } } as AgentConfig
+  return { ...base, thinking: { type: 'enabled', budgetTokens: 32000 } } as AgentConfig
 }
 
 export const maelstromAgent = createMaelstromConfig()

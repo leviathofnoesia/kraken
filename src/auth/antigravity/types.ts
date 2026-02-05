@@ -9,7 +9,7 @@
  */
 export interface AntigravityTokens {
   /** Always "antigravity" for this auth type */
-  type: "antigravity"
+  type: 'antigravity'
   /** OAuth access token from Google */
   access_token: string
   /** OAuth refresh token from Google */
@@ -42,11 +42,11 @@ export interface AntigravityProjectContext {
  */
 export interface AntigravityClientMetadata {
   /** IDE type identifier */
-  ideType: "IDE_UNSPECIFIED" | string
+  ideType: 'IDE_UNSPECIFIED' | string
   /** Platform identifier */
-  platform: "PLATFORM_UNSPECIFIED" | string
+  platform: 'PLATFORM_UNSPECIFIED' | string
   /** Plugin type - typically "GEMINI" */
-  pluginType: "GEMINI" | string
+  pluginType: 'GEMINI' | string
 }
 
 /**
@@ -117,18 +117,18 @@ export interface AntigravityResponseChoice {
   index: number
   /** Message content */
   message?: {
-    role: "assistant"
+    role: 'assistant'
     content?: string
     tool_calls?: AntigravityToolCall[]
   }
   /** Delta for streaming responses */
   delta?: {
-    role?: "assistant"
+    role?: 'assistant'
     content?: string
     tool_calls?: AntigravityToolCall[]
   }
   /** Finish reason */
-  finish_reason?: "stop" | "tool_calls" | "length" | "content_filter" | null
+  finish_reason?: 'stop' | 'tool_calls' | 'length' | 'content_filter' | null
 }
 
 /**
@@ -136,7 +136,7 @@ export interface AntigravityResponseChoice {
  */
 export interface AntigravityToolCall {
   id: string
-  type: "function"
+  type: 'function'
   function: {
     name: string
     arguments: string
@@ -213,13 +213,13 @@ export interface ParsedOAuthError {
  */
 
 /** All model families for rate limit tracking */
-export const MODEL_FAMILIES = ["claude", "gemini-flash", "gemini-pro"] as const
+export const MODEL_FAMILIES = ['claude', 'gemini-flash', 'gemini-pro'] as const
 
 /** Model family for rate limit tracking */
 export type ModelFamily = (typeof MODEL_FAMILIES)[number]
 
 /** Account tier for prioritization */
-export type AccountTier = "free" | "paid"
+export type AccountTier = 'free' | 'paid'
 
 /** Rate limit state per model family (Unix timestamps in ms) */
 export type RateLimitState = Partial<Record<ModelFamily, number>>

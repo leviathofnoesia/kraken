@@ -1,6 +1,6 @@
-import type { Hooks } from "@opencode-ai/plugin"
-import type { PluginInput } from "@opencode-ai/plugin"
-import type { Part } from "@opencode-ai/sdk"
+import type { Hooks } from '@opencode-ai/plugin'
+import type { PluginInput } from '@opencode-ai/plugin'
+import type { Part } from '@opencode-ai/sdk'
 
 export interface ContextConfig {
   enabled?: boolean
@@ -10,37 +10,37 @@ export interface ContextConfig {
 
 export function createContextInjector(
   _input: PluginInput,
-  options?: { config?: ContextConfig }
+  options?: { config?: ContextConfig },
 ): Hooks {
   const config = options?.config ?? { enabled: true }
 
   function getTextFromParts(parts: Part[]): string {
     return parts
-      .filter((p): p is Extract<Part, { type: "text" }> => p.type === "text")
-      .map(p => p.text)
-      .join("\n")
+      .filter((p): p is Extract<Part, { type: 'text' }> => p.type === 'text')
+      .map((p) => p.text)
+      .join('\n')
       .trim()
   }
 
   return {
-    "chat.message": async (input, output) => {
+    'chat.message': async (input, output) => {
       if (!config.enabled) return
 
       const promptText = getTextFromParts(output.parts)
 
       if (!promptText) return
 
-      console.log("[context-injector] Processing message for context injection")
+      console.log('[context-injector] Processing message for context injection')
     },
 
-    "experimental.chat.messages.transform": async (input, output) => {
+    'experimental.chat.messages.transform': async (input, output) => {
       if (!config.enabled) return
-      console.log("[context-injector] Transforming chat messages")
+      console.log('[context-injector] Transforming chat messages')
     },
 
-    "experimental.chat.system.transform": async (input, output) => {
+    'experimental.chat.system.transform': async (input, output) => {
       if (!config.enabled) return
-      console.log("[context-injector] Transforming system message")
+      console.log('[context-injector] Transforming system message')
     },
   }
 }

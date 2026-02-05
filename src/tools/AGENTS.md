@@ -21,7 +21,7 @@ Comprehensive tooling ecosystem for sea-themed agents: AST-aware code search, fi
  | **Model Switcher** | `model-switcher-*` | Interactive model selection and configuration |
  | **Compression** | `kraken-compress` | Context compression for efficiency |
  | **Agent Control** | `call_agent` | Spawn specialized explore/librarian agents |
-| **Memory (Kratos)** | `memory_save`, `memory_search`, `memory_get_recent`, `memory_ask` | Persistent memory storage and retrieval |
+| **Learning Memory** | `learning_add_experience`, `learning_search_experiences`, `learning_add_knowledge_node`, `learning_search_knowledge_nodes`, `learning_link_knowledge_nodes`, `learning_record_pattern`, `learning_list_patterns`, `learning_get_review_queue`, `learning_review_node`, `learning_create_state_machine`, `learning_list_state_machines` | Unified learning storage and retrieval |
 | **MCP Integration** | `websearch`, `webfetch`, `context7-search`, `context7-get`, `grep-search`, `grep-get-file` | Curated MCP servers for web search, documentation, and code search |
 | **Commands** | `ralph-loop` | Built-in command system |
 
@@ -31,7 +31,7 @@ Comprehensive tooling ecosystem for sea-themed agents: AST-aware code search, fi
 |---------|--------|-------------|
 | **Blitzkrieg System** | ✅ Full | Complete TDD enforcement: test plans, TDD workflow, evidence verification, planner constraints (4 hooks, integrated into plugin) |
 | **Skills System** | ✅ Full | Dynamic skill discovery and loading from templates/ |
-| **MCP Integration** | ✅ Full | Built-in MCP servers + Kratos memory with full JSON-RPC protocol |
+| **MCP Integration** | ✅ Full | Built-in MCP servers for web search, documentation, and code search |
 | **Context Management** | ✅ Partial | AGENTS.md injector exists, directory-specific instructions support |
 | **Hooks System** | ✅ Extensive | 30+ hooks including: keyword detection, think mode, Ralph Loop, session recovery, auto-update, comment checker, and more |
 | **Google Multi-Account Auth** | ✅ Full | AccountManager class with account rotation, rate limit handling, tier-based selection |
@@ -122,26 +122,26 @@ background_task_status
 background_task_list
 ```
 
-### Kratos Memory
+### Unified Learning Memory
 
 Persistent context across sessions:
 
 ```bash
-# Save a memory
-memory_save --summary "API design decision" --text "Used JWT because..." --tags ["auth", "api"] --importance 5
+# Save an experience
+learning_add_experience --summary "API design decision" --details "Used JWT because..." --tags ["auth", "api"] --confidence 0.8
 
-# Search memories
-memory_search --q "authentication" --k 10
+# Search experiences
+learning_search_experiences --query "authentication"
 
-# Natural language query
-memory_ask --question "How did we implement JWT?"
+# Record a knowledge node
+learning_add_knowledge_node --title "JWT decision" --content "JWT chosen for stateless auth" --tags ["auth"]
 ```
 
 ## BEST PRACTICES
 
 1. **Use AST-grep** over string search for code changes - it's language-aware
 2. **Leverage Background Agents** for time-consuming parallel tasks
-3. **Use Kratos Memory** for context that spans sessions
+3. **Use Learning Memory** for context that spans sessions
 4. **Use Blitzkrieg** for TDD-compliant development workflows
 5. **Use Model Switcher** to select optimal models per task type
 

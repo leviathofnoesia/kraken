@@ -1,9 +1,6 @@
-import * as fs from "fs"
-import * as path from "path"
-import {
-  getStateFilePath,
-  RalphLoopState,
-} from "../../storage"
+import * as fs from 'fs'
+import * as path from 'path'
+import { getStateFilePath, RalphLoopState } from '../../storage'
 
 const COMPLETION_PROMISE_REGEX = /<promise>\s*DONE\s*<\/promise>/gi
 const PROGRESS_PATTERN_REGEX = /<promise>\s*(PROGRESS:\d+%)\s*<\/promise>/gi
@@ -16,7 +13,7 @@ export interface CompletionDetectionResult {
 
 export async function detectCompletionPromise(
   sessionID: string,
-  promise: string
+  promise: string,
 ): Promise<boolean> {
   const stateFilePath = getStateFilePath(sessionID)
 
@@ -25,22 +22,19 @@ export async function detectCompletionPromise(
   }
 
   try {
-    const content = await fs.promises.readFile(stateFilePath, "utf-8")
+    const content = await fs.promises.readFile(stateFilePath, 'utf-8')
     const state = JSON.parse(content) as RalphLoopState
 
-    return state.status === "completed"
+    return state.status === 'completed'
   } catch (error) {
-    console.error(
-      `[ralph-detector] Error detecting completion for session ${sessionID}:`,
-      error
-    )
+    console.error(`[ralph-detector] Error detecting completion for session ${sessionID}:`, error)
     return false
   }
 }
 
 export async function detectCompletionInSessionMessages(
   sessionID: string,
-  promise: string
+  promise: string,
 ): Promise<boolean> {
   try {
     const stateFilePath = getStateFilePath(sessionID)
@@ -49,20 +43,18 @@ export async function detectCompletionInSessionMessages(
       return false
     }
 
-    const content = await fs.promises.readFile(stateFilePath, "utf-8")
+    const content = await fs.promises.readFile(stateFilePath, 'utf-8')
     const state = JSON.parse(content) as RalphLoopState
 
-    if (state.status !== "active") {
-      return state.status === "completed"
+    if (state.status !== 'active') {
+      return state.status === 'completed'
     }
 
-    const fullTranscript = state.transcript.join("\n")
+    const fullTranscript = state.transcript.join('\n')
     const completionMatch = COMPLETION_PROMISE_REGEX.test(fullTranscript)
 
     if (completionMatch) {
-      console.log(
-        `[ralph-detector] Detected completion promise in session ${sessionID}`
-      )
+      console.log(`[ralph-detector] Detected completion promise in session ${sessionID}`)
       return true
     }
 
@@ -72,9 +64,7 @@ export async function detectCompletionInSessionMessages(
       const progressValue = progressMatchContent.match(/PROGRESS:(\d+)/)
       if (progressValue) {
         const progress = parseInt(progressValue[1], 10)
-        console.log(
-          `[ralph-detector] Detected progress ${progress}% in session ${sessionID}`
-        )
+        console.log(`[ralph-detector] Detected progress ${progress}% in session ${sessionID}`)
         if (progress >= 100) {
           return true
         }
@@ -83,22 +73,16 @@ export async function detectCompletionInSessionMessages(
 
     return false
   } catch (error) {
-    console.error(
-      `[ralph-detector] Error detecting completion in session ${sessionID}:`,
-      error
-    )
+    console.error(`[ralph-detector] Error detecting completion in session ${sessionID}:`, error)
     return false
   }
 }
 
-export function detectCompletionInText(
-  text: string,
-  promise: string
-): CompletionDetectionResult {
+export function detectCompletionInText(text: string, promise: string): CompletionDetectionResult {
   const completionMatch = text.match(COMPLETION_PROMISE_REGEX)
 
   if (completionMatch) {
-    console.log("[ralph-detector] Detected completion promise in text")
+    console.log('[ralph-detector] Detected completion promise in text')
     return {
       completed: true,
       confidence: 1.0,
@@ -133,13 +117,11 @@ export function extractPromiseFromText(text: string): string | null {
   return promiseMatch[1].trim()
 }
 
-export function shouldContinueRalphLoop(
-  state: RalphLoopState
-): {
+export function shouldContinueRalphLoop(state: RalphLoopState): {
   shouldContinue: boolean
   reason?: string
 } {
-  if (state.status !== "active") {
+  if (state.status !== 'active') {
     return {
       shouldContinue: false,
       reason: `Loop is not active (status: ${state.status})`,

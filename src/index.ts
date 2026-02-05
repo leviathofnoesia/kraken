@@ -1,8 +1,6 @@
-import type { Plugin, PluginInput, Hooks, ToolDefinition } from '@opencode-ai/plugin'
-import type { BackgroundManager } from './features/background-agent/manager'
 import type { AgentConfig } from '@opencode-ai/sdk'
-import { z } from 'zod'
-import type { OpenCodeXConfig } from './config/schema'
+import type { Hooks, Plugin, PluginInput } from '@opencode-ai/plugin'
+
 import { getClaudeCodeCompatibilityConfig } from './config/manager'
 import { createLogger } from './utils/logger'
 
@@ -19,13 +17,12 @@ import {
   maelstromAgent,
   leviathanAgent,
   poseidonAgent,
+  cartographerAgent,
 } from './agents'
-
-// Utils
-import { getAvailableAgents } from './utils'
 
 // Tools
 import { opencodeXCompress } from './tools/compression'
+import { modelSwitcher } from './tools/model-switcher'
 import { createRalphLoopHook } from './hooks/ralph-loop'
 import { createAutoUpdateChecker } from './hooks/auto-update-checker'
 import { ast_grep_search, ast_grep_replace } from './tools/ast-grep'
@@ -34,6 +31,19 @@ import { grep } from './tools/grep'
 import { ralphLoop } from './tools/ralph-loop'
 import { call_kraken_agent } from './tools/agent-call'
 import { recordToolUse } from './storage'
+import {
+  learning_add_experience,
+  learning_add_knowledge_node,
+  learning_create_state_machine,
+  learning_get_review_queue,
+  learning_link_knowledge_nodes,
+  learning_list_patterns,
+  learning_list_state_machines,
+  learning_record_pattern,
+  learning_review_node,
+  learning_search_experiences,
+  learning_search_knowledge_nodes,
+} from './tools/learning'
 
 // LSP tools
 import {
@@ -73,6 +83,7 @@ import { createPreemptiveCompaction } from './hooks/preemptive-compaction'
 import { createSessionRecovery } from './hooks/session-recovery'
 import { createThinkingBlockValidator } from './hooks/thinking-block-validator'
 import { createCommentChecker } from './hooks/comment-checker'
+import { createMemoryGuard, createToolThrottle, createSessionLifecycle } from './hooks'
 import { createBlitzkriegTestPlanEnforcerHook } from './hooks/blitzkrieg-test-plan-enforcer'
 import { createBlitzkriegTddWorkflowHook } from './hooks/blitzkrieg-tdd-workflow'
 import { createBlitzkriegEvidenceVerifierHook } from './hooks/blitzkrieg-evidence-verifier'
@@ -80,11 +91,19 @@ import { createBlitzkriegPlannerConstraintsHook } from './hooks/blitzkrieg-plann
 
 // MCP & Features
 import { initializeAllMcpServers, shutdownAllMcpServers } from './features/mcp/index'
-import { initializeKratos, shutdownKratos } from './features/mcp/kratos'
-import { getBuiltinMcpTools } from './features/mcp/index'
+import {
+  context7GetToolMCP,
+  context7SearchToolMCP,
+  grepGetFileToolMCP,
+  grepSearchToolMCP,
+  webfetchTool,
+  websearchTool,
+} from './features/mcp'
+import { initializeLearning } from './features/memory'
 
 // CLI & Skills
-import { getMcpManager } from './features/skills/mcp-manager'
+import { initializeCommandLoader } from './features/command-loader'
+import { initializeSkillMcpManager } from './features/skill-mcp-manager'
 
 // Helper function
 function getSeaThemedAgents(): Record<string, AgentConfig> {
@@ -100,6 +119,7 @@ function getSeaThemedAgents(): Record<string, AgentConfig> {
     Maelstrom: maelstromAgent,
     Leviathan: leviathanAgent,
     Poseidon: poseidonAgent,
+    Cartographer: cartographerAgent,
   }
 }
 
@@ -143,17 +163,6 @@ function mergeHooks(...hooks: Hooks[]): Hooks {
   return result
 }
 
-async function initializeCommandLoader(): Promise<void> {
-  // Placeholder for command loader initialization
-  console.log('[kraken-code] Command loader not yet implemented')
-}
-
-async function initializeSkillMcpManager(): Promise<void> {
-  // Placeholder for skill MCP manager initialization
-  const mcpManager = getMcpManager()
-  console.log('[kraken-code] Skill MCP manager initialized')
-}
-
 const builtinTools: Record<string, any> = {
   ast_grep_search,
   ast_grep_replace,
@@ -162,7 +171,8 @@ const builtinTools: Record<string, any> = {
   session_read,
   session_search,
   session_info,
-  'model-switcher': opencodeXCompress,
+  'kraken-compress': opencodeXCompress,
+  'model-switcher': modelSwitcher,
   'ralph-loop': ralphLoop,
   lsp_hover,
   lsp_goto_definition,
@@ -176,53 +186,24 @@ const builtinTools: Record<string, any> = {
   lsp_code_action_resolve,
   lsp_servers,
   'call-kraken-agent': call_kraken_agent,
-  // TODO: Fix tool definitions with proper schema types
-  // "websearch": {
-  //   description: "Search the web using Exa AI",
-  //   args: z.object({
-  //     query: z.string(),
-  //     numResults: z.number().default(8),
-  //   }),
-  // },
-  // "webfetch": {
-  //   description: "Fetch a web page",
-  //   args: z.object({
-  //     url: z.string(),
-  //     format: z.enum(["text", "markdown", "html"]),
-  //   }),
-  // },
-  // "context7-search": {
-  //   description: "Search official documentation",
-  //   args: z.object({
-  //     query: z.string(),
-  //     numResults: z.number().default(5),
-  //   }),
-  // },
-  // "context7-get": {
-  //   description: "Get specific documentation",
-  //   args: z.object({
-  //     library: z.string(),
-  //     section: z.string().optional(),
-  //   }),
-  // },
-  // "grep-search": {
-  //   description: "Search code across GitHub",
-  //   args: z.object({
-  //     query: z.string(),
-  //     language: z.string().optional(),
-  //     numResults: z.number().default(10),
-  //   }),
-  // },
-  // "grep-get-file": {
-  //   description: "Get file from GitHub",
-  //   args: z.object({
-  //     repo: z.string(),
-  //     path: z.string(),
-  //   }),
-  // },
+  websearch: websearchTool,
+  webfetch: webfetchTool,
+  'context7-search': context7SearchToolMCP,
+  'context7-get': context7GetToolMCP,
+  'grep-search': grepSearchToolMCP,
+  'grep-get-file': grepGetFileToolMCP,
+  learning_add_experience,
+  learning_search_experiences,
+  learning_add_knowledge_node,
+  learning_search_knowledge_nodes,
+  learning_link_knowledge_nodes,
+  learning_record_pattern,
+  learning_list_patterns,
+  learning_get_review_queue,
+  learning_review_node,
+  learning_create_state_machine,
+  learning_list_state_machines,
 }
-
-let backgroundManager: BackgroundManager | null = null
 
 const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
   const logger = createLogger('plugin-main')
@@ -269,34 +250,42 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         (async () => {
           try {
             await initializeCommandLoader()
-            logger.info('Command loader initialized')
+            logger.debug('Command loader initialized')
           } catch (e) {
-            logger.error('Error initializing command loader:', e)
+            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
+              logger.error('Error initializing command loader:', e)
+            }
           }
         })(),
         (async () => {
           try {
             await initializeSkillMcpManager()
-            logger.info('Skill MCP manager initialized')
+            logger.debug('Skill MCP manager initialized')
           } catch (e) {
-            logger.error('Error initializing skill MCP manager:', e)
+            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
+              logger.error('Error initializing skill MCP manager:', e)
+            }
           }
         })(),
         (async () => {
           try {
-            await initializeKratos()
-            logger.info('Kratos initialized')
-          } catch (e) {
-            logger.error('Error initializing Kratos:', e)
-          }
-        })(),
-        (async () => {
-          const mcpConfig = pluginConfig.mcp || {}
-          try {
+            const mcpConfig = pluginConfig.mcp || {}
             await initializeAllMcpServers(mcpConfig)
-            logger.info('MCP servers initialized')
+            logger.debug('MCP servers initialized')
           } catch (e) {
-            logger.error('Error initializing MCP servers:', e)
+            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
+              logger.error('Error initializing MCP servers:', e)
+            }
+          }
+        })(),
+        (async () => {
+          try {
+            await initializeLearning()
+            logger.debug('Learning system initialized')
+          } catch (e) {
+            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
+              logger.error('Error initializing learning system:', e)
+            }
           }
         })(),
       ])
@@ -326,12 +315,20 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     hooks.push(createSessionRecovery(input))
     hooks.push(createThinkingBlockValidator(input))
     hooks.push(createCommentChecker(input))
+
+    // Memory leak prevention hooks - ensure these are ordered appropriately
+    hooks.push(createMemoryGuard(input))
+    hooks.push(createToolThrottle(input))
+    hooks.push(createSessionLifecycle(input))
+
     hooks.push(createBlitzkriegTestPlanEnforcerHook())
     hooks.push(createBlitzkriegTddWorkflowHook())
     hooks.push(createBlitzkriegEvidenceVerifierHook())
     hooks.push(createBlitzkriegPlannerConstraintsHook())
   } catch (e) {
-    logger.error('Error initializing hooks:', e)
+    if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
+      logger.error('Error initializing hooks:', e)
+    }
   }
 
   // 7. Storage Hooks
@@ -346,7 +343,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         await recordToolUse(sessionID, tool, output.output.toolInput, output.output.toolOutput)
       }
 
-      if (sessionID) {
+      if (sessionID && (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1')) {
         console.log(`[storage-hooks] Tool ${tool} completed for session ${sessionID}`)
       }
     },
@@ -356,7 +353,6 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
   process.on('exit', async () => {
     try {
       await shutdownAllMcpServers()
-      await shutdownKratos()
     } catch (e) {
       console.error('Kraken Code: Error shutting down services', e)
     }

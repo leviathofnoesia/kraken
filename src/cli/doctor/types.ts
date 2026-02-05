@@ -1,4 +1,4 @@
-export type CheckStatus = "pass" | "fail" | "warn" | "skip"
+export type CheckStatus = 'pass' | 'fail' | 'warn' | 'skip'
 
 export interface CheckResult {
   name: string
@@ -11,12 +11,12 @@ export interface CheckResult {
 export type CheckFunction = () => Promise<CheckResult>
 
 export type CheckCategory =
-  | "installation"
-  | "configuration"
-  | "authentication"
-  | "dependencies"
-  | "tools"
-  | "updates"
+  | 'installation'
+  | 'configuration'
+  | 'authentication'
+  | 'dependencies'
+  | 'tools'
+  | 'updates'
 
 export interface CheckDefinition {
   id: string
@@ -51,7 +51,7 @@ export interface OpenCodeInfo {
   installed: boolean
   version: string | null
   path: string | null
-  binary: "opencode" | "opencode-desktop" | null
+  binary: 'opencode' | 'opencode-desktop' | null
 }
 
 export interface PluginInfo {
@@ -65,12 +65,12 @@ export interface PluginInfo {
 export interface ConfigInfo {
   exists: boolean
   path: string | null
-  format: "json" | "jsonc" | null
+  format: 'json' | 'jsonc' | null
   valid: boolean
   errors: string[]
 }
 
-export type AuthProviderId = "anthropic" | "openai" | "google"
+export type AuthProviderId = 'anthropic' | 'openai' | 'google'
 
 export interface AuthProviderInfo {
   id: AuthProviderId
@@ -93,12 +93,12 @@ export interface LspServerInfo {
   id: string
   installed: boolean
   extensions: string[]
-  source: "builtin" | "config" | "plugin"
+  source: 'builtin' | 'config' | 'plugin'
 }
 
 export interface McpServerInfo {
   id: string
-  type: "builtin" | "user"
+  type: 'builtin' | 'user'
   enabled: boolean
   valid: boolean
   error?: string

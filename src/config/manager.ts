@@ -36,8 +36,12 @@ export function getBlitzkriegConfig() {
   return getConfigValue('blitzkrieg')
 }
 
-export function getKratosConfig() {
-  return getConfigValue('kratos')
+export function getMemoryConfig() {
+  return getConfigValue('memory')
+}
+
+export function getLearningConfig() {
+  return getConfigValue('learning')
 }
 
 export function getModesConfig() {

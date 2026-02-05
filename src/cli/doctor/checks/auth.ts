@@ -1,18 +1,18 @@
-import { existsSync, readFileSync } from "node:fs"
-import { homedir } from "node:os"
-import { join } from "node:path"
-import type { CheckResult, CheckDefinition, AuthProviderInfo, AuthProviderId } from "../types"
-import { CHECK_IDS, CHECK_NAMES } from "../constants"
-import { parseJsonc } from "../../../shared"
+import { existsSync, readFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
+import type { CheckResult, CheckDefinition, AuthProviderInfo, AuthProviderId } from '../types'
+import { CHECK_IDS, CHECK_NAMES } from '../constants'
+import { parseJsonc } from '../../../shared'
 
-const OPENCODE_CONFIG_DIR = join(homedir(), ".config", "opencode")
-const OPENCODE_JSON = join(OPENCODE_CONFIG_DIR, "opencode.json")
-const OPENCODE_JSONC = join(OPENCODE_CONFIG_DIR, "opencode.jsonc")
+const OPENCODE_CONFIG_DIR = join(homedir(), '.config', 'opencode')
+const OPENCODE_JSON = join(OPENCODE_CONFIG_DIR, 'opencode.json')
+const OPENCODE_JSONC = join(OPENCODE_CONFIG_DIR, 'opencode.jsonc')
 
 const AUTH_PLUGINS: Record<AuthProviderId, { plugin: string; name: string }> = {
-  anthropic: { plugin: "builtin", name: "Anthropic (Claude)" },
-  openai: { plugin: "opencode-openai-codex-auth", name: "OpenAI (ChatGPT)" },
-  google: { plugin: "opencode-antigravity-auth", name: "Google (Gemini)" },
+  anthropic: { plugin: 'builtin', name: 'Anthropic (Claude)' },
+  openai: { plugin: 'opencode-openai-codex-auth', name: 'OpenAI (ChatGPT)' },
+  google: { plugin: 'opencode-antigravity-auth', name: 'Google (Gemini)' },
 }
 
 function getOpenCodeConfig(): { plugin?: string[] } | null {
@@ -20,7 +20,7 @@ function getOpenCodeConfig(): { plugin?: string[] } | null {
   if (!existsSync(configPath)) return null
 
   try {
-    const content = readFileSync(configPath, "utf-8")
+    const content = readFileSync(configPath, 'utf-8')
     return parseJsonc<{ plugin?: string[] }>(content)
   } catch {
     return null
@@ -28,7 +28,7 @@ function getOpenCodeConfig(): { plugin?: string[] } | null {
 }
 
 function isPluginInstalled(plugins: string[], pluginName: string): boolean {
-  if (pluginName === "builtin") return true
+  if (pluginName === 'builtin') return true
   return plugins.some((p) => p === pluginName || p.startsWith(`${pluginName}@`))
 }
 
@@ -49,43 +49,40 @@ export function getAuthProviderInfo(providerId: AuthProviderId): AuthProviderInf
 
 export async function checkAuthProvider(providerId: AuthProviderId): Promise<CheckResult> {
   const info = getAuthProviderInfo(providerId)
-  const checkId = `auth-${providerId}` as keyof typeof CHECK_NAMES
+  const checkId = `auth-${providerId}`
   const checkName = CHECK_NAMES[checkId] || info.name
 
   if (!info.pluginInstalled) {
     return {
       name: checkName,
-      status: "skip",
-      message: "Auth plugin not installed",
-      details: [
-        `Plugin: ${AUTH_PLUGINS[providerId].plugin}`,
-        "Run: kraken-code install",
-      ],
+      status: 'skip',
+      message: 'Auth plugin not installed',
+      details: [`Plugin: ${AUTH_PLUGINS[providerId].plugin}`, 'Run: kraken-code install'],
     }
   }
 
   return {
     name: checkName,
-    status: "pass",
-    message: "Auth plugin available",
+    status: 'pass',
+    message: 'Auth plugin available',
     details: [
-      providerId === "anthropic"
-        ? "Run: opencode auth login (select Anthropic)"
+      providerId === 'anthropic'
+        ? 'Run: opencode auth login (select Anthropic)'
         : `Plugin: ${AUTH_PLUGINS[providerId].plugin}`,
     ],
   }
 }
 
 export async function checkAnthropicAuth(): Promise<CheckResult> {
-  return checkAuthProvider("anthropic")
+  return checkAuthProvider('anthropic')
 }
 
 export async function checkOpenAIAuth(): Promise<CheckResult> {
-  return checkAuthProvider("openai")
+  return checkAuthProvider('openai')
 }
 
 export async function checkGoogleAuth(): Promise<CheckResult> {
-  return checkAuthProvider("google")
+  return checkAuthProvider('google')
 }
 
 export function getAuthCheckDefinitions(): CheckDefinition[] {
@@ -93,21 +90,21 @@ export function getAuthCheckDefinitions(): CheckDefinition[] {
     {
       id: CHECK_IDS.AUTH_ANTHROPIC,
       name: CHECK_NAMES[CHECK_IDS.AUTH_ANTHROPIC],
-      category: "authentication",
+      category: 'authentication',
       check: checkAnthropicAuth,
       critical: false,
     },
     {
       id: CHECK_IDS.AUTH_OPENAI,
       name: CHECK_NAMES[CHECK_IDS.AUTH_OPENAI],
-      category: "authentication",
+      category: 'authentication',
       check: checkOpenAIAuth,
       critical: false,
     },
     {
       id: CHECK_IDS.AUTH_GOOGLE,
       name: CHECK_NAMES[CHECK_IDS.AUTH_GOOGLE],
-      category: "authentication",
+      category: 'authentication',
       check: checkGoogleAuth,
       critical: false,
     },

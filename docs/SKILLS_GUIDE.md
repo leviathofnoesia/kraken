@@ -5,7 +5,7 @@ Skills in Kraken Code use natural language to guide the AI for specific tasks.
 ## Available Skills
 
 ### Memory Skills
-- **Remember**: Store important information in Kratos
+- **Remember**: Store important information in the unified learning system
 - **Recall**: Retrieve stored memories
 
 ### Session Skills

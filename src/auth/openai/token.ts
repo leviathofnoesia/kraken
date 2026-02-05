@@ -50,23 +50,23 @@ function parseOAuthErrorPayload(text: string | undefined): ParsedOAuthError {
     return {}
   }
 
-    try {
-      const payload = JSON.parse(text) as OAuthErrorPayload
-      let code: string | undefined
+  try {
+    const payload = JSON.parse(text) as OAuthErrorPayload
+    let code: string | undefined
 
-      if (typeof payload.error === 'string') {
-        code = payload.error
-      } else if (payload.error && typeof payload.error === 'object') {
-        code = payload.error.code ?? String(payload.error.status)
-      }
-
-      return {
-        code,
-        description: payload.error_description,
-      }
-    } catch {
-      return { description: text }
+    if (typeof payload.error === 'string') {
+      code = payload.error
+    } else if (payload.error && typeof payload.error === 'object') {
+      code = payload.error.code ?? String(payload.error.status)
     }
+
+    return {
+      code,
+      description: payload.error_description,
+    }
+  } catch {
+    return { description: text }
+  }
 }
 
 export function isTokenExpired(tokens: OpenAITokens): boolean {
@@ -92,7 +92,7 @@ function isRetryableError(status: number): boolean {
 export async function refreshAccessToken(
   refreshToken: string,
   clientId: string = OPENAI_CLIENT_ID,
-  clientSecret: string = OPENAI_CLIENT_SECRET
+  clientSecret: string = OPENAI_CLIENT_SECRET,
 ): Promise<OpenAITokenExchangeResult> {
   const params = new URLSearchParams({
     grant_type: 'refresh_token',
@@ -133,7 +133,8 @@ export async function refreshAccessToken(
       const parsed = parseOAuthErrorPayload(responseBody)
 
       lastError = new OpenAITokenRefreshError({
-        message: parsed.description || `Token refresh failed: ${response.status} ${response.statusText}`,
+        message:
+          parsed.description || `Token refresh failed: ${response.status} ${response.statusText}`,
         code: parsed.code,
         description: parsed.description,
         status: response.status,
@@ -171,11 +172,14 @@ export async function refreshAccessToken(
     }
   }
 
-  throw lastError || new OpenAITokenRefreshError({
-    message: 'Token refresh failed after all retries',
-    status: 0,
-    statusText: 'Max Retries Exceeded',
-  })
+  throw (
+    lastError ||
+    new OpenAITokenRefreshError({
+      message: 'Token refresh failed after all retries',
+      status: 0,
+      statusText: 'Max Retries Exceeded',
+    })
+  )
 }
 
 export function parseStoredToken(stored: string): OpenAIRefreshParts {
@@ -188,9 +192,6 @@ export function parseStoredToken(stored: string): OpenAIRefreshParts {
   }
 }
 
-export function formatTokenForStorage(
-  refreshToken: string,
-  apiKey?: string
-): string {
+export function formatTokenForStorage(refreshToken: string, apiKey?: string): string {
   return `${refreshToken}|${apiKey || ''}`
 }

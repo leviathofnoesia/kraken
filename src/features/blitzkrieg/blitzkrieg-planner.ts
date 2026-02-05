@@ -83,7 +83,7 @@ export function createPlanningStep(
   description: string,
   type: PlanningStep['type'],
   complexity: number = 1,
-  dependencies: string[] = []
+  dependencies: string[] = [],
 ): PlanningStep {
   return {
     id,
@@ -112,7 +112,14 @@ export function inferStepType(description: string): PlanningStep['type'] {
     'check',
     'review',
   ]
-  const planningKeywords = ['plan architecture', 'design solution', 'plan', 'design', 'architect', 'outline']
+  const planningKeywords = [
+    'plan architecture',
+    'design solution',
+    'plan',
+    'design',
+    'architect',
+    'outline',
+  ]
 
   // Test keywords (less specific, checked last)
   const testKeywords = ['test', 'spec', 'assert', 'mock', 'stub']
@@ -194,7 +201,7 @@ function mapSeverity(severity: 'block' | 'warn' | 'info'): 'error' | 'warning' {
  */
 export function checkPlanningConstraints(
   steps: PlanningStep[],
-  config: PlannerConstraintConfig = DEFAULT_PLANNER_CONSTRAINT_CONFIG
+  config: PlannerConstraintConfig = DEFAULT_PLANNER_CONSTRAINT_CONFIG,
 ): ConstraintCheck {
   const violations: PlanningConstraintViolation[] = []
 
@@ -213,11 +220,7 @@ export function checkPlanningConstraints(
   }
 
   // Check for verification step requirement
-  if (
-    config.requireVerificationStep &&
-    implementationSteps.length > 0 &&
-    !hasVerificationStep
-  ) {
+  if (config.requireVerificationStep && implementationSteps.length > 0 && !hasVerificationStep) {
     violations.push({
       type: 'missing-verification',
       taskId: 'plan',
@@ -253,16 +256,14 @@ export function checkPlanningConstraints(
  */
 export function generatePlanningComplianceReport(
   steps: PlanningStep[],
-  config: PlannerConstraintConfig = DEFAULT_PLANNER_CONSTRAINT_CONFIG
+  config: PlannerConstraintConfig = DEFAULT_PLANNER_CONSTRAINT_CONFIG,
 ): PlanningComplianceReport {
   const check = checkPlanningConstraints(steps, config)
   const suggestions: string[] = []
 
   // Generate suggestions based on violations
   if (!check.hasTestStep && config.requireTestStep) {
-    suggestions.push(
-      'Add test steps to verify the implementation works correctly'
-    )
+    suggestions.push('Add test steps to verify the implementation works correctly')
   }
 
   if (!check.hasVerificationStep && config.requireVerificationStep) {
@@ -272,7 +273,7 @@ export function generatePlanningComplianceReport(
   for (const violation of check.violations) {
     if (violation.type === 'excessive-complexity') {
       suggestions.push(
-        `Break down complex step "${violation.taskId}" into smaller, more manageable tasks`
+        `Break down complex step "${violation.taskId}" into smaller, more manageable tasks`,
       )
     }
   }
@@ -293,9 +294,7 @@ export function generatePlanningComplianceReport(
 /**
  * Calculate statistics about planning steps
  */
-export function calculatePlanningStepStatistics(
-  steps: PlanningStep[]
-): PlanningStepStatistics {
+export function calculatePlanningStepStatistics(steps: PlanningStep[]): PlanningStepStatistics {
   const stats: PlanningStepStatistics = {
     totalSteps: steps.length,
     implementationSteps: 0,
@@ -376,9 +375,7 @@ export function validateStepDependencies(steps: PlanningStep[]): {
   for (const step of steps) {
     for (const depId of step.dependencies) {
       if (!stepIds.has(depId)) {
-        errors.push(
-          `Step "${step.id}" depends on non-existent step "${depId}"`
-        )
+        errors.push(`Step "${step.id}" depends on non-existent step "${depId}"`)
       }
     }
   }
@@ -443,7 +440,7 @@ export function generatePlanningReport(report: PlanningComplianceReport): string
     lines.push('\nViolations:')
     for (const violation of report.violations) {
       lines.push(
-        `  - [${violation.severity.toUpperCase()}] ${violation.type}: ${violation.message}`
+        `  - [${violation.severity.toUpperCase()}] ${violation.type}: ${violation.message}`,
       )
     }
   }

@@ -1,9 +1,9 @@
-import * as fs from "fs"
-import * as path from "path"
-import * as os from "os"
+import * as fs from 'fs'
+import * as path from 'path'
+import * as os from 'os'
 
-const KRAKEN_DIR = path.join(os.homedir(), ".kraken")
-const TODO_DIR = path.join(KRAKEN_DIR, "todos")
+const KRAKEN_DIR = path.join(os.homedir(), '.kraken')
+const TODO_DIR = path.join(KRAKEN_DIR, 'todos')
 
 export interface KrakenTodo {
   content: string
@@ -34,11 +34,11 @@ export function loadKrakenTodos(sessionId: string): KrakenTodo[] {
       return []
     }
 
-    const content = fs.readFileSync(filePath, "utf-8")
-    const lines = content.trim().split("\n")
+    const content = fs.readFileSync(filePath, 'utf-8')
+    const lines = content.trim().split('\n')
 
     return lines
-      .map(line => {
+      .map((line) => {
         try {
           return JSON.parse(line)
         } catch {
@@ -56,8 +56,8 @@ export function saveKrakenTodos(sessionId: string, todos: KrakenTodo[]): void {
   try {
     ensureDirectories()
     const filePath = getTodoPath(sessionId)
-    const lines = todos.map(todo => JSON.stringify({ ...todo, timestamp: Date.now() }))
-    fs.writeFileSync(filePath, lines.join("\n"))
+    const lines = todos.map((todo) => JSON.stringify({ ...todo, timestamp: Date.now() }))
+    fs.writeFileSync(filePath, lines.join('\n'))
     console.log(`[kraken-todo] Saved ${todos.length} todos for session ${sessionId}`)
   } catch (error) {
     console.error(`[kraken-todo] Error saving todos for session ${sessionId}:`, error)
@@ -93,6 +93,6 @@ export function cleanupOldTodos(maxAgeDays: number = 30): void {
       }
     }
   } catch (error) {
-    console.error("[kraken-todo] Error cleaning up old todos:", error)
+    console.error('[kraken-todo] Error cleaning up old todos:', error)
   }
 }

@@ -1,5 +1,5 @@
-import type { Hooks } from "@opencode-ai/plugin"
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { Hooks } from '@opencode-ai/plugin'
+import type { PluginInput } from '@opencode-ai/plugin'
 
 export interface NonInteractiveEnvConfig {
   enabled?: boolean
@@ -7,7 +7,7 @@ export interface NonInteractiveEnvConfig {
 
 export function createNonInteractiveEnv(
   _input: PluginInput,
-  options?: { config?: NonInteractiveEnvConfig }
+  options?: { config?: NonInteractiveEnvConfig },
 ): Hooks {
   const config = options?.config ?? { enabled: true }
 
@@ -16,7 +16,7 @@ export function createNonInteractiveEnv(
       if (!config.enabled) return
       const isCI = process.env.CI !== undefined
       if (isCI) {
-        console.log("[non-interactive-env] Detected CI environment, enabling non-interactive mode")
+        console.log('[non-interactive-env] Detected CI environment, enabling non-interactive mode')
       }
     },
   }

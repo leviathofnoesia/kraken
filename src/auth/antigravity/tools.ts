@@ -44,7 +44,7 @@ export interface GeminiTools {
  */
 export interface OpenAIToolCall {
   id: string
-  type: "function"
+  type: 'function'
   function: {
     name: string
     arguments: string
@@ -86,9 +86,7 @@ export interface GeminiToolResult {
  * @param tools - Array of OpenAI-format tools
  * @returns Gemini-format tools object with functionDeclarations, or undefined if no valid tools
  */
-export function normalizeToolsForGemini(
-  tools: OpenAITool[]
-): GeminiTools | undefined {
+export function normalizeToolsForGemini(tools: OpenAITool[]): GeminiTools | undefined {
   if (!tools || tools.length === 0) {
     return undefined
   }
@@ -96,12 +94,12 @@ export function normalizeToolsForGemini(
   const functionDeclarations: GeminiFunctionDeclaration[] = []
 
   for (const tool of tools) {
-    if (!tool || typeof tool !== "object") {
+    if (!tool || typeof tool !== 'object') {
       continue
     }
 
-    const toolType = tool.type ?? "function"
-    if (toolType === "function" && tool.function) {
+    const toolType = tool.type ?? 'function'
+    if (toolType === 'function' && tool.function) {
       const declaration: GeminiFunctionDeclaration = {
         name: tool.function.name,
       }
@@ -113,13 +111,13 @@ export function normalizeToolsForGemini(
       if (tool.function.parameters) {
         declaration.parameters = tool.function.parameters
       } else {
-        declaration.parameters = { type: "object", properties: {} }
+        declaration.parameters = { type: 'object', properties: {} }
       }
 
       functionDeclarations.push(declaration)
-    } else if (toolType !== "function" && process.env.ANTIGRAVITY_DEBUG === "1") {
+    } else if (toolType !== 'function' && process.env.ANTIGRAVITY_DEBUG === '1') {
       console.warn(
-        `[antigravity-tools] Unsupported tool type: "${toolType}". Tool will be skipped.`
+        `[antigravity-tools] Unsupported tool type: "${toolType}". Tool will be skipped.`,
       )
     }
   }
@@ -145,9 +143,7 @@ export function normalizeToolsForGemini(
  * @param results - Array of Gemini tool results containing functionCall or functionResponse
  * @returns Array of OpenAI-format tool calls
  */
-export function normalizeToolResultsFromGemini(
-  results: GeminiToolResult[]
-): OpenAIToolCall[] {
+export function normalizeToolResultsFromGemini(results: GeminiToolResult[]): OpenAIToolCall[] {
   if (!results || results.length === 0) {
     return []
   }
@@ -161,7 +157,7 @@ export function normalizeToolResultsFromGemini(
       callCounter++
       const toolCall: OpenAIToolCall = {
         id: `call_${Date.now()}_${callCounter}`,
-        type: "function",
+        type: 'function',
         function: {
           name: result.functionCall.name,
           arguments: JSON.stringify(result.functionCall.args ?? {}),
@@ -184,11 +180,11 @@ export function normalizeToolResultsFromGemini(
  */
 export function convertFunctionCallToToolCall(
   functionCall: GeminiFunctionCall,
-  id?: string
+  id?: string,
 ): OpenAIToolCall {
   return {
     id: id ?? `call_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-    type: "function",
+    type: 'function',
     function: {
       name: functionCall.name,
       arguments: JSON.stringify(functionCall.args ?? {}),
@@ -207,7 +203,7 @@ export function hasFunctionTools(tools: OpenAITool[]): boolean {
     return false
   }
 
-  return tools.some((tool) => tool.type === "function" && tool.function)
+  return tools.some((tool) => tool.type === 'function' && tool.function)
 }
 
 /**
@@ -217,10 +213,8 @@ export function hasFunctionTools(tools: OpenAITool[]): boolean {
  * @param tools - Tools that may be in Gemini or OpenAI format
  * @returns Array of function declarations
  */
-export function extractFunctionDeclarations(
-  tools: unknown
-): GeminiFunctionDeclaration[] {
-  if (!tools || typeof tools !== "object") {
+export function extractFunctionDeclarations(tools: unknown): GeminiFunctionDeclaration[] {
+  if (!tools || typeof tools !== 'object') {
     return []
   }
 

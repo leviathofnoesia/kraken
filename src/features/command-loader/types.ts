@@ -1,4 +1,10 @@
-export type CommandScope = "user" | "project" | "opencode" | "opencode-project" | "builtin" | "skill"
+export type CommandScope =
+  | 'user'
+  | 'project'
+  | 'opencode'
+  | 'opencode-project'
+  | 'builtin'
+  | 'skill'
 
 export interface HandoffDefinition {
   label: string

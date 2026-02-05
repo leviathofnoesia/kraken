@@ -1,6 +1,6 @@
-import type { SoundEvent } from "./sound-player"
-import { getNotificationCommand } from "./platform-detector"
-import { playSound, type SoundConfig } from "./sound-player"
+import type { SoundEvent } from './sound-player'
+import { getNotificationCommand } from './platform-detector'
+import { playSound, type SoundConfig } from './sound-player'
 
 export type { SoundEvent }
 
@@ -39,14 +39,9 @@ class NotificationManager {
     this.config = { ...DEFAULT_CONFIG, ...config }
   }
 
-  enqueue(
-    title: string,
-    message: string,
-    soundEvent?: SoundEvent,
-    id?: string,
-  ): string {
+  enqueue(title: string, message: string, soundEvent?: SoundEvent, id?: string): string {
     const notificationId = id || this.generateId()
-    
+
     this.queue.push({
       id: notificationId,
       title,
@@ -55,11 +50,11 @@ class NotificationManager {
       timestamp: Date.now(),
       retryCount: 0,
     })
-    
+
     console.log(`[notification-manager] Enqueued: ${notificationId} - ${title}`)
-    
+
     this.processQueue()
-    
+
     return notificationId
   }
 
@@ -76,7 +71,7 @@ class NotificationManager {
 
     try {
       const batch = this.queue.splice(0, this.config.batchSize)
-      const dedupedBatch = batch.filter(n => !this.sentNotifications.has(n.id))
+      const dedupedBatch = batch.filter((n) => !this.sentNotifications.has(n.id))
 
       if (dedupedBatch.length === 0) {
         this.processing = false
@@ -89,7 +84,7 @@ class NotificationManager {
       }
 
       if (this.queue.length > 0) {
-        await new Promise(resolve => setTimeout(resolve, this.config.batchDelay))
+        await new Promise((resolve) => setTimeout(resolve, this.config.batchDelay))
         this.processQueue()
       }
     } finally {
@@ -97,11 +92,9 @@ class NotificationManager {
     }
   }
 
-  private async sendNotification(
-    notification: QueuedNotification,
-  ): Promise<boolean> {
+  private async sendNotification(notification: QueuedNotification): Promise<boolean> {
     const commandResult = await getNotificationCommand()
-    
+
     if (!commandResult) {
       console.log(`[notification-manager] No notification command available for ${notification.id}`)
       return false
@@ -109,12 +102,12 @@ class NotificationManager {
 
     try {
       let success = false
-      
-      if (commandResult.platform === "linux") {
+
+      if (commandResult.platform === 'linux') {
         success = await this.sendLinuxNotification(notification, commandResult)
-      } else if (commandResult.platform === "darwin") {
+      } else if (commandResult.platform === 'darwin') {
         success = await this.sendDarwinNotification(notification, commandResult)
-      } else if (commandResult.platform === "win32") {
+      } else if (commandResult.platform === 'win32') {
         success = await this.sendWindowsNotification(notification, commandResult)
       }
 
@@ -125,13 +118,13 @@ class NotificationManager {
       return success
     } catch (error) {
       console.error(`[notification-manager] Error sending notification ${notification.id}:`, error)
-      
+
       if (notification.retryCount < this.config.maxRetries) {
         notification.retryCount++
         this.queue.push(notification)
         setTimeout(() => this.processQueue(), 1000 * (notification.retryCount + 1))
       }
-      
+
       return false
     }
   }
@@ -141,8 +134,8 @@ class NotificationManager {
     command: { command: string; args: string[]; platform: string },
   ): Promise<boolean> {
     try {
-      const { spawn } = await import("node:child_process")
-      
+      const { spawn } = await import('node:child_process')
+
       const args = [
         ...command.args,
         `--app-name=Kraken-Code`,
@@ -154,7 +147,7 @@ class NotificationManager {
 
       const result = spawn(command.command, args, {
         detached: true,
-        stdio: "ignore",
+        stdio: 'ignore',
       })
 
       result.unref()
@@ -169,13 +162,13 @@ class NotificationManager {
     command: { command: string; args: string[]; platform: string },
   ): Promise<boolean> {
     try {
-      const { execFile } = await import("node:child_process")
-      
+      const { execFile } = await import('node:child_process')
+
       const script = `
         display notification with title "${notification.title}" \
           subtitle "Kraken-Code" \
           message "${notification.message}" \
-          sound name "${notification.soundEvent || "notification"}"
+          sound name "${notification.soundEvent || 'notification'}"
       `
 
       await new Promise<void>((resolve, reject) => {
@@ -196,8 +189,8 @@ class NotificationManager {
     command: { command: string; args: string[]; platform: string },
   ): Promise<boolean> {
     try {
-      const { spawn } = await import("node:child_process")
-      
+      const { spawn } = await import('node:child_process')
+
       const script = `
         Add-Type -AssemblyName System.Windows.Forms
         Add-Type -AssemblyName System.Drawing
@@ -215,7 +208,7 @@ class NotificationManager {
 
       const result = spawn(command.command, [...command.args, script], {
         detached: true,
-        stdio: "ignore",
+        stdio: 'ignore',
       })
 
       result.unref()
@@ -228,7 +221,7 @@ class NotificationManager {
   clearQueue(): void {
     this.queue = []
     this.sentNotifications.clear()
-    console.log("[notification-manager] Queue cleared")
+    console.log('[notification-manager] Queue cleared')
   }
 
   getQueueLength(): number {

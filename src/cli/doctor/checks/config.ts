@@ -1,15 +1,15 @@
-import { existsSync, readFileSync } from "node:fs"
-import * as jsoncParser from "jsonc-parser"
-import path from "node:path"
-import os from "node:os"
-import type { CheckResult, CheckDefinition } from "../types"
-import { CHECK_IDS, CHECK_NAMES } from "../constants"
+import { existsSync, readFileSync } from 'node:fs'
+import * as jsoncParser from 'jsonc-parser'
+import path from 'node:path'
+import os from 'node:os'
+import type { CheckResult, CheckDefinition } from '../types'
+import { CHECK_IDS, CHECK_NAMES } from '../constants'
 
 function getOpenCodeConfigPaths() {
-  const crossPlatformDir = path.join(os.homedir(), ".config", "opencode")
+  const crossPlatformDir = path.join(os.homedir(), '.config', 'opencode')
   return {
-    configJson: path.join(crossPlatformDir, "opencode.json"),
-    configJsonc: path.join(crossPlatformDir, "opencode.jsonc"),
+    configJson: path.join(crossPlatformDir, 'opencode.json'),
+    configJsonc: path.join(crossPlatformDir, 'opencode.jsonc'),
   }
 }
 
@@ -29,26 +29,26 @@ export async function checkConfigValidity(): Promise<CheckResult> {
   if (!existsSync(configPath)) {
     return {
       name: CHECK_NAMES[CHECK_IDS.CONFIG_VALIDATION],
-      status: "fail",
-      message: "OpenCode config file not found",
+      status: 'fail',
+      message: 'OpenCode config file not found',
       details: [`Expected: ${configPath}`],
     }
   }
 
   try {
-    const content = readFileSync(configPath, "utf-8")
+    const content = readFileSync(configPath, 'utf-8')
     parseJsonc(content)
     return {
       name: CHECK_NAMES[CHECK_IDS.CONFIG_VALIDATION],
-      status: "pass",
-      message: "Config file is valid JSONC",
+      status: 'pass',
+      message: 'Config file is valid JSONC',
       details: [`Config: ${configPath}`],
     }
   } catch (error) {
     return {
       name: CHECK_NAMES[CHECK_IDS.CONFIG_VALIDATION],
-      status: "fail",
-      message: `Config parse error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      status: 'fail',
+      message: `Config parse error: ${error instanceof Error ? error.message : 'Unknown error'}`,
       details: [`Config: ${configPath}`],
     }
   }
@@ -58,7 +58,7 @@ export function getConfigCheckDefinition(): CheckDefinition {
   return {
     id: CHECK_IDS.CONFIG_VALIDATION,
     name: CHECK_NAMES[CHECK_IDS.CONFIG_VALIDATION],
-    category: "configuration",
+    category: 'configuration',
     check: checkConfigValidity,
     critical: false,
   }

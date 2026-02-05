@@ -1,11 +1,9 @@
-import { z } from "zod"
-
 export type ToolInput = Record<string, unknown>
 export type ToolOutput = unknown
 
 export interface ToolResult {
   content?: {
-    type: "text" | "image" | "resource"
+    type: 'text' | 'image' | 'resource'
     text?: string
     data?: unknown
     mimeType?: string
@@ -26,17 +24,11 @@ export interface McpCallContext {
 export type ToolCallResult = ToolResult | ToolError
 
 export function isToolError(result: unknown): result is ToolError {
-  return (
-    typeof result === "object" &&
-    result !== null &&
-    "error" in result
-  )
+  return typeof result === 'object' && result !== null && 'error' in result
 }
 
 export function isToolResult(result: unknown): result is ToolResult {
   return (
-    typeof result === "object" &&
-    result !== null &&
-    ("content" in result || "isError" in result)
+    typeof result === 'object' && result !== null && ('content' in result || 'isError' in result)
   )
 }

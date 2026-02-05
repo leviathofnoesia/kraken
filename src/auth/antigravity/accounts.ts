@@ -1,14 +1,13 @@
-import { saveAccounts } from "./storage"
-import { parseStoredToken, formatTokenForStorage } from "./token"
+import { saveAccounts } from './storage'
+import { parseStoredToken, formatTokenForStorage } from './token'
 import {
   MODEL_FAMILIES,
   type AccountStorage,
-  type AccountMetadata,
   type AccountTier,
   type AntigravityRefreshParts,
   type ModelFamily,
   type RateLimitState,
-} from "./types"
+} from './types'
 
 export interface ManagedAccount {
   index: number
@@ -28,7 +27,7 @@ interface AuthDetails {
 }
 
 interface OAuthAuthDetails {
-  type: "oauth"
+  type: 'oauth'
   refresh: string
   access: string
   expires: number
@@ -47,7 +46,7 @@ export class AccountManager {
   constructor(auth: AuthDetails, storedAccounts?: AccountStorage | null) {
     if (storedAccounts && storedAccounts.accounts.length > 0) {
       const validActiveIndex =
-        typeof storedAccounts.activeIndex === "number" &&
+        typeof storedAccounts.activeIndex === 'number' &&
         storedAccounts.activeIndex >= 0 &&
         storedAccounts.activeIndex < storedAccounts.accounts.length
           ? storedAccounts.activeIndex
@@ -110,8 +109,8 @@ export class AccountManager {
     if (current) {
       if (!isRateLimitedForFamily(current, family)) {
         const betterTierAvailable =
-          current.tier !== "paid" &&
-          this.accounts.some((a) => a.tier === "paid" && !isRateLimitedForFamily(a, family))
+          current.tier !== 'paid' &&
+          this.accounts.some((a) => a.tier === 'paid' && !isRateLimitedForFamily(a, family))
 
         if (!betterTierAvailable) {
           current.lastUsed = Date.now()
@@ -134,7 +133,7 @@ export class AccountManager {
       return null
     }
 
-    const paidAvailable = available.filter((a) => a.tier === "paid")
+    const paidAvailable = available.filter((a) => a.tier === 'paid')
     const pool = paidAvailable.length > 0 ? paidAvailable : available
 
     const account = pool[this.currentIndex % pool.length]
@@ -154,7 +153,7 @@ export class AccountManager {
   clearExpiredRateLimits(account: ManagedAccount): void {
     const now = Date.now()
     for (const family of MODEL_FAMILIES) {
-      if (account.rateLimits[family] !== undefined && now >= account.rateLimits[family]!) {
+      if (account.rateLimits[family] !== undefined && now >= account.rateLimits[family]) {
         delete account.rateLimits[family]
       }
     }
@@ -165,7 +164,7 @@ export class AccountManager {
     access?: string,
     expires?: number,
     email?: string,
-    tier?: AccountTier
+    tier?: AccountTier,
   ): void {
     this.accounts.push({
       index: this.accounts.length,
@@ -199,7 +198,7 @@ export class AccountManager {
     }
 
     for (let i = 0; i < this.accounts.length; i++) {
-      this.accounts[i]!.index = i
+      this.accounts[i].index = i
     }
 
     return true
@@ -209,12 +208,12 @@ export class AccountManager {
     const storage: AccountStorage = {
       version: 1,
       accounts: this.accounts.map((acc) => ({
-        email: acc.email ?? "",
-        tier: acc.tier ?? "free",
+        email: acc.email ?? '',
+        tier: acc.tier ?? 'free',
         refreshToken: acc.parts.refreshToken,
-        projectId: acc.parts.projectId ?? "",
+        projectId: acc.parts.projectId ?? '',
         managedProjectId: acc.parts.managedProjectId,
-        accessToken: acc.access ?? "",
+        accessToken: acc.access ?? '',
         expiresAt: acc.expires ?? 0,
         rateLimits: acc.rateLimits,
       })),
@@ -227,17 +226,23 @@ export class AccountManager {
   toAuthDetails(): OAuthAuthDetails {
     const current = this.getCurrentAccount() ?? this.accounts[0]
     if (!current) {
-      throw new Error("No accounts available")
+      throw new Error('No accounts available')
     }
 
     const allRefreshTokens = this.accounts
-      .map((acc) => formatTokenForStorage(acc.parts.refreshToken, acc.parts.projectId ?? "", acc.parts.managedProjectId))
-      .join("|||")
+      .map((acc) =>
+        formatTokenForStorage(
+          acc.parts.refreshToken,
+          acc.parts.projectId ?? '',
+          acc.parts.managedProjectId,
+        ),
+      )
+      .join('|||')
 
     return {
-      type: "oauth",
+      type: 'oauth',
       refresh: allRefreshTokens,
-      access: current.access ?? "",
+      access: current.access ?? '',
       expires: current.expires ?? 0,
     }
   }

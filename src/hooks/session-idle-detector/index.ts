@@ -1,6 +1,6 @@
-import type { Hooks } from "@opencode-ai/plugin"
-import type { PluginInput } from "@opencode-ai/plugin"
-import { sendNotification, type SoundEvent } from "../../notifications/manager"
+import type { Hooks } from '@opencode-ai/plugin'
+import type { PluginInput } from '@opencode-ai/plugin'
+import { sendNotification, type SoundEvent } from '../../notifications/manager'
 
 export interface SessionIdleDetectorConfig {
   enabled?: boolean
@@ -28,13 +28,13 @@ export function createSessionIdleDetectorHook(
   options?: { config?: SessionIdleDetectorConfig },
 ): Hooks {
   const config = { ...DEFAULT_CONFIG, ...options?.config }
-  
+
   if (!config.enabled) {
     return {}
   }
-  
+
   return {
-    "chat.message": async (chatInput: any, chatOutput: any) => {
+    'chat.message': async (chatInput: any, chatOutput: any) => {
       const { sessionID } = chatInput
       if (!sessionID) return
 
@@ -51,14 +51,16 @@ export function createSessionIdleDetectorHook(
           const hasIncompleteTodos = checkForIncompleteTodos(chatOutput)
 
           if (config.skipIfIncompleteTodos && hasIncompleteTodos) {
-            console.log(`[session-idle-detector] Session ${sessionID} idle with incomplete todos - skipping notification`)
+            console.log(
+              `[session-idle-detector] Session ${sessionID} idle with incomplete todos - skipping notification`,
+            )
           } else {
             state.idleNotified = true
 
             sendNotification(
-              "Session Idle",
+              'Session Idle',
               `Session ${sessionID} has been inactive for ${Math.floor(idleTime / 60000)} minutes`,
-              config.soundEnabled ? { type: "agent_idle" } : undefined,
+              config.soundEnabled ? { type: 'agent_idle' } : undefined,
             )
           }
         }
@@ -72,7 +74,7 @@ export function createSessionIdleDetectorHook(
 function updateSessionActivity(sessionID: string): void {
   const now = Date.now()
   let state = SESSION_STATES.get(sessionID)
-  
+
   if (!state) {
     state = {
       lastActivity: now,
@@ -87,16 +89,16 @@ function updateSessionActivity(sessionID: string): void {
 
 function checkForIncompleteTodos(chatOutput: any): boolean {
   if (!chatOutput?.parts) return false
-  
+
   for (const part of chatOutput.parts) {
-    if (part.type === "text") {
+    if (part.type === 'text') {
       const text = part.text.toLowerCase()
-      if (text.includes("todo") || text.includes("task") || text.includes("pending")) {
+      if (text.includes('todo') || text.includes('task') || text.includes('pending')) {
         return true
       }
     }
   }
-  
+
   return false
 }
 
@@ -109,7 +111,7 @@ export function getAllSessionStates(): Map<string, SessionState> {
 }
 
 export const metadata = {
-  name: "session-idle-detector",
+  name: 'session-idle-detector',
   priority: 35,
-  description: "Monitors session activity and notifies when session becomes idle",
+  description: 'Monitors session activity and notifies when session becomes idle',
 } as const

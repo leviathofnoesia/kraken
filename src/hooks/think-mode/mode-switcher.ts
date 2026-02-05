@@ -1,5 +1,5 @@
-import type { ModeConfig, ModeActivation } from "./modes"
-import { getModeConfig } from "./modes"
+import type { ModeConfig, ModeActivation } from './modes'
+import { getModeConfig } from './modes'
 
 export interface ModeSwitcherOptions {
   enabled?: boolean
@@ -18,7 +18,7 @@ const activeModes: Map<string, ActiveMode> = new Map()
 export function activateMode(
   sessionID: string,
   modeName: string,
-  options?: ModeSwitcherOptions
+  options?: ModeSwitcherOptions,
 ): boolean {
   const config = getModeConfig(modeName)
   if (!config || !config.enabled) {
@@ -38,7 +38,7 @@ export function activateMode(
   if (options?.onModeActivate) {
     options.onModeActivate({
       mode: modeName,
-      keyword: "",
+      keyword: '',
     })
   }
 
@@ -70,4 +70,16 @@ export function clearAllModes(): void {
 
 export function getActiveModeCount(): number {
   return activeModes.size
+}
+
+export function createModeSwitcher(options?: ModeSwitcherOptions) {
+  return {
+    activateMode: (sessionID: string, modeName: string) =>
+      activateMode(sessionID, modeName, options),
+    deactivateMode,
+    getActiveMode,
+    isModeActive,
+    clearAllModes,
+    getActiveModeCount,
+  }
 }

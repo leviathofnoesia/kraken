@@ -17,27 +17,39 @@
  * Debug logging available via ANTIGRAVITY_DEBUG=1 environment variable.
  */
 
-import { ANTIGRAVITY_ENDPOINT_FALLBACKS } from "./constants"
-import { fetchProjectContext, clearProjectContextCache, invalidateProjectContextByRefreshToken } from "./project"
-import { isTokenExpired, refreshAccessToken, parseStoredToken, formatTokenForStorage, AntigravityTokenRefreshError } from "./token"
-import { AccountManager, type ManagedAccount } from "./accounts"
-import { loadAccounts } from "./storage"
-import type { ModelFamily } from "./types"
-import { transformRequest } from "./request"
-import { convertRequestBody, hasOpenAIMessages } from "./message-converter"
+import { ANTIGRAVITY_ENDPOINT_FALLBACKS } from './constants'
 import {
-  transformResponse,
-  transformStreamingResponse,
-  isStreamingResponse,
-} from "./response"
-import { normalizeToolsForGemini, type OpenAITool } from "./tools"
-import { extractThinkingBlocks, shouldIncludeThinking, transformResponseThinking, extractThinkingConfig, applyThinkingConfigToRequest } from "./thinking"
+  fetchProjectContext,
+  clearProjectContextCache,
+  invalidateProjectContextByRefreshToken,
+} from './project'
+import {
+  isTokenExpired,
+  refreshAccessToken,
+  parseStoredToken,
+  formatTokenForStorage,
+  AntigravityTokenRefreshError,
+} from './token'
+import { AccountManager, type ManagedAccount } from './accounts'
+import { loadAccounts } from './storage'
+import type { ModelFamily } from './types'
+import { transformRequest } from './request'
+import { convertRequestBody, hasOpenAIMessages } from './message-converter'
+import { transformResponse, transformStreamingResponse, isStreamingResponse } from './response'
+import { normalizeToolsForGemini, type OpenAITool } from './tools'
+import {
+  extractThinkingBlocks,
+  shouldIncludeThinking,
+  transformResponseThinking,
+  extractThinkingConfig,
+  applyThinkingConfigToRequest,
+} from './thinking'
 import {
   getThoughtSignature,
   setThoughtSignature,
   getOrCreateSessionId,
-} from "./thought-signature-store"
-import type { AntigravityTokens } from "./types"
+} from './thought-signature-store'
+import type { AntigravityTokens } from './types'
 
 /**
  * Auth interface matching OpenCode's auth system
@@ -60,7 +72,7 @@ interface AuthClient {
  * Only logs when ANTIGRAVITY_DEBUG=1
  */
 function debugLog(message: string): void {
-  if (process.env.ANTIGRAVITY_DEBUG === "1") {
+  if (process.env.ANTIGRAVITY_DEBUG === '1') {
     console.log(`[antigravity-fetch] ${message}`)
   }
 }
@@ -74,23 +86,23 @@ function isRetryableError(status: number): boolean {
 
 function getModelFamilyFromModelName(modelName: string): ModelFamily | null {
   const lower = modelName.toLowerCase()
-  if (lower.includes("claude") || lower.includes("anthropic")) return "claude"
-  if (lower.includes("flash")) return "gemini-flash"
-  if (lower.includes("gemini")) return "gemini-pro"
+  if (lower.includes('claude') || lower.includes('anthropic')) return 'claude'
+  if (lower.includes('flash')) return 'gemini-flash'
+  if (lower.includes('gemini')) return 'gemini-pro'
   return null
 }
 
 function getModelFamilyFromUrl(url: string): ModelFamily {
-  if (url.includes("claude")) return "claude"
-  if (url.includes("flash")) return "gemini-flash"
-  return "gemini-pro"
+  if (url.includes('claude')) return 'claude'
+  if (url.includes('flash')) return 'gemini-flash'
+  return 'gemini-pro'
 }
 
 function getModelFamily(url: string, init?: RequestInit): ModelFamily {
-  if (init?.body && typeof init.body === "string") {
+  if (init?.body && typeof init.body === 'string') {
     try {
       const body = JSON.parse(init.body) as Record<string, unknown>
-      if (typeof body.model === "string") {
+      if (typeof body.model === 'string') {
         const fromModel = getModelFamilyFromModelName(body.model)
         if (fromModel) return fromModel
       }
@@ -100,10 +112,10 @@ function getModelFamily(url: string, init?: RequestInit): ModelFamily {
 }
 
 const GCP_PERMISSION_ERROR_PATTERNS = [
-  "PERMISSION_DENIED",
-  "does not have permission",
-  "Cloud AI Companion API has not been used",
-  "has not been enabled",
+  'PERMISSION_DENIED',
+  'does not have permission',
+  'Cloud AI Companion API has not been used',
+  'has not been enabled',
 ] as const
 
 function isGcpPermissionError(text: string): boolean {
@@ -119,7 +131,7 @@ async function isRetryableResponse(response: Response): Promise<boolean> {
   if (response.status === 403) {
     try {
       const text = await response.clone().text()
-      if (text.includes("SUBSCRIPTION_REQUIRED") || text.includes("Gemini Code Assist license")) {
+      if (text.includes('SUBSCRIPTION_REQUIRED') || text.includes('Gemini Code Assist license')) {
         debugLog(`[RETRY] 403 SUBSCRIPTION_REQUIRED detected, will retry with next endpoint`)
         return true
       }
@@ -140,16 +152,14 @@ interface AttemptFetchOptions {
 }
 
 interface RateLimitInfo {
-  type: "rate-limited"
+  type: 'rate-limited'
   retryAfterMs: number
   status: number
 }
 
-type AttemptFetchResult = Response | null | "pass-through" | "needs-refresh" | RateLimitInfo
+type AttemptFetchResult = Response | null | 'pass-through' | 'needs-refresh' | RateLimitInfo
 
-async function attemptFetch(
-  options: AttemptFetchOptions
-): Promise<AttemptFetchResult> {
+async function attemptFetch(options: AttemptFetchOptions): Promise<AttemptFetchResult> {
   const { endpoint, url, init, accessToken, projectId, sessionId, modelName, thoughtSignature } =
     options
   debugLog(`Trying endpoint: ${endpoint}`)
@@ -157,9 +167,9 @@ async function attemptFetch(
   try {
     const rawBody = init.body
 
-    if (rawBody !== undefined && typeof rawBody !== "string") {
+    if (rawBody !== undefined && typeof rawBody !== 'string') {
       debugLog(`Non-string body detected (${typeof rawBody}), signaling pass-through`)
-      return "pass-through"
+      return 'pass-through'
     }
 
     let parsedBody: Record<string, unknown> = {}
@@ -171,13 +181,17 @@ async function attemptFetch(
       }
     }
 
-    debugLog(`[BODY] Keys: ${Object.keys(parsedBody).join(", ")}`)
-    debugLog(`[BODY] Has contents: ${!!parsedBody.contents}, Has messages: ${!!parsedBody.messages}`)
+    debugLog(`[BODY] Keys: ${Object.keys(parsedBody).join(', ')}`)
+    debugLog(
+      `[BODY] Has contents: ${!!parsedBody.contents}, Has messages: ${!!parsedBody.messages}`,
+    )
     if (parsedBody.contents) {
       const contents = parsedBody.contents as Array<Record<string, unknown>>
       debugLog(`[BODY] contents length: ${contents.length}`)
       contents.forEach((c, i) => {
-        debugLog(`[BODY] contents[${i}].role: ${c.role}, parts: ${JSON.stringify(c.parts).substring(0, 200)}`)
+        debugLog(
+          `[BODY] contents[${i}].role: ${c.role}, parts: ${JSON.stringify(c.parts).substring(0, 200)}`,
+        )
       })
     }
 
@@ -227,19 +241,19 @@ async function attemptFetch(
     const maxPermissionRetries = 10
     for (let attempt = 0; attempt <= maxPermissionRetries; attempt++) {
       const response = await fetch(transformed.url, {
-        method: init.method || "POST",
+        method: init.method || 'POST',
         headers: transformed.headers,
         body: JSON.stringify(transformed.body),
         signal: init.signal,
       })
 
       debugLog(
-        `[RESP] status=${response.status} content-type=${response.headers.get("content-type") ?? ""} url=${response.url}`
+        `[RESP] status=${response.status} content-type=${response.headers.get('content-type') ?? ''} url=${response.url}`,
       )
 
       if (response.status === 401) {
         debugLog(`[401] Unauthorized response detected, signaling token refresh needed`)
-        return "needs-refresh"
+        return 'needs-refresh'
       }
 
       if (response.status === 403) {
@@ -248,7 +262,9 @@ async function attemptFetch(
           if (isGcpPermissionError(text)) {
             if (attempt < maxPermissionRetries) {
               const delay = calculateRetryDelay(attempt)
-              debugLog(`[RETRY] GCP permission error, retry ${attempt + 1}/${maxPermissionRetries} after ${delay}ms`)
+              debugLog(
+                `[RETRY] GCP permission error, retry ${attempt + 1}/${maxPermissionRetries} after ${delay}ms`,
+              )
               await new Promise((resolve) => setTimeout(resolve, delay))
               continue
             }
@@ -258,7 +274,7 @@ async function attemptFetch(
       }
 
       if (response.status === 429) {
-        const retryAfter = response.headers.get("retry-after")
+        const retryAfter = response.headers.get('retry-after')
         let retryAfterMs = 60000
         if (retryAfter) {
           const parsed = parseInt(retryAfter, 10)
@@ -273,13 +289,13 @@ async function attemptFetch(
         }
         debugLog(`[429] Rate limited, retry-after: ${retryAfterMs}ms`)
         await response.body?.cancel()
-        return { type: "rate-limited" as const, retryAfterMs, status: 429 }
+        return { type: 'rate-limited' as const, retryAfterMs, status: 429 }
       }
 
       if (response.status >= 500 && response.status < 600) {
         debugLog(`[5xx] Server error ${response.status}, marking for rotation`)
         await response.body?.cancel()
-        return { type: "rate-limited" as const, retryAfterMs: 300000, status: response.status }
+        return { type: 'rate-limited' as const, retryAfterMs: 300000, status: response.status }
       }
 
       if (!response.ok && (await isRetryableResponse(response))) {
@@ -293,7 +309,7 @@ async function attemptFetch(
     return null
   } catch (error) {
     debugLog(
-      `Endpoint failed: ${endpoint} (${error instanceof Error ? error.message : "Unknown error"}), trying next`
+      `Endpoint failed: ${endpoint} (${error instanceof Error ? error.message : 'Unknown error'}), trying next`,
     )
     return null
   }
@@ -333,7 +349,7 @@ function extractSignatureFromResponse(parsed: GeminiResponseBody): string | unde
 
     for (const part of parts) {
       const sig = part.thoughtSignature || part.thought_signature
-      if (sig && typeof sig === "string") {
+      if (sig && typeof sig === 'string') {
         return sig
       }
     }
@@ -345,7 +361,7 @@ function extractSignatureFromResponse(parsed: GeminiResponseBody): string | unde
 async function transformResponseWithThinking(
   response: Response,
   modelName: string,
-  fetchInstanceId: string
+  fetchInstanceId: string,
 ): Promise<Response> {
   const streaming = isStreamingResponse(response)
 
@@ -365,11 +381,15 @@ async function transformResponseWithThinking(
     debugLog(`[TSIG][RESP] Response text length: ${text.length}`)
 
     const parsed = JSON.parse(text) as GeminiResponseBody
-    debugLog(`[TSIG][RESP] Parsed keys: ${Object.keys(parsed).join(", ")}`)
-    debugLog(`[TSIG][RESP] Has candidates: ${!!parsed.candidates}, count: ${parsed.candidates?.length ?? 0}`)
+    debugLog(`[TSIG][RESP] Parsed keys: ${Object.keys(parsed).join(', ')}`)
+    debugLog(
+      `[TSIG][RESP] Has candidates: ${!!parsed.candidates}, count: ${parsed.candidates?.length ?? 0}`,
+    )
 
     const signature = extractSignatureFromResponse(parsed)
-    debugLog(`[TSIG][RESP] Signature extracted: ${signature ? signature.substring(0, 30) + "..." : "NONE"}`)
+    debugLog(
+      `[TSIG][RESP] Signature extracted: ${signature ? signature.substring(0, 30) + '...' : 'NONE'}`,
+    )
     if (signature) {
       setThoughtSignature(fetchInstanceId, signature)
       debugLog(`[TSIG][STORE] Stored signature for ${fetchInstanceId}`)
@@ -429,7 +449,7 @@ export function createAntigravityFetch(
   providerId: string,
   clientId?: string,
   clientSecret?: string,
-  accountManager?: AccountManager | null
+  accountManager?: AccountManager | null,
 ): (url: string, init?: RequestInit) => Promise<Response> {
   let cachedTokens: AntigravityTokens | null = null
   let cachedProjectId: string | null = null
@@ -444,7 +464,7 @@ export function createAntigravityFetch(
     // Get current auth state
     const auth = await getAuth()
     if (!auth.access || !auth.refresh) {
-      throw new Error("Antigravity: No authentication tokens available")
+      throw new Error('Antigravity: No authentication tokens available')
     }
 
     // Parse stored token format
@@ -455,13 +475,15 @@ export function createAntigravityFetch(
         const storedAccounts = await loadAccounts()
         if (storedAccounts) {
           manager = new AccountManager(
-            { refresh: auth.refresh, access: auth.access || "", expires: auth.expires || 0 },
-            storedAccounts
+            { refresh: auth.refresh, access: auth.access || '', expires: auth.expires || 0 },
+            storedAccounts,
           )
           debugLog(`[ACCOUNTS] Loaded ${manager.getAccountCount()} accounts from storage`)
         }
       } catch (error) {
-        debugLog(`[ACCOUNTS] Failed to load accounts, falling back to single-account: ${error instanceof Error ? error.message : "Unknown"}`)
+        debugLog(
+          `[ACCOUNTS] Failed to load accounts, falling back to single-account: ${error instanceof Error ? error.message : 'Unknown'}`,
+        )
       }
       accountsLoaded = true
     }
@@ -472,11 +494,15 @@ export function createAntigravityFetch(
       currentAccount = manager.getCurrentOrNextForFamily(family)
 
       if (currentAccount) {
-        debugLog(`[ACCOUNTS] Using account ${currentAccount.index + 1}/${manager.getAccountCount()} for ${family}`)
+        debugLog(
+          `[ACCOUNTS] Using account ${currentAccount.index + 1}/${manager.getAccountCount()} for ${family}`,
+        )
 
         if (lastAccountIndex === null || lastAccountIndex !== currentAccount.index) {
           if (lastAccountIndex !== null) {
-            debugLog(`[ACCOUNTS] Account changed from ${lastAccountIndex + 1} to ${currentAccount.index + 1}, clearing cached state`)
+            debugLog(
+              `[ACCOUNTS] Account changed from ${lastAccountIndex + 1} to ${currentAccount.index + 1}, clearing cached state`,
+            )
           } else if (cachedProjectId) {
             debugLog(`[ACCOUNTS] First account introduced, clearing cached state`)
           }
@@ -501,7 +527,7 @@ export function createAntigravityFetch(
     // Build initial token state
     if (!cachedTokens) {
       cachedTokens = {
-        type: "antigravity",
+        type: 'antigravity',
         access_token: auth.access,
         refresh_token: refreshParts.refreshToken,
         expires_in: auth.expires ? Math.floor((auth.expires - Date.now()) / 1000) : 3600,
@@ -515,13 +541,17 @@ export function createAntigravityFetch(
 
     // Check token expiration and refresh if needed
     if (isTokenExpired(cachedTokens)) {
-      debugLog("Token expired, refreshing...")
+      debugLog('Token expired, refreshing...')
 
       try {
-        const newTokens = await refreshAccessToken(refreshParts.refreshToken, clientId, clientSecret)
+        const newTokens = await refreshAccessToken(
+          refreshParts.refreshToken,
+          clientId,
+          clientSecret,
+        )
 
         cachedTokens = {
-          type: "antigravity",
+          type: 'antigravity',
           access_token: newTokens.access_token,
           refresh_token: newTokens.refresh_token,
           expires_in: newTokens.expires_in,
@@ -532,8 +562,8 @@ export function createAntigravityFetch(
 
         const formattedRefresh = formatTokenForStorage(
           newTokens.refresh_token,
-          refreshParts.projectId || "",
-          refreshParts.managedProjectId
+          refreshParts.projectId || '',
+          refreshParts.managedProjectId,
         )
 
         await client.set(providerId, {
@@ -542,7 +572,7 @@ export function createAntigravityFetch(
           expires: Date.now() + newTokens.expires_in * 1000,
         })
 
-        debugLog("Token refreshed successfully")
+        debugLog('Token refreshed successfully')
       } catch (error) {
         if (error instanceof AntigravityTokenRefreshError) {
           if (error.isInvalidGrant) {
@@ -551,11 +581,11 @@ export function createAntigravityFetch(
             clearProjectContextCache()
           }
           throw new Error(
-            `Antigravity: Token refresh failed: ${error.description || error.message}${error.code ? ` (${error.code})` : ""}`
+            `Antigravity: Token refresh failed: ${error.description || error.message}${error.code ? ` (${error.code})` : ''}`,
           )
         }
         throw new Error(
-          `Antigravity: Token refresh failed: ${error instanceof Error ? error.message : "Unknown error"}`
+          `Antigravity: Token refresh failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         )
       }
     }
@@ -563,7 +593,7 @@ export function createAntigravityFetch(
     // Fetch project ID via loadCodeAssist (CLIProxyAPI approach)
     if (!cachedProjectId) {
       const projectContext = await fetchProjectContext(cachedTokens.access_token)
-      cachedProjectId = projectContext.cloudaicompanionProject || ""
+      cachedProjectId = projectContext.cloudaicompanionProject || ''
       debugLog(`[PROJECT] Fetched project ID: "${cachedProjectId}"`)
     }
 
@@ -575,10 +605,10 @@ export function createAntigravityFetch(
     if (init.body) {
       try {
         const body =
-          typeof init.body === "string"
+          typeof init.body === 'string'
             ? (JSON.parse(init.body) as Record<string, unknown>)
             : (init.body as unknown as Record<string, unknown>)
-        if (typeof body.model === "string") {
+        if (typeof body.model === 'string') {
           modelName = body.model
         }
       } catch {
@@ -589,7 +619,9 @@ export function createAntigravityFetch(
     const maxEndpoints = Math.min(ANTIGRAVITY_ENDPOINT_FALLBACKS.length, 3)
     const sessionId = getOrCreateSessionId(fetchInstanceId)
     const thoughtSignature = getThoughtSignature(fetchInstanceId)
-    debugLog(`[TSIG][GET] sessionId=${sessionId}, signature=${thoughtSignature ? thoughtSignature.substring(0, 20) + "..." : "none"}`)
+    debugLog(
+      `[TSIG][GET] sessionId=${sessionId}, signature=${thoughtSignature ? thoughtSignature.substring(0, 20) + '...' : 'none'}`,
+    )
 
     let hasRefreshedFor401 = false
 
@@ -608,8 +640,8 @@ export function createAntigravityFetch(
           thoughtSignature,
         })
 
-        if (response === "pass-through") {
-          debugLog("Non-string body detected, passing through with auth headers")
+        if (response === 'pass-through') {
+          debugLog('Non-string body detected, passing through with auth headers')
           const headersWithAuth = {
             ...init.headers,
             Authorization: `Bearer ${cachedTokens!.access_token}`,
@@ -617,37 +649,37 @@ export function createAntigravityFetch(
           return fetch(url, { ...init, headers: headersWithAuth })
         }
 
-        if (response === "needs-refresh") {
+        if (response === 'needs-refresh') {
           if (hasRefreshedFor401) {
-            debugLog("[401] Already refreshed once, returning unauthorized error")
+            debugLog('[401] Already refreshed once, returning unauthorized error')
             return new Response(
               JSON.stringify({
                 error: {
-                  message: "Authentication failed after token refresh",
-                  type: "unauthorized",
-                  code: "token_refresh_failed",
+                  message: 'Authentication failed after token refresh',
+                  type: 'unauthorized',
+                  code: 'token_refresh_failed',
                 },
               }),
               {
                 status: 401,
-                statusText: "Unauthorized",
-                headers: { "Content-Type": "application/json" },
-              }
+                statusText: 'Unauthorized',
+                headers: { 'Content-Type': 'application/json' },
+              },
             )
           }
 
-          debugLog("[401] Refreshing token and retrying...")
+          debugLog('[401] Refreshing token and retrying...')
           hasRefreshedFor401 = true
 
           try {
             const newTokens = await refreshAccessToken(
               refreshParts.refreshToken,
               clientId,
-              clientSecret
+              clientSecret,
             )
 
             cachedTokens = {
-              type: "antigravity",
+              type: 'antigravity',
               access_token: newTokens.access_token,
               refresh_token: newTokens.refresh_token,
               expires_in: newTokens.expires_in,
@@ -658,8 +690,8 @@ export function createAntigravityFetch(
 
             const formattedRefresh = formatTokenForStorage(
               newTokens.refresh_token,
-              refreshParts.projectId || "",
-              refreshParts.managedProjectId
+              refreshParts.projectId || '',
+              refreshParts.managedProjectId,
             )
 
             await client.set(providerId, {
@@ -668,7 +700,7 @@ export function createAntigravityFetch(
               expires: Date.now() + newTokens.expires_in * 1000,
             })
 
-            debugLog("[401] Token refreshed, retrying request...")
+            debugLog('[401] Token refreshed, retrying request...')
             return executeWithEndpoints()
           } catch (refreshError) {
             if (refreshError instanceof AntigravityTokenRefreshError) {
@@ -677,48 +709,59 @@ export function createAntigravityFetch(
                 invalidateProjectContextByRefreshToken(refreshParts.refreshToken)
                 clearProjectContextCache()
               }
-              debugLog(`[401] Token refresh failed: ${refreshError.description || refreshError.message}`)
+              debugLog(
+                `[401] Token refresh failed: ${refreshError.description || refreshError.message}`,
+              )
               return new Response(
                 JSON.stringify({
                   error: {
                     message: refreshError.description || refreshError.message,
-                    type: refreshError.isInvalidGrant ? "token_revoked" : "unauthorized",
-                    code: refreshError.code || "token_refresh_failed",
+                    type: refreshError.isInvalidGrant ? 'token_revoked' : 'unauthorized',
+                    code: refreshError.code || 'token_refresh_failed',
                   },
                 }),
                 {
                   status: 401,
-                  statusText: "Unauthorized",
-                  headers: { "Content-Type": "application/json" },
-                }
+                  statusText: 'Unauthorized',
+                  headers: { 'Content-Type': 'application/json' },
+                },
               )
             }
-            debugLog(`[401] Token refresh failed: ${refreshError instanceof Error ? refreshError.message : "Unknown error"}`)
+            debugLog(
+              `[401] Token refresh failed: ${refreshError instanceof Error ? refreshError.message : 'Unknown error'}`,
+            )
             return new Response(
               JSON.stringify({
                 error: {
-                  message: refreshError instanceof Error ? refreshError.message : "Unknown error",
-                  type: "unauthorized",
-                  code: "token_refresh_failed",
+                  message: refreshError instanceof Error ? refreshError.message : 'Unknown error',
+                  type: 'unauthorized',
+                  code: 'token_refresh_failed',
                 },
               }),
               {
                 status: 401,
-                statusText: "Unauthorized",
-                headers: { "Content-Type": "application/json" },
-              }
+                statusText: 'Unauthorized',
+                headers: { 'Content-Type': 'application/json' },
+              },
             )
           }
         }
 
-        if (response && typeof response === "object" && "type" in response && response.type === "rate-limited") {
-          const rateLimitInfo = response as RateLimitInfo
+        if (
+          response &&
+          typeof response === 'object' &&
+          'type' in response &&
+          response.type === 'rate-limited'
+        ) {
+          const rateLimitInfo = response
           const family = getModelFamily(url, init)
 
           if (rateLimitInfo.retryAfterMs > 5000 && manager && currentAccount) {
             manager.markRateLimited(currentAccount, rateLimitInfo.retryAfterMs, family)
             await manager.save()
-            debugLog(`[RATE-LIMIT] Account ${currentAccount.index + 1} rate-limited for ${family}, rotating...`)
+            debugLog(
+              `[RATE-LIMIT] Account ${currentAccount.index + 1} rate-limited for ${family}, rotating...`,
+            )
 
             const nextAccount = manager.getCurrentOrNextForFamily(family)
             if (nextAccount && nextAccount.index !== currentAccount.index) {
@@ -730,25 +773,27 @@ export function createAntigravityFetch(
           const isLastEndpoint = i === maxEndpoints - 1
           if (isLastEndpoint) {
             const isServerError = rateLimitInfo.status >= 500
-            debugLog(`[RATE-LIMIT] No alternative account or endpoint, returning ${rateLimitInfo.status}`)
+            debugLog(
+              `[RATE-LIMIT] No alternative account or endpoint, returning ${rateLimitInfo.status}`,
+            )
             return new Response(
               JSON.stringify({
                 error: {
                   message: isServerError
                     ? `Server error (${rateLimitInfo.status}). Retry after ${Math.ceil(rateLimitInfo.retryAfterMs / 1000)} seconds`
                     : `Rate limited. Retry after ${Math.ceil(rateLimitInfo.retryAfterMs / 1000)} seconds`,
-                  type: isServerError ? "server_error" : "rate_limit",
-                  code: isServerError ? "server_error" : "rate_limited",
+                  type: isServerError ? 'server_error' : 'rate_limit',
+                  code: isServerError ? 'server_error' : 'rate_limited',
                 },
               }),
               {
                 status: rateLimitInfo.status,
-                statusText: isServerError ? "Server Error" : "Too Many Requests",
+                statusText: isServerError ? 'Server Error' : 'Too Many Requests',
                 headers: {
-                  "Content-Type": "application/json",
-                  "Retry-After": String(Math.ceil(rateLimitInfo.retryAfterMs / 1000)),
+                  'Content-Type': 'application/json',
+                  'Retry-After': String(Math.ceil(rateLimitInfo.retryAfterMs / 1000)),
                 },
-              }
+              },
             )
           }
 
@@ -760,8 +805,8 @@ export function createAntigravityFetch(
           debugLog(`Success with endpoint: ${endpoint}`)
           const transformedResponse = await transformResponseWithThinking(
             response,
-            modelName || "",
-            fetchInstanceId
+            modelName || '',
+            fetchInstanceId,
           )
           return transformedResponse
         }
@@ -774,15 +819,15 @@ export function createAntigravityFetch(
         JSON.stringify({
           error: {
             message: errorMessage,
-            type: "endpoint_failure",
-            code: "all_endpoints_failed",
+            type: 'endpoint_failure',
+            code: 'all_endpoints_failed',
           },
         }),
         {
           status: 503,
-          statusText: "Service Unavailable",
-          headers: { "Content-Type": "application/json" },
-        }
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'application/json' },
+        },
       )
     }
 

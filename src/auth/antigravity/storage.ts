@@ -1,23 +1,23 @@
-import { promises as fs } from "node:fs"
-import { join, dirname } from "node:path"
-import type { AccountStorage } from "./types"
-import { getDataDir as getSharedDataDir } from "../../shared/data-path"
+import { promises as fs } from 'node:fs'
+import { join, dirname } from 'node:path'
+import type { AccountStorage } from './types'
+import { getDataDir as getSharedDataDir } from '../../shared/data-path'
 
-export { getDataDir } from "../../shared/data-path"
+export { getDataDir } from '../../shared/data-path'
 
 function getPluginDataDir(): string {
-  return join(getSharedDataDir(), "opencode")
+  return join(getSharedDataDir(), 'opencode')
 }
 
 export function getStoragePath(): string {
-  return join(getPluginDataDir(), "kraken-code-accounts.json")
+  return join(getPluginDataDir(), 'kraken-code-accounts.json')
 }
 
 export async function loadAccounts(path?: string): Promise<AccountStorage | null> {
   const storagePath = path ?? getStoragePath()
 
   try {
-    const content = await fs.readFile(storagePath, "utf-8")
+    const content = await fs.readFile(storagePath, 'utf-8')
     const data = JSON.parse(content) as unknown
 
     if (!isValidAccountStorage(data)) {
@@ -27,7 +27,7 @@ export async function loadAccounts(path?: string): Promise<AccountStorage | null
     return data
   } catch (error) {
     const errorCode = (error as NodeJS.ErrnoException).code
-    if (errorCode === "ENOENT") {
+    if (errorCode === 'ENOENT') {
       return null
     }
     if (error instanceof SyntaxError) {
@@ -44,7 +44,7 @@ export async function saveAccounts(storage: AccountStorage, path?: string): Prom
 
   const content = JSON.stringify(storage, null, 2)
   const tempPath = `${storagePath}.tmp.${process.pid}.${Date.now()}`
-  await fs.writeFile(tempPath, content, { encoding: "utf-8", mode: 0o600 })
+  await fs.writeFile(tempPath, content, { encoding: 'utf-8', mode: 0o600 })
   try {
     await fs.rename(tempPath, storagePath)
   } catch (error) {
@@ -54,13 +54,13 @@ export async function saveAccounts(storage: AccountStorage, path?: string): Prom
 }
 
 function isValidAccountStorage(data: unknown): data is AccountStorage {
-  if (typeof data !== "object" || data === null) {
+  if (typeof data !== 'object' || data === null) {
     return false
   }
 
   const obj = data as Record<string, unknown>
 
-  if (typeof obj.version !== "number") {
+  if (typeof obj.version !== 'number') {
     return false
   }
 
@@ -68,7 +68,7 @@ function isValidAccountStorage(data: unknown): data is AccountStorage {
     return false
   }
 
-  if (typeof obj.activeIndex !== "number") {
+  if (typeof obj.activeIndex !== 'number') {
     return false
   }
 

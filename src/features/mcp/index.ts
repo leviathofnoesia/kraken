@@ -4,36 +4,26 @@
  * Exports all built-in MCP servers and provides utility functions for MCP management.
  */
 
-import type { MCPServerDefinition } from './types';
+import type { MCPServerDefinition } from './types'
+import { createLogger } from '../../utils/logger'
 
 // Import all built-in MCP servers
-import { websearchMCP } from './websearch';
-import { context7MCP } from './context7';
-import { grepAppMCP } from './grep-app';
-import { memorySaveTool, memorySearchTool, memoryGetRecentTool, memoryAskTool, initializeKratos, shutdownKratos } from './kratos';
+import { websearchMCP } from './websearch'
+import { context7MCP } from './context7'
+import { grepAppMCP } from './grep-app'
+
+const SHOULD_LOG =
+  process.env.ANTIGRAVITY_DEBUG === '1' ||
+  process.env.DEBUG === '1' ||
+  process.env.KRAKEN_LOG === '1'
+const logger = createLogger('mcp-index')
 
 /**
  * Built-in MCP Servers
  *
  * These are MCP servers that are built into Kraken Code and available by default.
  */
-export const builtinMCPs: MCPServerDefinition[] = [
-  websearchMCP,
-  context7MCP,
-  grepAppMCP,
-  {
-    name: 'kratos',
-    description: 'Ultra-lean memory system for AI coding tools',
-    version: '4.0.0',
-    tools: [memorySaveTool, memorySearchTool, memoryGetRecentTool, memoryAskTool],
-    configSchema: {
-      enabled: { type: 'boolean', default: true },
-      storagePath: { type: 'string', default: '~/.kratos' }
-    },
-    initialize: async (config: any) => await initializeKratos(),
-    shutdown: async () => await shutdownKratos()
-  }
-];
+export const builtinMCPs: MCPServerDefinition[] = [websearchMCP, context7MCP, grepAppMCP]
 
 /**
  * MCP Server Names
@@ -41,7 +31,7 @@ export const builtinMCPs: MCPServerDefinition[] = [
  * Returns a list of all built-in MCP server names.
  */
 export function getBuiltinMcpNames(): string[] {
-  return builtinMCPs.map(mcp => mcp.name);
+  return builtinMCPs.map((mcp) => mcp.name)
 }
 
 /**
@@ -53,7 +43,7 @@ export function getBuiltinMcpNames(): string[] {
  * @returns MCP server information or undefined if not found
  */
 export function getBuiltinMcpInfo(name: string): MCPServerDefinition | undefined {
-  return builtinMCPs.find(mcp => mcp.name === name);
+  return builtinMCPs.find((mcp) => mcp.name === name)
 }
 
 /**
@@ -65,8 +55,8 @@ export function getBuiltinMcpInfo(name: string): MCPServerDefinition | undefined
  * @returns Array of tools or empty array if server not found
  */
 export function getBuiltinMcpTools(name: string) {
-  const mcp = getBuiltinMcpInfo(name);
-  return mcp?.tools ?? [];
+  const mcp = getBuiltinMcpInfo(name)
+  return mcp?.tools ?? []
 }
 
 /**
@@ -77,7 +67,7 @@ export function getBuiltinMcpTools(name: string) {
  * @returns Array of all tools from all built-in MCP servers
  */
 export function getAllBuiltinMcpTools() {
-  return builtinMCPs.flatMap(mcp => mcp.tools);
+  return builtinMCPs.flatMap((mcp) => mcp.tools)
 }
 
 /**
@@ -88,11 +78,11 @@ export function getAllBuiltinMcpTools() {
  * @returns Array of enabled MCP servers
  */
 export function getEnabledMcpServers(): MCPServerDefinition[] {
-  return builtinMCPs.filter(mcp => {
+  return builtinMCPs.filter((mcp) => {
     // Check if MCP is enabled in its config
-    const enabled = mcp.configSchema?.enabled;
-    return enabled !== false; // Default to true if not specified
-  });
+    const enabled = mcp.configSchema?.enabled
+    return enabled !== false // Default to true if not specified
+  })
 }
 
 /**
@@ -103,16 +93,18 @@ export function getEnabledMcpServers(): MCPServerDefinition[] {
  * @param configs - Configuration object with server-specific configs
  */
 export async function initializeAllMcpServers(
-  configs: Record<string, Record<string, unknown>> = {}
+  configs: Record<string, Record<string, unknown>> = {},
 ): Promise<void> {
   for (const mcp of builtinMCPs) {
-    const config = configs[mcp.name] || {};
+    const config = configs[mcp.name] || {}
     if (mcp.initialize) {
       try {
-        await mcp.initialize(config);
+        await mcp.initialize(config)
       } catch (error) {
-        console.error(`Failed to initialize MCP server '${mcp.name}':`, error);
-        throw error;
+        if (SHOULD_LOG) {
+          logger.warn(`Failed to initialize MCP server '${mcp.name}':`, error)
+        }
+        throw error
       }
     }
   }
@@ -127,9 +119,11 @@ export async function shutdownAllMcpServers(): Promise<void> {
   for (const mcp of builtinMCPs) {
     if (mcp.shutdown) {
       try {
-        await mcp.shutdown();
+        await mcp.shutdown()
       } catch (error) {
-        console.error(`Failed to shutdown MCP server '${mcp.name}':`, error);
+        if (SHOULD_LOG) {
+          logger.warn(`Failed to shutdown MCP server '${mcp.name}':`, error)
+        }
       }
     }
   }
@@ -143,22 +137,24 @@ export async function shutdownAllMcpServers(): Promise<void> {
  * @returns Object with server names and health status
  */
 export async function checkAllMcpHealth(): Promise<Record<string, boolean>> {
-  const healthStatus: Record<string, boolean> = {};
+  const healthStatus: Record<string, boolean> = {}
 
   for (const mcp of builtinMCPs) {
     try {
       if (mcp.healthCheck) {
-        healthStatus[mcp.name] = await mcp.healthCheck();
+        healthStatus[mcp.name] = await mcp.healthCheck()
       } else {
-        healthStatus[mcp.name] = true; // Assume healthy if no health check
+        healthStatus[mcp.name] = true // Assume healthy if no health check
       }
     } catch (error) {
-      console.error(`Health check failed for MCP server '${mcp.name}':`, error);
-      healthStatus[mcp.name] = false;
+      if (SHOULD_LOG) {
+        logger.warn(`Health check failed for MCP server '${mcp.name}':`, error)
+      }
+      healthStatus[mcp.name] = false
     }
   }
 
-  return healthStatus;
+  return healthStatus
 }
 
 /**
@@ -178,12 +174,17 @@ export type {
   MCPRateLimitError,
   MCPAuthenticationError,
   MCPTimeoutError,
-} from './types';
+} from './types'
 
 // Re-export utility classes
-export { RateLimiter } from './types';
+export { RateLimiter } from './types'
 
 // Re-export specific MCP server implementations
-export { websearchMCP, websearchTool, webfetchTool } from './websearch';
-export { context7MCP, context7SearchToolMCP, context7GetToolMCP, clearContext7Cache } from './context7';
-export { grepAppMCP, grepSearchToolMCP, grepGetFileToolMCP } from './grep-app';
+export { websearchMCP, websearchTool, webfetchTool } from './websearch'
+export {
+  context7MCP,
+  context7SearchToolMCP,
+  context7GetToolMCP,
+  clearContext7Cache,
+} from './context7'
+export { grepAppMCP, grepSearchToolMCP, grepGetFileToolMCP } from './grep-app'

@@ -1,23 +1,23 @@
-import { promises as fs } from "fs"
-import { join, dirname } from "path"
-import * as os from "os"
-import type { OpenCodeTodo, TodoFile } from "./types"
+import { promises as fs } from 'fs'
+import { join, dirname } from 'path'
+import * as os from 'os'
+import type { OpenCodeTodo, TodoFile } from './types'
 
-const TODO_VERSION = "1.0"
-const TODO_ENCODING = "utf-8"
+const TODO_VERSION = '1.0'
+const TODO_ENCODING = 'utf-8'
 
 export function getTodoPath(sessionId: string, customPath?: string): string {
   if (customPath) {
     return join(customPath, `${sessionId}.json`)
   }
 
-  const basePath = join(os.homedir(), ".claude", "todos")
+  const basePath = join(os.homedir(), '.claude', 'todos')
   return join(basePath, `${sessionId}.json`)
 }
 
 export async function loadTodoFile(
   sessionId: string,
-  customPath?: string
+  customPath?: string,
 ): Promise<OpenCodeTodo[] | null> {
   const todoPath = getTodoPath(sessionId, customPath)
 
@@ -28,13 +28,15 @@ export async function loadTodoFile(
     const todoFile: TodoFile = JSON.parse(content)
 
     if (todoFile.version !== TODO_VERSION) {
-      console.warn(`[todo-manager] Todo file version mismatch: ${todoFile.version} (expected ${TODO_VERSION})`)
+      console.warn(
+        `[todo-manager] Todo file version mismatch: ${todoFile.version} (expected ${TODO_VERSION})`,
+      )
       return null
     }
 
     return todoFile.todos || []
   } catch (error: any) {
-    if (error?.code === "ENOENT") {
+    if (error?.code === 'ENOENT') {
       return []
     }
 
@@ -46,7 +48,7 @@ export async function loadTodoFile(
 export async function saveTodoFile(
   sessionId: string,
   todos: OpenCodeTodo[],
-  customPath?: string
+  customPath?: string,
 ): Promise<boolean> {
   const todoPath = getTodoPath(sessionId, customPath)
 
@@ -76,7 +78,7 @@ export async function deleteTodoFile(sessionId: string, customPath?: string): Pr
     console.log(`[todo-manager] Deleted todo file: ${todoPath}`)
     return true
   } catch (error: any) {
-    if (error?.code === "ENOENT") {
+    if (error?.code === 'ENOENT') {
       return true
     }
 
@@ -88,10 +90,10 @@ export async function deleteTodoFile(sessionId: string, customPath?: string): Pr
 export async function saveOpenCodeTodos(
   client: any,
   sessionId: string,
-  todos: OpenCodeTodo[]
+  todos: OpenCodeTodo[],
 ): Promise<boolean> {
   try {
-    const todoDir = join(os.homedir(), ".claude", "todos")
+    const todoDir = join(os.homedir(), '.claude', 'todos')
     await fs.mkdir(todoDir, { recursive: true })
 
     const todoFile: TodoFile = {
@@ -110,11 +112,9 @@ export async function saveOpenCodeTodos(
   }
 }
 
-export async function loadOpenCodeTodos(
-  sessionId: string
-): Promise<OpenCodeTodo[] | null> {
+export async function loadOpenCodeTodos(sessionId: string): Promise<OpenCodeTodo[] | null> {
   try {
-    const todoPath = join(os.homedir(), ".claude", "todos", `${sessionId}.json`)
+    const todoPath = join(os.homedir(), '.claude', 'todos', `${sessionId}.json`)
 
     const content = await fs.readFile(todoPath, TODO_ENCODING)
     const todoFile: TodoFile = JSON.parse(content)
@@ -126,7 +126,7 @@ export async function loadOpenCodeTodos(
 
     return todoFile.todos || []
   } catch (error: any) {
-    if (error?.code === "ENOENT") {
+    if (error?.code === 'ENOENT') {
       return []
     }
 
@@ -136,7 +136,7 @@ export async function loadOpenCodeTodos(
 }
 
 export function validateTodo(todo: OpenCodeTodo): boolean {
-  const requiredFields = ["id", "content", "status", "priority"]
+  const requiredFields = ['id', 'content', 'status', 'priority']
 
   for (const field of requiredFields) {
     if (!(todo as any)[field]) {
@@ -145,13 +145,13 @@ export function validateTodo(todo: OpenCodeTodo): boolean {
     }
   }
 
-  const validStatuses = ["pending", "in_progress", "completed", "cancelled"]
+  const validStatuses = ['pending', 'in_progress', 'completed', 'cancelled']
   if (!validStatuses.includes(todo.status)) {
     console.warn(`[todo-manager] Invalid todo status: ${todo.status}`)
     return false
   }
 
-  const validPriorities = ["high", "medium", "low"]
+  const validPriorities = ['high', 'medium', 'low']
   if (!validPriorities.includes(todo.priority)) {
     console.warn(`[todo-manager] Invalid todo priority: ${todo.priority}`)
     return false

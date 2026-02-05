@@ -1,10 +1,10 @@
-import type { Hooks } from '@opencode-ai/plugin';
-import type { PluginInput } from '@opencode-ai/plugin';
+import type { Hooks } from '@opencode-ai/plugin'
+import type { PluginInput } from '@opencode-ai/plugin'
 
 export interface ToolOutputTruncatorConfig {
-  maxTokens?: number;
-  headroomRatio?: number;
-  preserveHeaderLines?: number;
+  maxTokens?: number
+  headroomRatio?: number
+  preserveHeaderLines?: number
 }
 
 const TOOL_SPECIFIC_MAX_TOKENS = {
@@ -33,13 +33,13 @@ const TOOL_SPECIFIC_MAX_TOKENS = {
   session_read: 30000,
   session_search: 20000,
   session_info: 10000,
-} as const;
+} as const
 
 const DEFAULT_CONFIG: Required<ToolOutputTruncatorConfig> = {
   maxTokens: 50000,
   headroomRatio: 0.5,
   preserveHeaderLines: 3,
-};
+}
 
 const TRUNCATABLE_TOOLS = [
   'lsp_hover',
@@ -55,14 +55,14 @@ const TRUNCATABLE_TOOLS = [
   'session_info',
   'websearch',
   'webfetch',
-] as const;
+] as const
 
 function estimateTokens(text: string): number {
-  return Math.ceil(text.length / 4);
+  return Math.ceil(text.length / 4)
 }
 
 function getToolSpecificMaxTokens(toolName: string, defaultMax: number): number {
-  return TOOL_SPECIFIC_MAX_TOKENS[toolName as keyof typeof TOOL_SPECIFIC_MAX_TOKENS] ?? defaultMax;
+  return TOOL_SPECIFIC_MAX_TOKENS[toolName as keyof typeof TOOL_SPECIFIC_MAX_TOKENS] ?? defaultMax
 }
 
 function truncateContent(
@@ -71,43 +71,43 @@ function truncateContent(
   preserveHeaderLines: number,
   toolName?: string,
 ): string {
-  const usableTokens = Math.floor(maxTokens * 0.75);
-  const maxChars = Math.floor(usableTokens * 4);
+  const usableTokens = Math.floor(maxTokens * 0.75)
+  const maxChars = Math.floor(usableTokens * 4)
 
   if (content.length <= maxChars) {
-    return content;
+    return content
   }
 
-  const lines = content.split('\n');
-  const headerLines = lines.slice(0, preserveHeaderLines);
-  const headerContent = headerLines.join('\n');
-  const remainingLines = lines.slice(preserveHeaderLines);
-  const remainingContent = remainingLines.join('\n');
+  const lines = content.split('\n')
+  const headerLines = lines.slice(0, preserveHeaderLines)
+  const headerContent = headerLines.join('\n')
+  const remainingLines = lines.slice(preserveHeaderLines)
+  const remainingContent = remainingLines.join('\n')
 
-  let truncatedContent: string;
-  let omittedChars = 0;
+  let truncatedContent: string
+  let omittedChars = 0
 
   if (remainingContent.length > maxChars - headerContent.length) {
-    truncatedContent = remainingContent.substring(0, maxChars - headerContent.length);
-    omittedChars = remainingContent.length - truncatedContent.length;
-    truncatedContent = headerContent + '\n' + truncatedContent;
+    truncatedContent = remainingContent.substring(0, maxChars - headerContent.length)
+    omittedChars = remainingContent.length - truncatedContent.length
+    truncatedContent = headerContent + '\n' + truncatedContent
   } else {
-    return content;
+    return content
   }
 
-  const totalOmitted = content.length - truncatedContent.length;
-  const omittedLines = Math.round(totalOmitted / 100);
-  const estimatedTokens = estimateTokens(content);
+  const totalOmitted = content.length - truncatedContent.length
+  const omittedLines = Math.round(totalOmitted / 100)
+  const estimatedTokens = estimateTokens(content)
 
-  let truncationNotice = '\n\n' + '='.repeat(60);
-  truncationNotice += `\n[Output truncated: ${estimatedTokens.toLocaleString()} tokens estimated]`;
-  truncationNotice += `\nShowing ${truncatedContent.length.toLocaleString()} of ${content.length.toLocaleString()} characters`;
+  let truncationNotice = '\n\n' + '='.repeat(60)
+  truncationNotice += `\n[Output truncated: ${estimatedTokens.toLocaleString()} tokens estimated]`
+  truncationNotice += `\nShowing ${truncatedContent.length.toLocaleString()} of ${content.length.toLocaleString()} characters`
   if (omittedLines > 0) {
-    truncationNotice += ` (~${omittedLines} lines omitted)`;
+    truncationNotice += ` (~${omittedLines} lines omitted)`
   }
-  truncationNotice += '\n' + '='.repeat(60) + '\n';
+  truncationNotice += '\n' + '='.repeat(60) + '\n'
 
-  return truncatedContent + truncationNotice;
+  return truncatedContent + truncationNotice
 }
 
 function processToolContent(
@@ -116,24 +116,24 @@ function processToolContent(
   toolName: string,
 ): any {
   if (typeof content === 'string') {
-    const toolMaxTokens = getToolSpecificMaxTokens(toolName, config.maxTokens);
-    return truncateContent(content, toolMaxTokens, config.preserveHeaderLines, toolName);
+    const toolMaxTokens = getToolSpecificMaxTokens(toolName, config.maxTokens)
+    return truncateContent(content, toolMaxTokens, config.preserveHeaderLines, toolName)
   }
 
   if (Array.isArray(content)) {
-    const text = JSON.stringify(content);
-    const estimatedTokens = estimateTokens(text);
-    const toolMaxTokens = getToolSpecificMaxTokens(toolName, config.maxTokens);
+    const text = JSON.stringify(content)
+    const estimatedTokens = estimateTokens(text)
+    const toolMaxTokens = getToolSpecificMaxTokens(toolName, config.maxTokens)
 
     if (estimatedTokens <= config.maxTokens * config.headroomRatio) {
-      return content;
+      return content
     }
 
-    return truncateContent(text, toolMaxTokens, config.preserveHeaderLines, toolName);
+    return truncateContent(text, toolMaxTokens, config.preserveHeaderLines, toolName)
   }
 
   if (content.type === 'image_url') {
-    return content;
+    return content
   }
 
   if (content.type === 'resource') {
@@ -149,11 +149,11 @@ function processToolContent(
             toolName,
           ),
         },
-      };
+      }
     }
   }
 
-  return content;
+  return content
 }
 
 async function toolExecuteAfter(
@@ -161,14 +161,14 @@ async function toolExecuteAfter(
   output: any,
   config: Required<ToolOutputTruncatorConfig>,
 ) {
-  const toolName = input.tool;
+  const toolName = input.tool
 
-  if (!TRUNCATABLE_TOOLS.includes(toolName as any)) {
-    return;
+  if (!TRUNCATABLE_TOOLS.includes(toolName)) {
+    return
   }
 
   if (output?.output && typeof output.output === 'string') {
-    output.output = processToolContent(output.output, config, toolName);
+    output.output = processToolContent(output.output, config, toolName)
   }
 }
 
@@ -176,24 +176,24 @@ export function createToolOutputTruncatorHook(
   _input: PluginInput,
   options?: { config?: ToolOutputTruncatorConfig },
 ): Hooks {
-  const finalConfig = { ...DEFAULT_CONFIG, ...options?.config };
+  const finalConfig = { ...DEFAULT_CONFIG, ...options?.config }
 
   return {
     'tool.execute.after': async (toolInput: any, toolOutput: any) => {
-      await toolExecuteAfter(toolInput, toolOutput, finalConfig);
+      await toolExecuteAfter(toolInput, toolOutput, finalConfig)
     },
-  };
+  }
 }
 
 export function createHook(
   input: PluginInput,
   options?: { config?: ToolOutputTruncatorConfig },
 ): Hooks {
-  return createToolOutputTruncatorHook(input, options);
+  return createToolOutputTruncatorHook(input, options)
 }
 
 export const metadata = {
   name: 'tool-output-truncator',
   priority: 40,
   description: 'Truncates large tool outputs with tool-specific limits and header preservation',
-} as const;
+} as const

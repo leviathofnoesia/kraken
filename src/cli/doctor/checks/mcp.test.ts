@@ -48,6 +48,7 @@ describe("mcp check", () => {
 
       // #then should list servers
       expect(result.details?.some((d) => d.includes("context7"))).toBe(true)
+      expect(result.details?.some((d) => d.includes("websearch"))).toBe(true)
       expect(result.details?.some((d) => d.includes("grep_app"))).toBe(true)
     })
   })

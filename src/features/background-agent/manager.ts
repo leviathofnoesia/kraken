@@ -1,16 +1,17 @@
-import type { PluginInput, ToolDefinition } from "@opencode-ai/plugin"
+import type { PluginInput, ToolDefinition } from '@opencode-ai/plugin'
 import {
   createCallAgentTool,
   createBackgroundTaskStatusTool,
   createBackgroundTaskListTool,
   createBackgroundTaskCancelTool,
-} from "./tool"
+} from './tool'
 
 export interface BackgroundTask {
   id: string
   agent: string
-  status: "pending" | "running" | "completed" | "failed"
+  status: 'pending' | 'running' | 'completed' | 'failed'
   createdAt: number
+  sessionId?: string
   startedAt?: number
   completedAt?: number
   result?: string
@@ -39,7 +40,7 @@ export class BackgroundManager {
       return modelLimit === 0 ? Infinity : modelLimit
     }
 
-    const provider = model.split("/")[0]
+    const provider = model.split('/')[0]
     const providerLimit = this.config.providerConcurrency?.[provider]
     if (providerLimit !== undefined) {
       return providerLimit === 0 ? Infinity : providerLimit
@@ -95,7 +96,7 @@ export class BackgroundManager {
     const newTask: BackgroundTask = {
       id: crypto.randomUUID(),
       agent,
-      status: "pending",
+      status: 'pending',
       createdAt: Date.now(),
     }
     this.tasks.set(newTask.id, newTask)
@@ -111,7 +112,7 @@ export class BackgroundManager {
           reject(new Error(`Task ${taskId} not found`))
           return
         }
-        if (task.status === "completed" || task.status === "failed") {
+        if (task.status === 'completed' || task.status === 'failed') {
           clearInterval(checkInterval)
           resolve(task)
         }
@@ -126,31 +127,31 @@ export class BackgroundManager {
 
   cancelTask(taskId: string): boolean {
     const task = this.tasks.get(taskId)
-    if (!task || (task.status !== "pending" && task.status !== "running")) {
+    if (!task || (task.status !== 'pending' && task.status !== 'running')) {
       return false
     }
-    task.status = "failed"
+    task.status = 'failed'
     task.completedAt = Date.now()
-    task.error = "Task cancelled by user"
+    task.error = 'Task cancelled by user'
     return true
   }
 
   startTask(taskId: string): boolean {
     const task = this.tasks.get(taskId)
-    if (!task || task.status !== "pending") {
+    if (!task || task.status !== 'pending') {
       return false
     }
-    task.status = "running"
+    task.status = 'running'
     task.startedAt = Date.now()
     return true
   }
 
   completeTask(taskId: string, result: string): boolean {
     const task = this.tasks.get(taskId)
-    if (!task || task.status !== "running") {
+    if (!task || task.status !== 'running') {
       return false
     }
-    task.status = "completed"
+    task.status = 'completed'
     task.completedAt = Date.now()
     task.result = result
     return true
@@ -158,10 +159,10 @@ export class BackgroundManager {
 
   failTask(taskId: string, error: string): boolean {
     const task = this.tasks.get(taskId)
-    if (!task || task.status !== "running") {
+    if (!task || task.status !== 'running') {
       return false
     }
-    task.status = "failed"
+    task.status = 'failed'
     task.completedAt = Date.now()
     task.error = error
     return true
@@ -177,7 +178,7 @@ export class BackgroundManager {
 
   listActiveTasks(): BackgroundTask[] {
     return Array.from(this.tasks.values()).filter(
-      (t) => t.status === "pending" || t.status === "running"
+      (t) => t.status === 'pending' || t.status === 'running',
     )
   }
 }
@@ -187,11 +188,14 @@ export function createBackgroundAgentFeature(_input: PluginInput): {
   tools: Record<string, ToolDefinition>
 } {
   const manager = new BackgroundManager()
-  
+
   return {
     manager,
     tools: {
-      call_agent: createCallAgentTool(manager),
+      call_agent: createCallAgentTool(manager, {
+        client: _input.client,
+        directory: _input.directory,
+      }),
       background_task_status: createBackgroundTaskStatusTool(manager),
       background_task_list: createBackgroundTaskListTool(manager),
       background_task_cancel: createBackgroundTaskCancelTool(manager),

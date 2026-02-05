@@ -1,16 +1,16 @@
-import { existsSync, readFileSync } from "node:fs"
-import { homedir } from "node:os"
-import { join } from "node:path"
-import type { CheckResult, CheckDefinition, McpServerInfo } from "../types"
-import { CHECK_IDS, CHECK_NAMES } from "../constants"
-import { parseJsonc } from "../../../shared"
+import { existsSync, readFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
+import type { CheckResult, CheckDefinition, McpServerInfo } from '../types'
+import { CHECK_IDS, CHECK_NAMES } from '../constants'
+import { parseJsonc } from '../../../shared'
 
-const BUILTIN_MCP_SERVERS = ["websearch", "context7", "grep_app"]
+const BUILTIN_MCP_SERVERS = ['websearch', 'context7', 'grep_app']
 
 const MCP_CONFIG_PATHS = [
-  join(homedir(), ".claude", ".mcp.json"),
-  join(process.cwd(), ".mcp.json"),
-  join(process.cwd(), ".claude", ".mcp.json"),
+  join(homedir(), '.claude', '.mcp.json'),
+  join(process.cwd(), '.mcp.json'),
+  join(process.cwd(), '.claude', '.mcp.json'),
 ]
 
 interface McpConfig {
@@ -24,7 +24,7 @@ function loadUserMcpConfig(): Record<string, unknown> {
     if (!existsSync(configPath)) continue
 
     try {
-      const content = readFileSync(configPath, "utf-8")
+      const content = readFileSync(configPath, 'utf-8')
       const config = parseJsonc<McpConfig>(content)
       if (config.mcpServers) {
         Object.assign(servers, config.mcpServers)
@@ -40,7 +40,7 @@ function loadUserMcpConfig(): Record<string, unknown> {
 export function getBuiltinMcpInfo(): McpServerInfo[] {
   return BUILTIN_MCP_SERVERS.map((id) => ({
     id,
-    type: "builtin" as const,
+    type: 'builtin' as const,
     enabled: true,
     valid: true,
   }))
@@ -51,13 +51,13 @@ export function getUserMcpInfo(): McpServerInfo[] {
   const servers: McpServerInfo[] = []
 
   for (const [id, config] of Object.entries(userServers)) {
-    const isValid = typeof config === "object" && config !== null
+    const isValid = typeof config === 'object' && config !== null
     servers.push({
       id,
-      type: "user",
+      type: 'user',
       enabled: true,
       valid: isValid,
-      error: isValid ? undefined : "Invalid configuration format",
+      error: isValid ? undefined : 'Invalid configuration format',
     })
   }
 
@@ -69,7 +69,7 @@ export async function checkBuiltinMcpServers(): Promise<CheckResult> {
 
   return {
     name: CHECK_NAMES[CHECK_IDS.MCP_BUILTIN],
-    status: "pass",
+    status: 'pass',
     message: `${servers.length} built-in servers enabled`,
     details: servers.map((s) => `Enabled: ${s.id}`),
   }
@@ -81,9 +81,9 @@ export async function checkUserMcpServers(): Promise<CheckResult> {
   if (servers.length === 0) {
     return {
       name: CHECK_NAMES[CHECK_IDS.MCP_USER],
-      status: "skip",
-      message: "No user MCP configuration found",
-      details: ["Optional: Add .mcp.json for custom MCP servers"],
+      status: 'skip',
+      message: 'No user MCP configuration found',
+      details: ['Optional: Add .mcp.json for custom MCP servers'],
     }
   }
 
@@ -91,7 +91,7 @@ export async function checkUserMcpServers(): Promise<CheckResult> {
   if (invalidServers.length > 0) {
     return {
       name: CHECK_NAMES[CHECK_IDS.MCP_USER],
-      status: "warn",
+      status: 'warn',
       message: `${invalidServers.length} server(s) have configuration issues`,
       details: [
         ...servers.filter((s) => s.valid).map((s) => `Valid: ${s.id}`),
@@ -102,7 +102,7 @@ export async function checkUserMcpServers(): Promise<CheckResult> {
 
   return {
     name: CHECK_NAMES[CHECK_IDS.MCP_USER],
-    status: "pass",
+    status: 'pass',
     message: `${servers.length} user server(s) configured`,
     details: servers.map((s) => `Configured: ${s.id}`),
   }
@@ -113,14 +113,14 @@ export function getMcpCheckDefinitions(): CheckDefinition[] {
     {
       id: CHECK_IDS.MCP_BUILTIN,
       name: CHECK_NAMES[CHECK_IDS.MCP_BUILTIN],
-      category: "tools",
+      category: 'tools',
       check: checkBuiltinMcpServers,
       critical: false,
     },
     {
       id: CHECK_IDS.MCP_USER,
       name: CHECK_NAMES[CHECK_IDS.MCP_USER],
-      category: "tools",
+      category: 'tools',
       check: checkUserMcpServers,
       critical: false,
     },
