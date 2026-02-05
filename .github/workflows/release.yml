@@ -2,18 +2,58 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - master
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v1.2.0)'
+        required: true
+        default: 'v1.2.0'
 
 permissions:
   contents: write
   id-token: write
 
 jobs:
-  release:
+  version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            # Extract version from package.json on master branch pushes
+            VERSION=$(bun run -c 'cat package.json | grep '"'"'"version"'"'"' | head -1 | cut -d'"'"'"'"'"' -f4')
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag ${{ steps.version.outputs.version }} || true
+          git push origin ${{ steps.version.outputs.version }} || true
+
+  typecheck:
+    name: Typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -26,11 +66,101 @@ jobs:
       - name: Run typecheck
         run: bun run typecheck
 
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    needs: typecheck
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
       - name: Run tests
         run: bun test
 
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
       - name: Build
         run: bun run build
+
+  build-binaries:
+    name: Build Binaries
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            binary_name: kraken-code-macos-x64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            binary_name: kraken-code-macos-arm64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            binary_name: kraken-code-linux-x64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            binary_name: kraken-code-linux-arm64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            binary_name: kraken-code-windows-x64.exe
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build binary
+        run: bun run build:binary --compile ./src/cli/index.ts --outfile ${{ matrix.binary_name }}
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.binary_name }}
+          path: ${{ matrix.binary_name }}
+
+  release-github:
+    name: GitHub Release
+    runs-on: ubuntu-latest
+    needs: build-binaries
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -45,10 +175,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-npm:
+    name: NPM Publish
     runs-on: ubuntu-latest
-    needs: release
+    needs: build
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v1
@@ -62,6 +194,28 @@ jobs:
         run: bun run build
 
       - name: Publish to NPM
-        run: bun publish
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          bun publish --access public --userconfig .npmrc
+          rm .npmrc
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  agent-docs:
+    name: AGENTS.md Documentation Check
+    runs-on: ubuntu-latest
+    needs: publish-npm
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Check AGENTS.md freshness
+        run: bun run agent:docs:check
