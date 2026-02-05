@@ -102,6 +102,8 @@ jobs:
               fi
             fi
           done
+          # Copy additional release files
+          cp assets/kraken-code.schema.json release/
           ls -la release/
 
       - name: Generate release notes
