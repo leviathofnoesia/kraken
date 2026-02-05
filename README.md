@@ -1,8 +1,8 @@
-# Kraken Code v1.1.4
+# Kraken Code v1.1.5
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/v1.1.4-brightgreen?labelColor=0e8fd0&style=flat-square)
+![Version](https://img.shields.io/badge/v1.1.5-brightgreen?labelColor=0e8fd0&style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT?labelColor=black&style=flat-square)
 ![Bun](https://img.shields.io/badge/bun-1.2%2B-white?labelColor=%231F27&style=flat-square)
 ![OpenCode](https://img.shields.io/badge/compatibility-green?label=OpenCode&style=flat-square)
@@ -16,16 +16,36 @@
 
 ## Quick Start
 
+### Installation
+
+Choose your preferred installation method:
+
 ```bash
-# Install Kraken Code
-bun install kraken-code
+# Option 1: Using Bun (fastest)
+bun install -g kraken-code
 
-# Or with npm
-npm install kraken-code
+# Option 2: Using NPM
+npm install -g kraken-code
 
-# Or with curl (for non-package-manager users)
-bash scripts/install-curl.sh
+# Option 3: Using the install script (auto-detects environment)
+curl -fsSL https://raw.githubusercontent.com/leviathofnoesia/kraken-code/main/install.sh | bash
 
+# Option 4: Using Homebrew (macOS/Linux)
+brew tap leviathofnoesia/kraken
+brew install kraken-code
+
+# Option 5: Using Docker
+docker pull ghcr.io/leviathofnoesia/kraken-code:latest
+
+# Option 6: Download binary directly
+# Visit: https://github.com/leviathofnoesia/kraken-code/releases/latest
+```
+
+### Initialization
+
+After installation, initialize Kraken Code:
+
+```bash
 # Initialize with minimal setup (agents only)
 kraken-code init --minimal
 
@@ -36,7 +56,7 @@ kraken-code init --full
 opencode
 ```
 
-**Important:** After installation, you must run `kraken-code init` to create the proper configuration. The CLI command adds the plugin to your `~/.config/opencode/opencode.json` file and sets up all Kraken Code features.
+**Important:** The initialization step is required. It adds the plugin to your `~/.config/opencode/opencode.json` file and sets up all Kraken Code features.
 
 For detailed installation options, run: `kraken-code --help`
 
@@ -85,13 +105,13 @@ Kraken Code now includes a unified learning system that captures experiences, bu
 
 **OpenCode is powerful. Kraken makes it unstoppable.**
 
-| OpenCode Alone | With Kraken |
-|---------------|--------------|
-| Ask a question → forgets context | Ask a question → Learning retains context |
-| Do work → guess what's next | Do work → Blitzkrieg enforces quality |
-| Explore → manual grep searches | Explore → Nautilus auto-fires on patterns |
+| OpenCode Alone                       | With Kraken                                   |
+| ------------------------------------ | --------------------------------------------- |
+| Ask a question → forgets context     | Ask a question → Learning retains context     |
+| Do work → guess what's next          | Do work → Blitzkrieg enforces quality         |
+| Explore → manual grep searches       | Explore → Nautilus auto-fires on patterns     |
 | Multi-step tasks → one-shot guessing | Multi-step tasks → Atlas breaks down properly |
-| Change scope → context bloats out | Change scope → Learning preserves key context |
+| Change scope → context bloats out    | Change scope → Learning preserves key context |
 
 **The Value Proposition:**
 
@@ -146,6 +166,176 @@ Built-in MCP servers:
 - **Websearch** - Exa AI web search
 - **Context7** - Official documentation lookup
 - **Grep App** - GitHub code search
+
+---
+
+## Installation Guide
+
+### Prerequisites
+
+- **Node.js 18+** or **Bun 1.2+**
+- **OpenCode** (will be used after installation)
+
+### Method 1: Package Managers (Recommended)
+
+```bash
+# Using Bun (fastest)
+bun install -g kraken-code
+
+# Using NPM
+npm install -g kraken-code
+
+# Initialize
+kraken-code init --minimal
+```
+
+### Method 2: Install Script
+
+The install script auto-detects your environment and picks the best installation method:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/leviathofnoesia/kraken-code/main/install.sh | bash
+```
+
+**What it does:**
+
+1. Detects your OS and architecture
+2. Tries Bun → NPM → Binary download → Direct download
+3. Auto-initializes Kraken Code
+4. Provides clear next steps
+
+### Method 3: Homebrew (macOS/Linux)
+
+```bash
+# Add the tap
+brew tap leviathofnoesia/kraken
+
+# Install
+brew install kraken-code
+
+# The formula includes shell completions and auto-initializes
+```
+
+### Method 4: Prebuilt Binaries
+
+Download standalone binaries from [GitHub Releases](https://github.com/leviathofnoesia/kraken-code/releases):
+
+| Platform | Architecture          | Download                         |
+| -------- | --------------------- | -------------------------------- |
+| macOS    | Intel (x64)           | `kraken-code-macos-x64.tar.gz`   |
+| macOS    | Apple Silicon (ARM64) | `kraken-code-macos-arm64.tar.gz` |
+| Linux    | x64                   | `kraken-code-linux-x64.tar.gz`   |
+| Linux    | ARM64                 | `kraken-code-linux-arm64.tar.gz` |
+| Windows  | x64                   | `kraken-code-windows-x64.zip`    |
+
+```bash
+# Example: macOS Apple Silicon
+curl -LO https://github.com/leviathofnoesia/kraken-code/releases/latest/download/kraken-code-macos-arm64.tar.gz
+tar -xzf kraken-code-macos-arm64.tar.gz
+sudo mv kraken-code /usr/local/bin/
+kraken-code init --minimal
+```
+
+### Method 5: Docker
+
+```bash
+# Pull the image
+docker pull ghcr.io/leviathofnoesia/kraken-code:latest
+
+# Run with your project mounted
+docker run -it -v $(pwd):/workspace ghcr.io/leviathofnoesia/kraken-code:latest
+
+# Or run OpenCode directly
+docker run -it -v $(pwd):/workspace ghcr.io/leviathofnoesia/kraken-code
+```
+
+### Method 6: Build from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/leviathofnoesia/kraken-code.git
+cd kraken-code
+
+# Install dependencies
+bun install
+
+# Build
+bun run build
+
+# Link locally (optional)
+ln -s $(pwd)/dist/cli/index.js /usr/local/bin/kraken-code
+
+# Initialize
+kraken-code init --minimal
+```
+
+### Verifying Installation
+
+After installation, verify everything is working:
+
+```bash
+# Check version
+kraken-code --version
+
+# Check status
+kraken-code status
+
+# Run diagnostics
+kraken-code doctor
+
+# Get help
+kraken-code --help
+```
+
+### Updating
+
+```bash
+# NPM
+npm update -g kraken-code
+
+# Bun
+bun update -g kraken-code
+
+# Homebrew
+brew upgrade kraken-code
+
+# Docker
+docker pull ghcr.io/leviathofnoesia/kraken-code:latest
+
+# Binary: Download latest release manually
+```
+
+### Troubleshooting
+
+**Command not found after installation:**
+
+```bash
+# Make sure global bin directory is in PATH
+export PATH="$PATH:$(npm config get prefix)/bin"  # NPM
+export PATH="$PATH:$HOME/.bun/bin"                 # Bun
+export PATH="$PATH:$HOME/.local/bin"               # Install script
+```
+
+**Initialization fails:**
+
+```bash
+# Check if OpenCode config directory exists
+mkdir -p ~/.config/opencode
+
+# Try manual initialization
+kraken-code init --full
+```
+
+**Permission denied:**
+
+```bash
+# Fix permissions (Unix)
+sudo chown -R $(whoami) ~/.config/opencode
+
+# Or reinstall with proper permissions
+npm uninstall -g kraken-code
+npm install -g kraken-code
+```
 
 ---
 
