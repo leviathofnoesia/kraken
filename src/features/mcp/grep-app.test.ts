@@ -40,14 +40,18 @@ describe('grep-app MCP', () => {
     })
 
     it('warns when no GitHub token provided', async () => {
-      // #given no GitHub token
-      // #when initializing without token
+      // #given no GitHub token and debug mode enabled
+      const originalDebug = process.env.DEBUG
+      process.env.DEBUG = '1'
       const consoleWarnSpy = spyOn(console, 'warn').mockImplementation(() => {})
+
+      // #when initializing without token
       await initializeGrepAppMCP({})
 
       // #then should warn about rate limits
       expect(consoleWarnSpy).toHaveBeenCalled()
       consoleWarnSpy.mockRestore()
+      process.env.DEBUG = originalDebug
     })
   })
 

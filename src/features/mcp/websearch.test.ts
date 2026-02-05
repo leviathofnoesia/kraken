@@ -36,14 +36,18 @@ describe('websearch MCP', () => {
     })
 
     it('warns when no API key provided', async () => {
-      // #given no API key
-      // #when initializing without API key
+      // #given no API key and debug mode enabled
+      const originalDebug = process.env.DEBUG
+      process.env.DEBUG = '1'
       const consoleWarnSpy = spyOn(console, 'warn').mockImplementation(() => {})
+
+      // #when initializing without API key
       await initializeWebsearchMCP({})
 
       // #then should warn
       expect(consoleWarnSpy).toHaveBeenCalled()
       consoleWarnSpy.mockRestore()
+      process.env.DEBUG = originalDebug
     })
   })
 
