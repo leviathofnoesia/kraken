@@ -1,9 +1,10 @@
 # Dependencies
-.sisyphus/
 node_modules/
+.sisyphus/
 
 # Build output
 dist/
+*.tgz
 
 # IDE
 .idea/
@@ -18,52 +19,38 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
-
-# Lock files
-package-lock.json
-yarn.lock
+yarn-debug.log*
+bun-debug.log*
 
 # Environment
 .env
 .env.local
-test-injection/
-notepad.md
-oauth-success.html
+.env.*.local
 
-# ============================================
-# Internal Tools & Research (Not for release)
-# ============================================
+# Secrets and credentials
+*.pem
+*.key
+*.crt
+.cookie
+.oauth/
 
-# Distinction audit and verification
-distinction_audit.py
-distinction_audit.json
+# Test and development
+coverage/
+.nyc_output/
+*.lcov
 
-# Report generation scripts
-generate_report.py
-generate_sbom.py
-batch_rename.py
-extract_prompts.py
-fix_imports.py
-replace_prompts.py
-rewrite_prompts.py
-prompt_replacements.json
+# Cache
+.cache/
+*.tsbuildinfo
 
-# Python cache and artifacts
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-*.so
-*.egg
-*.egg-info/
-dist/
-build/
-
-# Research and completion artifacts
-COMPLETION_SUMMARY.md
-RESEARCH_REPORT.md
-sbom.cyclonedx.json
+# OS-specific
+# macOS
+.DS_Store
+# Windows
+Thumbs.db
+# Linux
+*.swp
+*.swo
 
 # Temporary files
 *.tmp
@@ -71,8 +58,3 @@ sbom.cyclonedx.json
 *~
 .#*
 \#*\#
-
-# Configuration overrides (user-specific)
-.userconfig
-.claude/
-GEMINI.md
