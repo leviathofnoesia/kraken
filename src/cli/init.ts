@@ -6,6 +6,29 @@ import * as path from 'path'
 import * as os from 'os'
 import color from 'picocolors'
 
+// Simple deep merge utility for nested object merging
+function deepMerge<T = Record<string, any>>(base: T, override: Partial<T>): T {
+  const result: any = structuredClone(base) || {}
+  for (const [key, value] of Object.entries(override)) {
+    if (
+      value !== null &&
+      value !== undefined &&
+      typeof value === 'object' &&
+      !Array.isArray(value)
+    ) {
+      if (typeof result[key] === 'object' && result[key] !== null && !Array.isArray(result[key])) {
+        result[key] = deepMerge(result[key], value)
+      } else {
+        result[key] = structuredClone(value)
+      }
+    } else if (value !== null && value !== undefined) {
+      result[key] = value
+    }
+  }
+
+  return result as T
+}
+
 export async function runInit(options: { minimal?: boolean; full?: boolean; verbose?: boolean }) {
   if (options.verbose) {
     console.log(color.dim('🐙 Initializing Kraken Code with verbose output...'))
@@ -131,11 +154,8 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
     console.log(color.dim(`ℹ️  No existing Kraken configuration found at ${krakenConfigPath}`))
   }
 
-  // Deep merge configs: use structuredClone for deep copy then spread merge to preserve nested Blitzkrieg settings
-  const mergedKrakenConfig = structuredClone(
-    structuredClone(krakenConfig),
-    structuredClone(existingKrakenConfig),
-  )
+  // Deep merge configs: use deepMerge to preserve nested Blitzkrieg settings
+  const mergedKrakenConfig = deepMerge(krakenConfig, existingKrakenConfig)
 
   // Write kraken-code config
   try {
@@ -269,7 +289,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
     // Check if kraken-code appears in plugin list
     const { exec } = await import('node:child_process')
     const result = await new Promise((resolve, reject) => {
-      exec('opencode --plugins', { timeout: 50000 }, (error, stdout, stderr) => {
+      exec('opencode --plugins', { timeout: 5000 }, (error, stdout, stderr) => {
         if (error) {
           reject(error)
         } else {
