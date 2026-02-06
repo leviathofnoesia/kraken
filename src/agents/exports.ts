@@ -6,6 +6,7 @@ export { coralAgent } from './coral'
 export { sirenAgent } from './siren'
 export { scyllaAgent } from './scylla'
 export { pearlAgent } from './pearl'
+export { cartographerAgent } from './cartographer'
 
 import type { AgentPromptMetadata } from '../types'
 

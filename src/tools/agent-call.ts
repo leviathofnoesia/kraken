@@ -6,7 +6,7 @@ export const call_kraken_agent = tool({
     'Call a specialized Kraken Code agent for a specific task. ' +
     'Use this to delegate to agents like Atlas (navigation), Nautilus (semantic search), ' +
     'Abyssal (external research), Coral (UI/UX), Siren (documentation), Scylla (code review), ' +
-    'or Pearl (testing).',
+    'Pearl (testing), or Cartographer (advanced planning).',
   args: {
     agent: z
       .enum([
@@ -20,6 +20,7 @@ export const call_kraken_agent = tool({
         'Leviathan',
         'Maelstrom',
         'Poseidon',
+        'Cartographer',
       ])
       .describe('Agent to call'),
     task: z.string().describe('Task or instruction for the agent'),
@@ -38,6 +39,8 @@ export const call_kraken_agent = tool({
       Leviathan: 'Architectural design and system-level decisions',
       Maelstrom: 'Orchestrate complex multi-step workflows',
       Poseidon: 'Plan and coordinate complex tasks',
+      Cartographer:
+        'Advanced planning with hierarchical task decomposition and subagent delegation',
     }
 
     const defaultTask = agentInstructions[agent] || 'Execute your specialized function'
