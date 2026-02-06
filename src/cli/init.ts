@@ -1,5 +1,7 @@
 #!/usr/bin/env bun
 import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
+// @ts-ignore - jsonc-parser exports parseJsonc
+import { parseJsonc } from 'jsonc-parser'
 import * as path from 'path'
 import * as os from 'os'
 import color from 'picocolors'
@@ -104,7 +106,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
   let existingKrakenConfig: Record<string, any> = {}
   if (existsSync(krakenConfigPath)) {
     try {
-      existingKrakenConfig = JSON.parse(readFileSync(krakenConfigPath, 'utf-8'))
+      existingKrakenConfig = parseJsonc(readFileSync(krakenConfigPath, 'utf-8'))
       if (options.verbose) {
         console.log(
           color.dim(
@@ -157,7 +159,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
   let existingOpencodeConfig: Record<string, any> = {}
   if (existsSync(opencodeConfigPath)) {
     try {
-      existingOpencodeConfig = JSON.parse(readFileSync(opencodeConfigPath, 'utf-8'))
+      existingOpencodeConfig = parseJsonc(readFileSync(opencodeConfigPath, 'utf-8'))
       if (options.verbose) {
         console.log(color.dim(`ℹ️  Found existing OpenCode configuration at ${opencodeConfigPath}`))
       }
@@ -244,7 +246,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
   }
   try {
     const opencodeConfigPath = path.join(os.homedir(), '.config', 'opencode', 'opencode.json')
-    const opencodeConfig = JSON.parse(readFileSync(opencodeConfigPath, 'utf-8'))
+    const opencodeConfig = parseJsonc(readFileSync(opencodeConfigPath, 'utf-8'))
 
     if (opencodeConfig.plugin && opencodeConfig.plugin.includes('kraken-code')) {
       console.log(color.green('✓ Kraken Code plugin is registered in opencode.json'))

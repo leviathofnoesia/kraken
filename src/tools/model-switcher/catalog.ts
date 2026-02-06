@@ -124,15 +124,9 @@ export function generateOptimalPresets(
     Kraken: {
       model: hasAnthropic ? 'anthropic/claude-sonnet-4-5' : 'google/antigravity-gemini-3-pro',
     },
-    Cartographer: { model: 'anthropic/claude-sonnet-4-5' },
-    Maelstrom: { model: 'anthropic/claude-sonnet-4-5' },
-    Nautilus: {
-      model: hasGoogle ? 'google/antigravity-gemini-3-flash' : 'anthropic/claude-haiku-4-5',
-    },
-    Abyssal: { model: hasOpenAI ? 'openai/gpt-4o-mini' : 'anthropic/claude-sonnet-4-5' },
-    Coral: { model: 'anthropic/claude-sonnet-4-5' },
-    Siren: { model: 'anthropic/claude-sonnet-4-5' },
-    Leviathan: { model: 'anthropic/claude-sonnet-4-5' },
+    // Removed hardcoded Cartographer and economy presets
+    // These agents now use provider-aware selection via the same logic as other agents
+    // See model-switcher for runtime model selection
     'Poseidon (Plan Consultant)': { model: 'anthropic/claude-opus-4-5' },
     'Scylla (Plan Reviewer)': { model: 'anthropic/claude-sonnet-4-5' },
     Pearl: {
