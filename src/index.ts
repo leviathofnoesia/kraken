@@ -240,10 +240,20 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
       if (!pluginConfig.agent) pluginConfig.agent = {}
       const agents = getSeaThemedAgents()
       for (const [name, agentConfig] of Object.entries(agents)) {
-        if (!pluginConfig.agent[name]) pluginConfig.agent[name] = agentConfig
+        // Merge: plugin defaults as base, user overrides on top
+        // This ensures mode, prompt, and other defaults always propagate
+        // even when the user has partial overrides in their config
+        pluginConfig.agent[name] = { ...agentConfig, ...pluginConfig.agent[name] }
       }
-      if (!pluginConfig.default_agent && pluginConfig.agent['Kraken'])
-        pluginConfig.default_agent = 'Kraken'
+
+      // Ensure primary agents always retain their mode even after user overrides
+      // Without this, a user override missing 'mode' would demote a primary agent
+      const primaryAgents = ['Kraken', 'Cartographer']
+      for (const name of primaryAgents) {
+        if (pluginConfig.agent[name]) {
+          pluginConfig.agent[name].mode = 'primary'
+        }
+      }
 
       // Parallelize initialization for faster startup
       await Promise.all([

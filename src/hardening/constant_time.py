@@ -5,13 +5,15 @@ Constant-time secret comparison for webhook signature verification.
 
 import hashlib
 import hmac
-from typing import Optional
 
 
 def constant_time_compare(val1: str, val2: str) -> bool:
     """
     Compare two strings in constant time.
     Prevents timing attacks in signature verification.
+
+    Uses hmac.compare_digest which is implemented in C and guaranteed
+    to be constant-time by the Python stdlib.
 
     Args:
         val1: First string (e.g., computed signature)
@@ -20,14 +22,7 @@ def constant_time_compare(val1: str, val2: str) -> bool:
     Returns:
         True if strings are equal, False otherwise
     """
-    if len(val1) != len(val2):
-        return False
-
-    result = 0
-    for c1, c2 in zip(val1.encode("utf-8"), val2.encode("utf-8")):
-        result |= ord(c1) ^ ord(c2)
-
-    return result == 0
+    return hmac.compare_digest(val1, val2)
 
 
 def verify_webhook_signature(
@@ -93,6 +88,9 @@ def constant_time_bytes_equal(val1: bytes, val2: bytes) -> bool:
     """
     Compare two byte sequences in constant time.
 
+    Uses hmac.compare_digest which is implemented in C and guaranteed
+    to be constant-time by the Python stdlib.
+
     Args:
         val1: First byte sequence
         val2: Second byte sequence
@@ -100,11 +98,4 @@ def constant_time_bytes_equal(val1: bytes, val2: bytes) -> bool:
     Returns:
         True if equal, False otherwise
     """
-    if len(val1) != len(val2):
-        return False
-
-    result = 0
-    for b1, b2 in zip(val1, val2):
-        result |= b1 ^ b2
-
-    return result == 0
+    return hmac.compare_digest(val1, val2)

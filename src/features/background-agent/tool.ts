@@ -91,6 +91,7 @@ export function createCallAgentTool(manager: BackgroundManager, context: AgentCa
           'Poseidon (Plan Consultant)',
           'Scylla (Plan Reviewer)',
           'Pearl',
+          'Cartographer',
         ])
         .describe(
           'Name of subagent to delegate to. Each agent has specialized expertise:\n' +
@@ -102,7 +103,8 @@ export function createCallAgentTool(manager: BackgroundManager, context: AgentCa
             '- Leviathan: System design, structural analysis, large-scale architecture\n' +
             '- Poseidon: Planning, requirement analysis, test plan creation\n' +
             '- Scylla: Code review, test coverage analysis, quality assurance\n' +
-            '- Pearl: Testing, test creation, test execution',
+            '- Pearl: Testing, test creation, test execution\n' +
+            '- Cartographer: Advanced planning with hierarchical task decomposition and subagent delegation',
         ),
       task: z
         .string()

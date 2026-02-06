@@ -4,6 +4,7 @@ node_modules/
 
 # Build output
 dist/
+bin/
 *.tgz
 
 # IDE
@@ -15,6 +16,7 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+nul
 
 # Logs
 *.log
@@ -33,24 +35,27 @@ bun-debug.log*
 *.crt
 .cookie
 .oauth/
+tokens.json
 
 # Test and development
 coverage/
 .nyc_output/
 *.lcov
+lsp-test/
+verify_deep_parity.ts
 
 # Cache
 .cache/
 *.tsbuildinfo
 
-# OS-specific
-# macOS
-.DS_Store
-# Windows
-Thumbs.db
-# Linux
-*.swp
-*.swo
+# Generated / tool caches
+.agent-docs/
+.skill-compiler.json
+package-lock.json
+
+# User-specific agent/IDE configs (Claude Code, OpenCode)
+.claude/
+CLAUDE.md
 
 # Temporary files
 *.tmp

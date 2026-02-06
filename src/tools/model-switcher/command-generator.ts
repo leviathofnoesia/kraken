@@ -21,7 +21,7 @@ Parse user input:
 - "history": Show configuration history
 - "status": Show all agent models
 
-Supported agents: Kraken, Maelstrom, Nautilus, Abyssal, Coral, Siren, Leviathan, Poseidon, Scylla, Pearl
+Supported agents: Kraken, Cartographer, Maelstrom, Nautilus, Abyssal, Coral, Siren, Leviathan, Poseidon, Scylla, Pearl
 </command-instruction>
 `,
 
