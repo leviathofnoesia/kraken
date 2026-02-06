@@ -30,34 +30,54 @@ describe('Plugin Agent Registration', () => {
     }
   })
 
-  it('should set default_agent to Kraken', async () => {
+  it('should set both Kraken and Cartographer as primary agents via mode', async () => {
     const plugin = (await import('../../src/index')).default
     const mockConfig: any = {}
     const hooks = await plugin({} as any)
     await hooks.config!(mockConfig)
 
-    expect(mockConfig.default_agent).toBe('Kraken')
+    expect(mockConfig.agent['Kraken'].mode).toBe('primary')
+    expect(mockConfig.agent['Cartographer'].mode).toBe('primary')
   })
 
-  it('should set default_agents to include both primary agents', async () => {
+  it('should enforce primary mode even when user overrides exist', async () => {
     const plugin = (await import('../../src/index')).default
-    const mockConfig: any = {}
+    // Simulate user config that partially overrides Cartographer without setting mode
+    const mockConfig: any = {
+      agent: {
+        Cartographer: { model: 'openai/gpt-5', temperature: 0.5 },
+      },
+    }
     const hooks = await plugin({} as any)
     await hooks.config!(mockConfig)
 
-    expect(mockConfig.default_agents).toContain('Kraken')
-    expect(mockConfig.default_agents).toContain('Cartographer')
+    // mode:primary must be enforced even with user overrides
+    expect(mockConfig.agent['Cartographer'].mode).toBe('primary')
+    // User overrides should still be applied
+    expect(mockConfig.agent['Cartographer'].model).toBe('openai/gpt-5')
+    expect(mockConfig.agent['Cartographer'].temperature).toBe(0.5)
+    // Plugin defaults should fill gaps
+    expect(mockConfig.agent['Cartographer'].prompt).toBeDefined()
+    expect(mockConfig.agent['Cartographer'].description).toBeDefined()
   })
 
-  it('should ensure Cartographer is added to existing default_agents', async () => {
+  it('should merge plugin defaults with user overrides for all agents', async () => {
     const plugin = (await import('../../src/index')).default
-    // Simulate a stale config that only has Kraken
-    const mockConfig: any = { default_agents: ['Kraken'] }
+    // Simulate user config that partially overrides Nautilus
+    const mockConfig: any = {
+      agent: {
+        Nautilus: { model: 'custom/model' },
+      },
+    }
     const hooks = await plugin({} as any)
     await hooks.config!(mockConfig)
 
-    expect(mockConfig.default_agents).toContain('Kraken')
-    expect(mockConfig.default_agents).toContain('Cartographer')
+    // User override should win for model
+    expect(mockConfig.agent['Nautilus'].model).toBe('custom/model')
+    // Plugin defaults should fill in prompt and description
+    expect(mockConfig.agent['Nautilus'].prompt).toBeDefined()
+    expect(mockConfig.agent['Nautilus'].description).toBeDefined()
+    expect(mockConfig.agent['Nautilus'].mode).toBe('subagent')
   })
 
   it('should register Cartographer as a primary agent', async () => {

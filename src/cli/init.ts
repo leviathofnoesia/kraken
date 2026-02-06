@@ -44,9 +44,9 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
   const isFull = options.full
 
   // Plugin config stored in separate file (not in opencode.json)
+  // Note: Agent switching is controlled by mode:'primary' on each AgentConfig,
+  // not by config properties. The OpenCode platform reads mode from pluginConfig.agent.
   const krakenConfig: Record<string, any> = {
-    default_agent: 'Kraken',
-    default_agents: ['Kraken', 'Cartographer'],
     blitzkrieg: {
       enabled: true,
       testPlan: {
@@ -132,8 +132,6 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
   const mergedKrakenConfig = {
     ...krakenConfig,
     ...existingKrakenConfig,
-    // Always ensure default_agents includes all primary agents (prevents stale config from hiding new agents)
-    default_agents: krakenConfig.default_agents,
   }
 
   // Write kraken-code config

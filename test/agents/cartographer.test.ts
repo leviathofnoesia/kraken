@@ -104,4 +104,38 @@ describe('Cartographer', () => {
       expect(desc).toContain('fixed order')
     })
   })
+
+  describe('config merge resilience', () => {
+    it('should retain mode:primary when merged with user overrides', () => {
+      const agentConfig = createCartographerConfig()
+      // Simulate user override that only sets model (no mode)
+      const userOverride = { model: 'openai/gpt-5' }
+      const merged = { ...agentConfig, ...userOverride }
+      // mode:primary must survive the merge
+      expect(merged.mode).toBe('primary')
+    })
+
+    it('should have plugin defaults fill gaps in partial user config', () => {
+      const agentConfig = createCartographerConfig()
+      // Simulate partial user config with only temperature
+      const userOverride = { temperature: 0.5 }
+      const merged = { ...agentConfig, ...userOverride }
+      // Plugin defaults should be present
+      expect(merged.mode).toBe('primary')
+      expect(merged.prompt).toBeDefined()
+      expect(merged.description).toBeDefined()
+      // User override should win
+      expect(merged.temperature).toBe(0.5)
+    })
+
+    it('should not lose mode when user override explicitly sets other fields', () => {
+      const agentConfig = createCartographerConfig()
+      // Simulate user config that sets tools but not mode
+      const userOverride = { tools: { write: true, edit: true } }
+      const merged = { ...agentConfig, ...userOverride }
+      expect(merged.mode).toBe('primary')
+      // User tools override should win
+      expect(merged.tools?.write).toBe(true)
+    })
+  })
 })
