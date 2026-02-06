@@ -1,6 +1,6 @@
 {
   "name": "kraken-code",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Kraken Code - Transforms OpenCode into an autonomous, high-density development environment",
   "type": "module",
   "main": "dist/index.js",
@@ -91,7 +91,7 @@
     "hono": "^4.10.4",
     "js-yaml": "^4.1.1",
     "jsonc-parser": "^3.3.1",
-    "kraken-code": "^1.3.1",
+    "kraken-code": "^1.3.2",
     "open": "^11.0.0",
     "picocolors": "^1.1.1",
     "picomatch": "^4.0.2",
