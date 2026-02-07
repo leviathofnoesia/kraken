@@ -233,7 +233,9 @@ export function createCommentChecker(
 
         justificationPrompt += `\nPlease provide justification for each comment or remove them.\n${'='.repeat(60)}\n`
 
-        if (SHOULD_LOG) console.log(justificationPrompt)
+        if (SHOULD_LOG) {
+          console.log(justificationPrompt)
+        }
       }
     },
   }

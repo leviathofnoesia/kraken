@@ -474,9 +474,10 @@ export function detectMode(text: string): DetectedMode | null {
   const keywords = Array.from(modeMatches.get(bestMode)!)
   const confidence = bestKeywordCount > 2 ? 0.9 : bestKeywordCount > 1 ? 0.7 : 0.5
 
-  if (SHOULD_LOG) console.log(
-    `[mode-detector] Detected mode "${bestMode}" with ${bestKeywordCount} keyword matches (confidence: ${confidence})`,
-  )
+  if (SHOULD_LOG)
+    console.log(
+      `[mode-detector] Detected mode "${bestMode}" with ${bestKeywordCount} keyword matches (confidence: ${confidence})`,
+    )
 
   return {
     mode: bestMode,

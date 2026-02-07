@@ -86,7 +86,6 @@
     "@clack/prompts": "^1.0.0-alpha.9",
     "@modelcontextprotocol/sdk": "^1.25.1",
     "@openauthjs/openauth": "^0.4.3",
-    "claude": "^0.1.2",
     "commander": "^14.0.2",
     "glob": "^11.0.0",
     "hono": "^4.10.4",

@@ -17,13 +17,15 @@ export function createPreemptiveCompaction(
     'chat.message': async (input, output) => {
       if (!config.enabled) return
       const threshold = config.threshold ?? 10000
-      if (SHOULD_LOG) console.log(
-        `[preemptive-compaction] Monitoring message length for preemptive compaction (threshold: ${threshold})`,
-      )
+      if (SHOULD_LOG)
+        console.log(
+          `[preemptive-compaction] Monitoring message length for preemptive compaction (threshold: ${threshold})`,
+        )
     },
     'experimental.session.compacting': async (input, output) => {
       if (!config.enabled) return
-      if (SHOULD_LOG) console.log('[preemptive-compaction] Triggering preemptive session compaction')
+      if (SHOULD_LOG)
+        console.log('[preemptive-compaction] Triggering preemptive session compaction')
     },
   }
 }

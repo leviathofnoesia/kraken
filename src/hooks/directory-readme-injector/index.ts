@@ -21,9 +21,26 @@ export function createDirectoryReadmeInjector(
         if (existsSync(readme)) {
           try {
             const content = readFileSync(readme, 'utf-8')
-            if (SHOULD_LOG) console.log('[directory-readme-injector] Found README, injecting context')
+            if (SHOULD_LOG) {
+              console.log('[directory-readme-injector] Found README, injecting context')
+            }
+
+            // Inject README content into the output
+            if (output.parts && Array.isArray(output.parts)) {
+              const textPartIndex = output.parts.findIndex((p: any) => p.type === 'text')
+              if (textPartIndex >= 0) {
+                const textPart = output.parts[textPartIndex] as any
+                const readmeContext = `\n\n---\n**Project README:**\n${content}\n---\n\n`
+                output.parts[textPartIndex] = {
+                  ...textPart,
+                  text: `${textPart.text || ''}${readmeContext}`,
+                }
+              }
+            }
           } catch {
-            if (SHOULD_LOG) console.log('[directory-readme-injector] Could not read README')
+            if (SHOULD_LOG) {
+              console.log('[directory-readme-injector] Could not read README')
+            }
           }
           break
         }

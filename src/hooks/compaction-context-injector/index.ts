@@ -26,11 +26,15 @@ export function createCompactionContextInjector(
       if (!config.enabled) return
       const text = getTextFromParts(output.parts)
       if (!text) return
-      if (SHOULD_LOG) console.log('[compaction-context-injector] Processing message before compaction')
+      if (SHOULD_LOG) {
+        console.log('[compaction-context-injector] Processing message before compaction')
+      }
     },
     'experimental.session.compacting': async (input, output) => {
       if (!config.enabled) return
-      if (SHOULD_LOG) console.log('[compaction-context-injector] Adding context for session compaction')
+      if (SHOULD_LOG) {
+        console.log('[compaction-context-injector] Adding context for session compaction')
+      }
     },
   }
 }

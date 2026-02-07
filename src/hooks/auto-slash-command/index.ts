@@ -43,7 +43,8 @@ export function createAutoSlashCommand(
 
       for (const [command, action] of Object.entries(config.commands || {})) {
         if (text.startsWith(command)) {
-          if (SHOULD_LOG) console.log(`[auto-slash-command] Detected ${command}, triggering: ${action}`)
+          if (SHOULD_LOG)
+            console.log(`[auto-slash-command] Detected ${command}, triggering: ${action}`)
         }
       }
     },

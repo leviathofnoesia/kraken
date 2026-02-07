@@ -32,9 +32,11 @@ export function createModeHooks(input: any, options?: ModeHooksOptions): Hooks {
             const detected = detectMode(content)
 
             if (detected && options?.autoActivate !== false) {
-              if (SHOULD_LOG) console.log(
-                `[mode-hooks] Detected mode "${detected.mode}" with ${detected.keywords.length} keywords for session ${sessionID}`,
-              )
+              if (SHOULD_LOG) {
+                console.log(
+                  `[mode-hooks] Detected mode "${detected.mode}" with ${detected.keywords.length} keywords for session ${sessionID}`,
+                )
+              }
 
               // Activate mode
               activateMode(sessionID, detected.mode)

@@ -19,7 +19,9 @@ export function createAnthropicContextWindowLimitRecovery(
   return {
     'chat.params': async (input, output) => {
       if (!config.enabled) return
-      if (SHOULD_LOG) console.log('[anthropic-context-window-limit-recovery] Monitoring context window usage')
+      if (SHOULD_LOG) {
+        console.log('[anthropic-context-window-limit-recovery] Monitoring context window usage')
+      }
     },
   }
 }

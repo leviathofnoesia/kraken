@@ -223,7 +223,8 @@ export function createThinkModeHook(input: PluginInput): Hooks {
 
           // DON'T override if agent already has thinking configured
           if (!paramsOutput.options.thinking) {
-            if (SHOULD_LOG) console.log(`[think-mode] Applying think mode settings for provider ${providerID}`)
+            if (SHOULD_LOG)
+              console.log(`[think-mode] Applying think mode settings for provider ${providerID}`)
 
             if (providerID.includes('anthropic')) {
               paramsOutput.options.thinking = {
