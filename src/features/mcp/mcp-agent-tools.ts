@@ -1,140 +1,99 @@
 /**
- * New MCP Agent Tools
+ * MCP Agent Tools - Additional MCP Providers
  *
- * Creates agent-accessible tools for new MCP providers.
+ * Agent-accessible tools for additional MCP providers (deepwiki, semgrep, sequential_thinking, bridgemind).
  * Tools are lazy-loaded and do NOT auto-inject context.
  */
 
 import { tool } from '@opencode-ai/plugin'
-import type { RemoteMcpConfig } from './types'
+import { z } from 'zod'
+import { deepwiki, semgrep, sequential_thinking, bridgemind } from './additional-mcps'
 import { mcpLoader } from './mcp-loader'
-import { additionalMcpConfigs, additionalMcpNames } from './additional-mcps'
 
 /**
- * Create MCP tool for agent use
+ * Deepwiki Search Agent Tool
  *
- * Creates a tool that wraps remote MCP server access.
- * Tools are lazy-loaded and do NOT auto-inject context.
- */
-function createMCPTool(
-  name: string,
-  description: string,
-  mcpName: AdditionalMcpName,
-  remoteToolName: string,
-): MCPTool {
-  return {
-    name,
-    description,
-    mcpConfig: additionalMcpConfigs[mcpName],
-    toolName: remoteToolName,
-  }
-}
-
-/**
- * Deepwiki Search Tool
- *
- * Search Wikipedia and knowledge bases.
+ * Search Wikipedia-like knowledge base using DeepWiki. Does NOT auto-inject results.
  */
 export const mcpDeepwikiSearch = tool({
-  name: 'mcp_deepwiki_search',
   description:
-    'Search Wikipedia and knowledge bases using DeepWiki API. Does NOT auto-inject results into conversation context - you must explicitly read and use results.',
+    'Search Wikipedia-like knowledge base using DeepWiki. Does NOT auto-inject results into conversation context - you must explicitly read and use results.',
   args: {
-    query: tool.schema.string().min(1).describe('Search query for DeepWiki'),
-    maxResults: tool.schema
-      .number()
-      .min(1)
-      .max(20)
-      .optional()
-      .describe('Maximum number of results to return'),
+    query: z.string().min(1).describe('Search query for knowledge base'),
   },
   async execute(args) {
-    const mcpConfig = additionalMcpConfigs.deepwiki
-    const result = await mcpLoader.callTool('search', args, mcpConfig)
-    return JSON.stringify(result)
+    const result = await mcpLoader.callTool('search', args, deepwiki)
+    return JSON.stringify(result, null, 2)
   },
 })
 
 /**
- * Semgrep Search Tool
+ * Semgrep Search Agent Tool
  *
- * Semantic code search using AI-powered grep.
+ * Semantic code search using AI-powered grep. Does NOT auto-inject results.
  */
 export const mcpSemgrepSearch = tool({
-  name: 'mcp_semgrep_search',
   description:
-    'Search code semantically using AI-powered grep. Does NOT auto-inject results into conversation context - you must explicitly read and use results.',
+    'Semantic code search using AI-powered grep via Semgrep. Does NOT auto-inject results into conversation context - you must explicitly read and use results.',
   args: {
-    query: tool.schema.string().min(1).describe('Search query for Semgrep'),
-    filePattern: tool.schema.string().optional().describe('File pattern to search (e.g., "*.ts")'),
-    maxResults: tool.schema
-      .number()
-      .min(1)
-      .max(50)
-      .optional()
-      .describe('Maximum number of results'),
+    query: z.string().min(1).describe('Search query for semantic code search'),
+    language: z.string().optional().describe('Filter by programming language'),
   },
   async execute(args) {
-    const mcpConfig = additionalMcpConfigs.semgrep
-    const result = await mcpLoader.callTool('search', args, mcpConfig)
-    return JSON.stringify(result)
+    const result = await mcpLoader.callTool('search', args, semgrep)
+    return JSON.stringify(result, null, 2)
   },
 })
 
 /**
- * Sequential Thinking Tool
+ * Sequential Thinking Agent Tool
  *
- * Chain-of-thought reasoning tool.
+ * Chain-of-thought reasoning tool. Does NOT auto-inject results.
  */
 export const mcpSequentialThinking = tool({
-  name: 'mcp_sequential_thinking',
   description:
-    'Perform chain-of-thought reasoning using Sequential Thinking MCP. Does NOT auto-inject results into conversation context - you must explicitly read and use results.',
+    'Chain-of-thought reasoning tool that helps break down complex problems step by step. Does NOT auto-inject results into conversation context - you must explicitly read and use results.',
   args: {
-    prompt: tool.schema.string().min(1).describe('Task or question to reason through'),
-    maxIterations: tool.schema
+    problem: z.string().min(1).describe('Problem or question to reason about step by step'),
+    steps: z
       .number()
-      .min(1)
-      .max(10)
       .optional()
-      .describe('Maximum number of reasoning iterations'),
+      .default(5)
+      .describe('Number of reasoning steps to take (default: 5)'),
   },
   async execute(args) {
-    const mcpConfig = additionalMcpConfigs.sequential_thinking
-    const result = await mcpLoader.callTool('think', args, mcpConfig)
-    return JSON.stringify(result)
+    const result = await mcpLoader.callTool('think', args, sequential_thinking)
+    return JSON.stringify(result, null, 2)
   },
 })
 
 /**
- * Bridgemind Tool
+ * Bridgemind Agent Tool
  *
- * Mind mapping and brainstorming.
+ * Mind mapping and brainstorming tool. Does NOT auto-inject results.
  */
 export const mcpBridgemind = tool({
-  name: 'mcp_bridgemind',
   description:
-    'Create mind maps and brainstorm ideas using Bridgemind MCP. Does NOT auto-inject results into conversation context - you must explicitly read and use results.',
+    'Mind mapping and brainstorming tool to visualize connections between ideas. Does NOT auto-inject results into conversation context - you must explicitly read and use results.',
   args: {
-    topic: tool.schema.string().min(1).describe('Central topic or idea to brainstorm'),
-    branches: tool.schema
-      .array(tool.schema.string())
-      .optional()
-      .describe('Branches or sub-topics to explore'),
+    action: z
+      .enum(['create', 'explore'])
+      .describe('Action to perform: create new mind map or explore existing'),
+    topic: z.string().optional().describe('Topic or idea for mind map creation'),
+    mapId: z.string().optional().describe('ID of existing mind map to explore'),
   },
   async execute(args) {
-    const mcpConfig = additionalMcpConfigs.bridgemind
-    const result = await mcpLoader.callTool('create', args, mcpConfig)
-    return JSON.stringify(result)
+    const result = await mcpLoader.callTool(args.action, args, bridgemind)
+    return JSON.stringify(result, null, 2)
   },
 })
 
 /**
- * All MCP Agent Tools (new MCPs only)
+ * Export all new MCP agent tools
  */
 export const mcpAgentTools = {
-  mcp_deepwiki_search: mcpDeepwikiSearch,
-  mcp_semgrep_search: mcpSemgrepSearch,
-  mcp_sequential_thinking: mcpSequentialThinking,
-  mcp_bridgemind: mcpBridgemind,
+  mcpDeepwikiSearch,
+  mcpSemgrepSearch,
+  mcpSequentialThinking,
+  mcpBridgemind,
 }

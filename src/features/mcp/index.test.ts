@@ -9,9 +9,9 @@ import {
 
 describe('MCP remote configuration index', () => {
   describe('builtinMcpConfigs', () => {
-    test('contains all three MCP servers', () => {
+    test('contains all seven MCP servers', () => {
       const keys = Object.keys(builtinMcpConfigs)
-      expect(keys.length).toBe(3)
+      expect(keys.length).toBe(7)
     })
 
     test('contains websearch config', () => {
@@ -31,6 +31,32 @@ describe('MCP remote configuration index', () => {
       expect(builtinMcpConfigs.grep_app.type).toBe('remote')
       expect(builtinMcpConfigs.grep_app.url).toBe('https://mcp.grep.app')
     })
+
+    test('contains deepwiki config', () => {
+      expect(builtinMcpConfigs.deepwiki).toBeDefined()
+      expect(builtinMcpConfigs.deepwiki.type).toBe('remote')
+      expect(builtinMcpConfigs.deepwiki.url).toBe('https://mcp.deepwiki.com/mcp')
+    })
+
+    test('contains semgrep config', () => {
+      expect(builtinMcpConfigs.semgrep).toBeDefined()
+      expect(builtinMcpConfigs.semgrep.type).toBe('remote')
+      expect(builtinMcpConfigs.semgrep.url).toBe('https://mcp.semgrep.ai/sse')
+    })
+
+    test('contains sequential_thinking config', () => {
+      expect(builtinMcpConfigs.sequential_thinking).toBeDefined()
+      expect(builtinMcpConfigs.sequential_thinking.type).toBe('remote')
+      expect(builtinMcpConfigs.sequential_thinking.url).toBe(
+        'https://remote-mcp-servers.org/sequential-thinking/mcp',
+      )
+    })
+
+    test('contains bridgemind config', () => {
+      expect(builtinMcpConfigs.bridgemind).toBeDefined()
+      expect(builtinMcpConfigs.bridgemind.type).toBe('remote')
+      expect(builtinMcpConfigs.bridgemind.url).toBe('https://remote-mcp-servers.org/bridgemind/mcp')
+    })
   })
 
   describe('getBuiltinMcpNames', () => {
@@ -39,7 +65,11 @@ describe('MCP remote configuration index', () => {
       expect(names).toContain('websearch')
       expect(names).toContain('context7')
       expect(names).toContain('grep_app')
-      expect(names.length).toBe(3)
+      expect(names).toContain('deepwiki')
+      expect(names).toContain('semgrep')
+      expect(names).toContain('sequential_thinking')
+      expect(names).toContain('bridgemind')
+      expect(names.length).toBe(7)
     })
 
     test('returns readonly array', () => {
@@ -70,25 +100,46 @@ describe('MCP remote configuration index', () => {
       expect(config?.url).toBe('https://mcp.grep.app')
     })
 
-    test('returns undefined for unknown MCP', () => {
-      // TypeScript doesn't allow literal 'unknown' as input
-      // In practice, invalid names return undefined
-      const config1 = getBuiltinMcpConfig('websearch')
-      const config2 = getBuiltinMcpConfig('context7')
-      const config3 = getBuiltinMcpConfig('grep_app')
-      expect(config1).toBeDefined()
-      expect(config2).toBeDefined()
-      expect(config3).toBeDefined()
+    test('returns deepwiki config', () => {
+      const config = getBuiltinMcpConfig('deepwiki')
+      expect(config).toBeDefined()
+      expect(config?.type).toBe('remote')
+      expect(config?.url).toBe('https://mcp.deepwiki.com/mcp')
+    })
+
+    test('returns semgrep config', () => {
+      const config = getBuiltinMcpConfig('semgrep')
+      expect(config).toBeDefined()
+      expect(config?.type).toBe('remote')
+      expect(config?.url).toBe('https://mcp.semgrep.ai/sse')
+    })
+
+    test('returns sequential_thinking config', () => {
+      const config = getBuiltinMcpConfig('sequential_thinking')
+      expect(config).toBeDefined()
+      expect(config?.type).toBe('remote')
+      expect(config?.url).toBe('https://remote-mcp-servers.org/sequential-thinking/mcp')
+    })
+
+    test('returns bridgemind config', () => {
+      const config = getBuiltinMcpConfig('bridgemind')
+      expect(config).toBeDefined()
+      expect(config?.type).toBe('remote')
+      expect(config?.url).toBe('https://remote-mcp-servers.org/bridgemind/mcp')
     })
   })
 
   describe('createBuiltinMcpConfigs', () => {
     test('returns all MCP configs when no disabled list', () => {
       const configs = createBuiltinMcpConfigs()
-      expect(Object.keys(configs).length).toBe(3)
+      expect(Object.keys(configs).length).toBe(7)
       expect(configs.websearch).toBeDefined()
       expect(configs.context7).toBeDefined()
       expect(configs.grep_app).toBeDefined()
+      expect(configs.deepwiki).toBeDefined()
+      expect(configs.semgrep).toBeDefined()
+      expect(configs.sequential_thinking).toBeDefined()
+      expect(configs.bridgemind).toBeDefined()
     })
 
     test('excludes websearch when disabled', () => {
@@ -96,13 +147,21 @@ describe('MCP remote configuration index', () => {
       expect(configs.websearch).toBeUndefined()
       expect(configs.context7).toBeDefined()
       expect(configs.grep_app).toBeDefined()
+      expect(configs.deepwiki).toBeDefined()
+      expect(configs.semgrep).toBeDefined()
+      expect(configs.sequential_thinking).toBeDefined()
+      expect(configs.bridgemind).toBeDefined()
     })
 
     test('excludes multiple MCPs when disabled', () => {
-      const configs = createBuiltinMcpConfigs(['websearch', 'context7'])
+      const configs = createBuiltinMcpConfigs(['websearch', 'context7', 'deepwiki'])
       expect(configs.websearch).toBeUndefined()
       expect(configs.context7).toBeUndefined()
+      expect(configs.deepwiki).toBeUndefined()
       expect(configs.grep_app).toBeDefined()
+      expect(configs.semgrep).toBeDefined()
+      expect(configs.sequential_thinking).toBeDefined()
+      expect(configs.bridgemind).toBeDefined()
     })
 
     test('passes websearch config through', () => {

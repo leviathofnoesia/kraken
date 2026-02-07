@@ -89,7 +89,7 @@ import { createBlitzkriegEvidenceVerifierHook } from './hooks/blitzkrieg-evidenc
 import { createBlitzkriegPlannerConstraintsHook } from './hooks/blitzkrieg-planner-constraints'
 
 // MCP & Features
-import { createBuiltinMcpConfigs } from './features/mcp/index'
+import { createBuiltinMcpConfigs, getMcpAgentTools } from './features/mcp/index'
 import { initializeLearning } from './features/memory'
 
 // CLI & Skills
@@ -176,6 +176,7 @@ const builtinTools: Record<string, any> = {
   learning_review_node,
   learning_create_state_machine,
   learning_list_state_machines,
+  ...getMcpAgentTools(),
 }
 
 const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks> => {

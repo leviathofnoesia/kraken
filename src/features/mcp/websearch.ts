@@ -1,21 +1,21 @@
 /**
- * Websearch MCP Remote Configuration
+ * Websearch MCP - Remote Configuration + Agent Tool
  *
- * Provides remote configuration for Exa AI websearch server.
+ * Provides both remote configuration for plugin registration AND agent-accessible tool in one file.
  * Free tier works without API key. Optional API key for enhanced quota.
  */
 
-import type { RemoteMcpConfig, WebsearchConfig } from './types'
+import { tool } from '@opencode-ai/plugin'
+import { z } from 'zod'
+import type { RemoteMcpConfig } from './types'
+import { mcpLoader } from './mcp-loader'
 
 /**
- * Create websearch remote configuration
+ * Websearch Provider Configuration
  *
  * Returns configuration pointing to Exa AI or Tavily remote MCP server.
- *
- * @param config - Optional websearch configuration
- * @returns Remote MCP configuration
  */
-export function createWebsearchConfig(config?: WebsearchConfig): RemoteMcpConfig {
+export function createWebsearchConfig(config?: { provider?: 'exa' | 'tavily' }): RemoteMcpConfig {
   const provider = config?.provider || 'exa'
 
   if (provider === 'tavily') {
@@ -45,7 +45,50 @@ export function createWebsearchConfig(config?: WebsearchConfig): RemoteMcpConfig
   }
 }
 
-/**
- * Default websearch configuration (exa provider, optional API key)
- */
+// Default websearch remote configuration (for plugin registration)
 export const websearch = createWebsearchConfig()
+
+/**
+ * Websearch Agent Tool
+ *
+ * Search the web using Exa AI or Tavily. Does NOT auto-inject results.
+ */
+export const websearchTool = tool({
+  description:
+    'Search the web using Exa AI (default) or Tavily. Does NOT auto-inject results into conversation context - you must explicitly read and use results.',
+  args: {
+    query: z.string().min(1).describe('Search query for web search'),
+    numResults: z
+      .number()
+      .optional()
+      .default(10)
+      .describe('Number of results to return (default: 10)'),
+  },
+  async execute(args) {
+    const result = await mcpLoader.callTool('search', args, websearch)
+    return JSON.stringify(result, null, 2)
+  },
+})
+
+/**
+ * Webfetch Agent Tool
+ *
+ * Fetch content from a specific URL. Does NOT auto-inject results.
+ */
+export const webfetchTool = tool({
+  description:
+    'Fetch and parse web content from a specific URL. Does NOT auto-inject results into conversation context - you must explicitly read and use results.',
+  args: {
+    url: z.string().url().describe('URL to fetch content from'),
+    format: z
+      .enum(['markdown', 'text', 'html'])
+      .optional()
+      .default('markdown')
+      .describe('Output format (default: markdown)'),
+    timeout: z.number().optional().describe('Request timeout in milliseconds (default: 60000)'),
+  },
+  async execute(args) {
+    const result = await mcpLoader.callTool('fetch', args, websearch)
+    return JSON.stringify(result, null, 2)
+  },
+})

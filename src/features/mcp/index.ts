@@ -2,22 +2,32 @@
  * MCP (Model Context Protocol) Integration Index
  *
  * Exports all built-in MCP remote configurations and provides utility functions.
+ * Includes agent-accessible MCP tools for ALL MCPs (new + existing).
  */
 
 import type { RemoteMcpConfig, WebsearchConfig } from './types'
 
-// Import all built-in MCP configurations
+// Import all built-in MCP remote configurations
 import { createWebsearchConfig, websearch } from './websearch'
 import { context7 } from './context7'
 import { grep_app } from './grep-app'
 
+// Import additional MCPs
+import { additionalMcpConfigs, additionalMcpNames } from './additional-mcps'
+
+// Import MCP agent tools (both new and existing)
+import { mcpAgentTools } from './mcp-agent-tools'
+import { existingMcpAgentTools } from './existing-mcp-agent-tools'
+
+// Import MCP loader
+import { mcpLoader } from './mcp-loader'
+
 /**
  * Built-in MCP Server Names
  */
-export const builtinMcpNames: readonly ['websearch', 'context7', 'grep_app'] = [
-  'websearch',
-  'context7',
-  'grep_app',
+export const builtinMcpNames: readonly string[] = [
+  ...['websearch', 'context7', 'grep_app'],
+  ...additionalMcpNames,
 ] as const
 
 export type BuiltinMcpName = (typeof builtinMcpNames)[number]
@@ -29,6 +39,7 @@ export const builtinMcpConfigs: Record<BuiltinMcpName, RemoteMcpConfig> = {
   websearch,
   context7,
   grep_app,
+  ...additionalMcpConfigs,
 }
 
 /**
@@ -62,10 +73,11 @@ export function getBuiltinMcpConfig(name: BuiltinMcpName): RemoteMcpConfig | und
  */
 export function createBuiltinMcpConfigs(
   disabledMcps: string[] = [],
-  config?: { websearch?: WebsearchConfig },
+  config?: { websearch?: { provider?: 'exa' | 'tavily' } },
 ): Record<string, RemoteMcpConfig> {
   const mcps: Record<string, RemoteMcpConfig> = {}
 
+  // Original MCPs
   if (!disabledMcps.includes('websearch')) {
     mcps.websearch = createWebsearchConfig(config?.websearch)
   }
@@ -78,10 +90,34 @@ export function createBuiltinMcpConfigs(
     mcps.grep_app = grep_app
   }
 
+  // Additional MCPs
+  for (const name of additionalMcpNames) {
+    if (!disabledMcps.includes(name)) {
+      mcps[name] = additionalMcpConfigs[name]
+    }
+  }
+
   return mcps
 }
 
 /**
- * Re-export types
+ * Get MCP Agent Tools
+ *
+ * Returns all MCP tools available for agents to use.
+ * These tools are lazy-loaded and do NOT auto-inject context.
  */
-export type { RemoteMcpConfig, WebsearchConfig } from './types'
+export function getMcpAgentTools(): Record<string, any> {
+  return {
+    ...existingMcpAgentTools,
+    ...mcpAgentTools,
+  }
+}
+
+/**
+ * Re-export types and utilities
+ */
+export type { RemoteMcpConfig } from './types'
+export { additionalMcpConfigs, additionalMcpNames } from './additional-mcps'
+export { mcpLoader } from './mcp-loader'
+export { mcpAgentTools } from './mcp-agent-tools'
+export { existingMcpAgentTools } from './existing-mcp-agent-tools'
