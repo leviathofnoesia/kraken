@@ -1,6 +1,6 @@
 {
   "name": "kraken-code",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "description": "Kraken Code - Transforms OpenCode into an autonomous, high-density development environment",
   "type": "module",
   "main": "dist/index.js",
