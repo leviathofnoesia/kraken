@@ -1,4 +1,5 @@
 import { ModeActivation, ModeConfig, getModeConfig } from './modes'
+import { SHOULD_LOG } from '../../utils/logger'
 
 export interface DetectedMode {
   mode: string
@@ -473,7 +474,7 @@ export function detectMode(text: string): DetectedMode | null {
   const keywords = Array.from(modeMatches.get(bestMode)!)
   const confidence = bestKeywordCount > 2 ? 0.9 : bestKeywordCount > 1 ? 0.7 : 0.5
 
-  console.log(
+  if (SHOULD_LOG) console.log(
     `[mode-detector] Detected mode "${bestMode}" with ${bestKeywordCount} keyword matches (confidence: ${confidence})`,
   )
 

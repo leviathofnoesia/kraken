@@ -1,6 +1,7 @@
 import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
 import { readFileSync, existsSync } from 'node:fs'
+import { SHOULD_LOG } from '../../utils/logger'
 
 export interface DirectoryReadmeInjectorConfig {
   enabled?: boolean
@@ -20,9 +21,9 @@ export function createDirectoryReadmeInjector(
         if (existsSync(readme)) {
           try {
             const content = readFileSync(readme, 'utf-8')
-            console.log('[directory-readme-injector] Found README, injecting context')
+            if (SHOULD_LOG) console.log('[directory-readme-injector] Found README, injecting context')
           } catch {
-            console.log('[directory-readme-injector] Could not read README')
+            if (SHOULD_LOG) console.log('[directory-readme-injector] Could not read README')
           }
           break
         }

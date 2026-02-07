@@ -1,6 +1,7 @@
 import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
 import type { Part } from '@opencode-ai/sdk'
+import { SHOULD_LOG } from '../../utils/logger'
 
 export interface ThinkingBlockValidatorConfig {
   enabled?: boolean
@@ -279,33 +280,37 @@ export function createThinkingBlockValidator(
           errors: validation.errors,
         })
 
-        console.log(
-          `[thinking-block-validator] Detected ${validation.errors.length} thinking block validation error(s) ` +
-            `in session ${sessionID}`,
-        )
-
-        for (const error of validation.errors) {
+        if (SHOULD_LOG) {
           console.log(
-            `[thinking-block-validator] [${error.type}] Line ${error.line}: ${error.message}`,
+            `[thinking-block-validator] Detected ${validation.errors.length} thinking block validation error(s) ` +
+              `in session ${sessionID}`,
           )
-          console.log(`[thinking-block-validator] Suggestion: ${error.suggestion}`)
 
-          if (error.recovered) {
-            console.log(`[thinking-block-validator] ✓ Auto-recovery applied`)
+          for (const error of validation.errors) {
+            console.log(
+              `[thinking-block-validator] [${error.type}] Line ${error.line}: ${error.message}`,
+            )
+            console.log(`[thinking-block-validator] Suggestion: ${error.suggestion}`)
+
+            if (error.recovered) {
+              console.log(`[thinking-block-validator] ✓ Auto-recovery applied`)
+            }
           }
         }
 
         if (config.autoRecover && validation.recovered) {
           const recoveredText = applyRecovery(text, validation.errors)
-          console.log('[thinking-block-validator] [session recovered - continuing previous task]')
-          console.log(
-            `[thinking-block-validator] Recovered text length: ${recoveredText.length} ` +
-              `(original: ${text.length})`,
-          )
+          if (SHOULD_LOG) {
+            console.log('[thinking-block-validator] [session recovered - continuing previous task]')
+            console.log(
+              `[thinking-block-validator] Recovered text length: ${recoveredText.length} ` +
+                `(original: ${text.length})`,
+            )
+          }
         }
 
         if (config.strictMode && !validation.recovered) {
-          console.error(
+          if (SHOULD_LOG) console.error(
             '[thinking-block-validator] CRITICAL: Validation failed in strict mode. ' +
               'Please fix the thinking block structure before continuing.',
           )

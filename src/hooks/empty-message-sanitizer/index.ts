@@ -1,6 +1,7 @@
 import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
 import type { Part } from '@opencode-ai/sdk'
+import { SHOULD_LOG } from '../../utils/logger'
 
 export interface EmptyMessageSanitizerConfig {
   enabled?: boolean
@@ -155,37 +156,27 @@ export function createEmptyMessageSanitizer(
           reason: check.reason,
         })
 
-        console.log(`[empty-message-sanitizer] Detected empty message in session ${sessionID}`)
-        console.log(`[empty-message-sanitizer] Reason: ${check.reason}`)
+        if (SHOULD_LOG) {
+          console.log(`[empty-message-sanitizer] Detected empty message in session ${sessionID}`)
+          console.log(`[empty-message-sanitizer] Reason: ${check.reason}`)
 
-        if (config.trackPatterns && history.emptyCount > 1) {
-          console.log(
-            `[empty-message-sanitizer] Empty message count: ${history.emptyCount} ` +
-              `in session ${sessionID}`,
-          )
-        }
+          if (config.trackPatterns && history.emptyCount > 1) {
+            console.log(
+              `[empty-message-sanitizer] Empty message count: ${history.emptyCount} ` +
+                `in session ${sessionID}`,
+            )
+          }
 
-        if (config.autoRecover) {
-          const context = getMessageHistory(sessionID)
-          const suggestion = getSuggestionBasedOnContext(context)
+          if (config.autoRecover) {
+            console.log('[empty-message-sanitizer] [session recovered - continuing previous task]')
+          }
 
-          const recoveryPrompt =
-            `\n${'='.repeat(60)}\n` +
-            `EMPTY MESSAGE SANITIZER\n${'='.repeat(60)}\n` +
-            `Your message appears to be empty or contains only whitespace.\n` +
-            `Reason: ${check.reason}\n\n` +
-            `Suggestion: ${suggestion}\n` +
-            `${'='.repeat(60)}\n`
-
-          console.log(recoveryPrompt)
-          console.log('[empty-message-sanitizer] [session recovered - continuing previous task]')
-        }
-
-        if (config.requireJustification && config.autoRecover) {
-          console.log(
-            '[empty-message-sanitizer] Please provide a justification for ' +
-              'sending an empty message, or include actual content.',
-          )
+          if (config.requireJustification && config.autoRecover) {
+            console.log(
+              '[empty-message-sanitizer] Please provide a justification for ' +
+                'sending an empty message, or include actual content.',
+            )
+          }
         }
       }
     },

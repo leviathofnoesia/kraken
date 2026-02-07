@@ -7,6 +7,7 @@ import {
   LANGUAGE_COMMENT_DELIMITERS,
   getLanguageFromFile,
 } from './patterns'
+import { SHOULD_LOG } from '../../utils/logger'
 
 export interface CommentCheckerConfig {
   enabled?: boolean
@@ -171,7 +172,7 @@ export function createCommentChecker(
         })
       }
 
-      if (comments.length > 0) {
+      if (comments.length > 0 && SHOULD_LOG) {
         console.log(
           `[comment-checker] Found ${comments.length} annotated comments that need justification`,
         )
@@ -209,11 +210,13 @@ export function createCommentChecker(
             comments: nonExceptionComments,
           })
 
-          console.log(`[comment-checker] File ${filename}:`)
-          for (const comment of nonExceptionComments) {
-            console.log(
-              `  Line ${comment.line}: ${comment.type} - ${comment.text.substring(0, 50)}`,
-            )
+          if (SHOULD_LOG) {
+            console.log(`[comment-checker] File ${filename}:`)
+            for (const comment of nonExceptionComments) {
+              console.log(
+                `  Line ${comment.line}: ${comment.type} - ${comment.text.substring(0, 50)}`,
+              )
+            }
           }
         }
       }
@@ -230,7 +233,7 @@ export function createCommentChecker(
 
         justificationPrompt += `\nPlease provide justification for each comment or remove them.\n${'='.repeat(60)}\n`
 
-        console.log(justificationPrompt)
+        if (SHOULD_LOG) console.log(justificationPrompt)
       }
     },
   }

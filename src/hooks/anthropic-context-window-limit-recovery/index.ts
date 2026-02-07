@@ -1,5 +1,6 @@
 import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
+import { SHOULD_LOG } from '../../utils/logger'
 
 export interface AnthropicContextWindowLimitRecoveryConfig {
   enabled?: boolean
@@ -18,7 +19,7 @@ export function createAnthropicContextWindowLimitRecovery(
   return {
     'chat.params': async (input, output) => {
       if (!config.enabled) return
-      console.log('[anthropic-context-window-limit-recovery] Monitoring context window usage')
+      if (SHOULD_LOG) console.log('[anthropic-context-window-limit-recovery] Monitoring context window usage')
     },
   }
 }

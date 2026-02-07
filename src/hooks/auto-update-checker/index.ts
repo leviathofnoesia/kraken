@@ -2,9 +2,10 @@ import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
 import { exec } from 'node:child_process'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
+import { join, dirname } from 'node:path'
 import { homedir } from 'node:os'
+import { fileURLToPath } from 'node:url'
 import { createLogger } from '../../utils/logger'
 
 export interface AutoUpdateCheckerConfig {
@@ -39,9 +40,25 @@ let updateCache: UpdateCache | null = null
 function getCurrentVersion(): string {
   if (!currentVersion) {
     try {
-      const packageJson = require('../package.json')
-      currentVersion = packageJson.version || '0.0.0'
-    } catch (e) {
+      const __dirname = dirname(fileURLToPath(import.meta.url))
+      const candidates = [
+        join(__dirname, '..', 'package.json'),
+        join(__dirname, '..', '..', 'package.json'),
+        join(__dirname, '..', '..', '..', 'package.json'),
+      ]
+      for (const candidate of candidates) {
+        try {
+          if (existsSync(candidate)) {
+            const pkg = JSON.parse(readFileSync(candidate, 'utf-8'))
+            if (pkg.name === PACKAGE_NAME && pkg.version) {
+              currentVersion = pkg.version
+              break
+            }
+          }
+        } catch {}
+      }
+      if (!currentVersion) currentVersion = '0.0.0'
+    } catch {
       currentVersion = '0.0.0'
     }
   }
