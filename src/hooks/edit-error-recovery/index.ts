@@ -1,5 +1,8 @@
 import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
+import { createLogger } from '../../utils/logger'
+
+const logger = createLogger('edit-error-recovery')
 
 export interface EditErrorRecoveryConfig {
   enabled?: boolean
@@ -137,13 +140,13 @@ async function applyRecovery(
   const action = getRecoveryAction(errorType, filePath, config)
 
   if (!action.canRecover) {
-    console.log(`[edit-error-recovery] Cannot recover from error type: ${errorType}`)
-    console.log(`[edit-error-recovery] Suggestion: ${action.suggestion}`)
+    logger.debug(`Cannot recover from error type: ${errorType}`)
+    logger.debug(`Suggestion: ${action.suggestion}`)
     return false
   }
 
-  console.log(`[edit-error-recovery] Attempting recovery action: ${action.action}`)
-  console.log(`[edit-error-recovery] Suggestion: ${action.suggestion}`)
+  logger.debug(`Attempting recovery action: ${action.action}`)
+  logger.debug(`Suggestion: ${action.suggestion}`)
 
   if (errorType === 'file_not_found' && config.autoCreateDirs) {
     try {
@@ -151,10 +154,11 @@ async function applyRecovery(
       const dir = filePath.split('/').slice(0, -1).join('/')
       if (dir) {
         await mkdir(dir, { recursive: true })
-        console.log(`[edit-error-recovery] Created directory: ${dir}`)
+        logger.debug(`Created directory: ${dir}`)
       }
       return true
     } catch (e) {
+      // Critical error - always visible
       console.error(`[edit-error-recovery] Failed to create directory: ${e}`)
       return false
     }
@@ -214,32 +218,30 @@ export function createEditErrorRecovery(
             }
           }
 
-          console.log(
-            `[edit-error-recovery] Edit error detected (attempt ${currentRetries + 1}/${maxRetries})`,
-          )
+          logger.debug(`Edit error detected (attempt ${currentRetries + 1}/${maxRetries})`)
           if (filePath) {
-            console.log(`[edit-error-recovery] File: ${filePath}`)
+            logger.debug(`File: ${filePath}`)
           }
-          console.log(`[edit-error-recovery] Error type: ${errorType}`)
-          console.log(`[edit-error-recovery] Error: ${error}`)
+          logger.debug(`Error type: ${errorType}`)
+          logger.debug(`Error: ${error}`)
 
           const recovered = await applyRecovery(errorType, filePath || '', config)
 
           if (recovered) {
             const delay = getRetryDelay(currentRetries, baseDelay, maxDelay)
             editRetries.set(retryKey, currentRetries + 1)
-
-            console.log(`[edit-error-recovery] Retry scheduled in ${delay}ms`)
-            console.log('[edit-error-recovery] [session recovered - continuing previous task]')
-
+            logger.debug(`Retry scheduled in ${delay}ms`)
+            logger.debug('[session recovered - continuing previous task]')
             setTimeout(() => {
               editRetries.delete(retryKey)
             }, delay)
           } else {
+            // Critical error - always visible
             console.error(`[edit-error-recovery] Recovery failed for ${filePath || 'unknown'}`)
             editRetries.delete(retryKey)
           }
         } else {
+          // Critical error - always visible
           console.error(
             `[edit-error-recovery] Max retries (${maxRetries}) exceeded for ${filePath || 'unknown'}`,
           )

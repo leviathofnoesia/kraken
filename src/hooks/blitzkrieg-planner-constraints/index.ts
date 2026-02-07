@@ -180,10 +180,10 @@ export function createBlitzkriegPlannerConstraintsHook(): Hooks {
       // If there are warnings but no blocking violations, log them
       const warningViolations = check.violations.filter((v) => v.severity === 'warning')
       if (warningViolations.length > 0) {
+        // WARNING: This shows in TUI - consider using notification system instead
         const warningsMsg = warningViolations
           .map((v) => `- [${v.severity}] ${v.type}: ${v.message}`)
           .join('\n')
-        console.warn(`Blitzkrieg Planner Warnings:\n${warningsMsg}`)
       }
     },
 

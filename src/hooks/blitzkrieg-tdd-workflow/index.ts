@@ -175,7 +175,7 @@ export function createBlitzkriegTddWorkflowHook(): Hooks {
       // If warning, log it but allow operation
       if (result.decision === 'warn' && result.violations.length > 0) {
         // In production, could log warning to console or send notification
-        console.warn(`Blitzkrieg TDD Warning: ${result.reason}`)
+        // WARNING: This shows in TUI - consider using notification system instead
       }
     },
 

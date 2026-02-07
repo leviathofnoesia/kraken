@@ -29,7 +29,6 @@ import { ast_grep_search, ast_grep_replace } from './tools/ast-grep'
 import { session_list, session_read, session_search, session_info } from './tools/session'
 import { grep } from './tools/grep'
 import { ralphLoop } from './tools/ralph-loop'
-import { call_kraken_agent } from './tools/agent-call'
 import { recordToolUse } from './storage'
 import {
   learning_add_experience,
@@ -174,18 +173,6 @@ const builtinTools: Record<string, any> = {
   'kraken-compress': opencodeXCompress,
   'model-switcher': modelSwitcher,
   'ralph-loop': ralphLoop,
-  lsp_hover,
-  lsp_goto_definition,
-  lsp_find_references,
-  lsp_document_symbols,
-  lsp_workspace_symbols,
-  lsp_diagnostics,
-  lsp_prepare_rename,
-  lsp_rename,
-  lsp_code_actions,
-  lsp_code_action_resolve,
-  lsp_servers,
-  'call-kraken-agent': call_kraken_agent,
   websearch: websearchTool,
   webfetch: webfetchTool,
   'context7-search': context7SearchToolMCP,

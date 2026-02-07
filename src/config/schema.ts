@@ -9,8 +9,8 @@ export const OpenCodeXBuiltinAgentNameSchema = z.enum([
   'Coral',
   'Siren',
   'Leviathan',
-  'Poseidon (Plan Consultant)',
-  'Scylla (Plan Reviewer)',
+  'Poseidon',
+  'Scylla',
   'Pearl',
 ])
 
@@ -80,8 +80,8 @@ export const AgentOverridesSchema = z.object({
   Coral: AgentOverrideConfigSchema.optional(),
   Siren: AgentOverrideConfigSchema.optional(),
   Leviathan: AgentOverrideConfigSchema.optional(),
-  'Poseidon (Plan Consultant)': AgentOverrideConfigSchema.optional(),
-  'Scylla (Plan Reviewer)': AgentOverrideConfigSchema.optional(),
+  Poseidon: AgentOverrideConfigSchema.optional(),
+  Scylla: AgentOverrideConfigSchema.optional(),
   Pearl: AgentOverrideConfigSchema.optional(),
 })
 

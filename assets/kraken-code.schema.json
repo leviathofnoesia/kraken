@@ -1074,7 +1074,7 @@
             }
           }
         },
-        "Poseidon (Plan Consultant)": {
+        "Poseidon": {
           "type": "object",
           "properties": {
             "model": {
@@ -1202,7 +1202,7 @@
             }
           }
         },
-        "Scylla (Plan Reviewer)": {
+        "Scylla": {
           "type": "object",
           "properties": {
             "model": {

@@ -23,7 +23,7 @@ export function createSessionStorageHook(input: any, options?: SessionStorageHoo
       const { tool, sessionID } = input
 
       if (sessionID) {
-        console.log(`[session-storage] Tool ${tool} completed for session ${sessionID}`)
+        logger.debug(`Tool ${tool} completed for session ${sessionID}`)
 
         // Record tool usage in transcript
         const { appendTranscriptEntry } = require('../storage')
@@ -58,7 +58,7 @@ export function createSessionStorageHook(input: any, options?: SessionStorageHoo
 
       try {
         const todos = await loadOpenCodeTodos(sessionID)
-        console.log(`[session-storage] Saved ${todos.length} todos for session ${sessionID}`)
+        logger.debug(`Saved ${todos.length} todos for session ${sessionID}`)
       } catch (error) {
         console.error('[session-storage] Error saving todos:', error)
       }

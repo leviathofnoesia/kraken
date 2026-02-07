@@ -88,8 +88,8 @@ export function createCallAgentTool(manager: BackgroundManager, context: AgentCa
           'Coral',
           'Siren',
           'Leviathan',
-          'Poseidon (Plan Consultant)',
-          'Scylla (Plan Reviewer)',
+          'Poseidon',
+          'Scylla',
           'Pearl',
           'Cartographer',
         ])
@@ -101,8 +101,8 @@ export function createCallAgentTool(manager: BackgroundManager, context: AgentCa
             '- Coral: Visual/UI/UX design, frontend components, styling\n' +
             '- Siren: Documentation writing, technical communication, clarity\n' +
             '- Leviathan: System design, structural analysis, large-scale architecture\n' +
-            '- Poseidon: Planning, requirement analysis, test plan creation\n' +
-            '- Scylla: Code review, test coverage analysis, quality assurance\n' +
+            '- Poseidon: Planning, requirement analysis, test plan creation (Plan Consultant role)\n' +
+            '- Scylla: Code review, test coverage analysis, quality assurance (Plan Reviewer role)\n' +
             '- Pearl: Testing, test creation, test execution\n' +
             '- Cartographer: Advanced planning with hierarchical task decomposition and subagent delegation',
         ),

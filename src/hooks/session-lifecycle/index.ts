@@ -1,4 +1,7 @@
 import type { Hooks, PluginInput } from '@opencode-ai/plugin'
+import { createLogger } from '../../utils/logger'
+
+const logger = createLogger('session-lifecycle')
 
 export interface SessionLifecycleConfig {
   enabled?: boolean
@@ -64,12 +67,10 @@ export function createSessionLifecycle(
         if (stats.toolCount === toolWarningThreshold) {
           if (!stats.warningsIssued.has('tools-70')) {
             stats.warningsIssued.add('tools-70')
-            console.warn(
-              `[kraken-code:session-lifecycle] ⚠️  Session approaching tool limit (${stats.toolCount}/${cfg.maxToolsPerSession})`,
+            logger.warn(
+              `Session approaching tool limit (${stats.toolCount}/${cfg.maxToolsPerSession})`,
             )
-            console.warn(
-              `[kraken-code:session-lifecycle] Consider starting a new session soon to prevent memory issues`,
-            )
+            logger.warn(`Consider starting a new session soon to prevent memory issues`)
           }
         }
 
@@ -92,9 +93,8 @@ export function createSessionLifecycle(
           if (!stats.warningsIssued.has('duration-80')) {
             stats.warningsIssued.add('duration-80')
             const remaining = Math.round(cfg.maxSessionDurationMinutes - durationMinutes)
-            console.warn(
-              `[kraken-code:session-lifecycle] ⏰ Session running long (${Math.round(durationMinutes)}m)`,
-            )
+            logger.warn(`Session running long (${Math.round(durationMinutes)}m)`)
+            logger.warn(`Recommend restart within ${remaining} minutes`)
             console.warn(
               `[kraken-code:session-lifecycle] Recommend restart within ${remaining} minutes`,
             )
@@ -113,8 +113,8 @@ export function createSessionLifecycle(
 
         // Log stats every 25 tools
         if (stats.toolCount % 25 === 0) {
-          console.log(
-            `[kraken-code:session-lifecycle] Session stats: ${stats.toolCount} tools, ${formatDuration(duration)} elapsed`,
+          logger.debug(
+            `Session stats: ${stats.toolCount} tools, ${formatDuration(duration)} elapsed`,
           )
         }
       } catch (error) {
@@ -130,8 +130,8 @@ export function createSessionLifecycle(
         if (eventAny?.type === 'session.start' && sessionID) {
           // Initialize stats for new session
           getStats(sessionID)
-          console.log(
-            `[kraken-code:session-lifecycle] Session started - Limits: ${cfg.maxToolsPerSession} tools, ${cfg.maxSessionDurationMinutes}min`,
+          logger.debug(
+            `Session started - Limits: ${cfg.maxToolsPerSession} tools, ${cfg.maxSessionDurationMinutes}min`,
           )
         }
 
@@ -140,9 +140,7 @@ export function createSessionLifecycle(
           const stats = sessionStats.get(sessionID)
           if (stats) {
             const duration = Date.now() - stats.startTime
-            console.log(
-              `[kraken-code:session-lifecycle] Session ended: ${stats.toolCount} tools in ${formatDuration(duration)}`,
-            )
+            logger.debug(`Session ended: ${stats.toolCount} tools in ${formatDuration(duration)}`)
             sessionStats.delete(sessionID)
           }
         }

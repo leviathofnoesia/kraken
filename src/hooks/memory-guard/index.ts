@@ -1,4 +1,7 @@
 import type { Hooks, PluginInput } from '@opencode-ai/plugin'
+import { createLogger } from '../../utils/logger'
+
+const logger = createLogger('memory-guard')
 
 export interface MemoryGuardConfig {
   enabled?: boolean
@@ -73,13 +76,9 @@ export function createMemoryGuard(_input: PluginInput, config?: MemoryGuardConfi
 
         // Warning level
         if (rss > cfg.warningThresholdMB && rss < cfg.criticalThresholdMB) {
-          console.warn(
-            `[kraken-code:memory-guard] ⚠️  Memory usage elevated: ${formatMemory(snapshot)}`,
-          )
+          logger.warn(`Memory usage elevated: ${formatMemory(snapshot)}`)
           if (growth > 20) {
-            console.warn(
-              `[kraken-code:memory-guard] 📈 Memory growing rapidly (+${growth}% in last ${cfg.checkInterval} tools)`,
-            )
+            logger.warn(`Memory growing rapidly (+${growth}% in last ${cfg.checkInterval} tools)`)
           }
         }
 
@@ -90,14 +89,14 @@ export function createMemoryGuard(_input: PluginInput, config?: MemoryGuardConfi
 
           // Try to trigger GC if available
           if (globalThis.gc) {
-            console.log('[kraken-code:memory-guard] Attempting garbage collection...')
+            logger.debug('Attempting garbage collection...')
             globalThis.gc()
 
             // Check if GC helped
             const afterGC = getMemoryUsage()
             const freed = rss - afterGC.rss
             if (freed > 50) {
-              console.log(`[kraken-code:memory-guard] GC freed ~${freed}MB`)
+              logger.debug(`GC freed ~${freed}MB`)
             }
           }
         }

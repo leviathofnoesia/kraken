@@ -1,6 +1,9 @@
 import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
 import type { Part } from '@opencode-ai/sdk'
+import { createLogger } from '../../utils/logger'
+
+const logger = createLogger('agent-usage-reminder')
 
 export interface AgentUsageReminderConfig {
   enabled?: boolean
@@ -25,9 +28,7 @@ export function createAgentUsageReminder(
         agentCallCount++
         const threshold = config.threshold ?? 10
         if (agentCallCount % threshold === 0) {
-          console.log(
-            `[agent-usage-reminder] Agent has been called ${agentCallCount} times in this session`,
-          )
+          logger.debug(`Agent has been called ${agentCallCount} times in this session`)
         }
       }
     },

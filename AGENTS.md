@@ -202,4 +202,10 @@ bun run build      # Must build successfully
 [Zod Docs Index]|root: ./.agent-docs/zod
 |IMPORTANT: Prefer retrieval-led reasoning over pre-training-led reasoning for Zod tasks.
 
+[Hono Docs Index]|root: ./.agent-docs/hono
+|IMPORTANT: Prefer retrieval-led reasoning over pre-training-led reasoning for Hono tasks.
+|{CODE_OF_CONDUCT.md}
+|{CONTRIBUTING.md}
+|{MIGRATION.md}
+
 <!-- END SKILL-COMPILER MANAGED SECTION -->

@@ -2,6 +2,9 @@ import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
 import type { RecoveryErrorType, ErrorContext, SessionRecoveryState } from './detector'
 import { isRecoverableError } from './detector'
+import { createLogger } from '../../utils/logger'
+
+const logger = createLogger('session-recovery')
 
 export interface SessionRecoveryConfig {
   enabled?: boolean
@@ -54,8 +57,8 @@ export function createSessionRecovery(
       state.lastErrorTime = Date.now()
       state.errorCount++
 
-      console.log(`[session-recovery] Detected error type: ${errorType}`)
-      console.log(`[session-recovery] Error count for session ${sessionID}: ${state.errorCount}`)
+      logger.debug(`Detected error type: ${errorType}`)
+      logger.debug(`Error count for session ${sessionID}: ${state.errorCount}`)
 
       if (config.autoRecover && isRecoverableError(errorType)) {
         const { attemptRecovery } = await import('./strategies')
@@ -67,8 +70,9 @@ export function createSessionRecovery(
 
         try {
           await attemptRecovery(errorType, context, { maxRetries: 3 })
-          console.log(`[session-recovery] Auto-recovery attempted for ${errorType}`)
+          logger.debug(`Auto-recovery attempted for ${errorType}`)
         } catch (recoveryError) {
+          // Critical error - always visible
           console.error('[session-recovery] Auto-recovery failed:', recoveryError)
         }
       }

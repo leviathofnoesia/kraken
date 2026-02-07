@@ -1,5 +1,8 @@
 import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
+import { createLogger } from '../../utils/logger'
+
+const logger = createLogger('claude-code-hooks')
 
 export interface ClaudeCodeHooksConfig {
   enabled?: boolean
@@ -45,16 +48,17 @@ export function createClaudeCodeHooks(
           }
         }
       } catch (error) {
+        // Critical error - always visible
         console.error('[claude-code-hooks] Error applying config:', error)
       }
     },
     'tool.execute.before': async (input, output) => {
       if (!config.enabled || config.hooks === false || config.toggles?.hooks === false) return
-      console.log('[claude-code-hooks] Processing tool execution')
+      logger.debug('Tool execution started')
     },
     'tool.execute.after': async (input, output) => {
       if (!config.enabled || config.hooks === false || config.toggles?.hooks === false) return
-      console.log('[claude-code-hooks] Tool execution completed')
+      logger.debug('Tool execution started')
     },
   }
 }

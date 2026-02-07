@@ -86,11 +86,6 @@ export async function loadPresets(worktree: string): Promise<Record<string, Pres
       config: {},
       createdAt: Date.now(),
     },
-    economy: {
-      description: 'Most cost-effective models',
-      config: {},
-      createdAt: Date.now(),
-    },
   }
 
   if (config.modelSwitcher?.presets) {
