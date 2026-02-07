@@ -3,6 +3,7 @@ import { getModesConfig } from '../config/manager'
 import { createSessionStorageHook } from './session-storage'
 import { detectMode } from './think-mode/mode-detector'
 import { activateMode, deactivateMode } from './think-mode/mode-switcher'
+import { SHOULD_LOG } from '../utils/logger'
 
 export interface ModeHooksOptions {
   enabled?: boolean
@@ -31,23 +32,26 @@ export function createModeHooks(input: any, options?: ModeHooksOptions): Hooks {
             const detected = detectMode(content)
 
             if (detected && options?.autoActivate !== false) {
-              console.log(
-                `[mode-hooks] Detected mode "${detected.mode}" with ${detected.keywords.length} keywords for session ${sessionID}`,
-              )
+              if (SHOULD_LOG) {
+                console.log(
+                  `[mode-hooks] Detected mode "${detected.mode}" with ${detected.keywords.length} keywords for session ${sessionID}`,
+                )
+              }
 
               // Activate mode
               activateMode(sessionID, detected.mode)
 
               // Inject mode activation context
-              if (detected.mode === 'blitzkrieg') {
-                const modeConfig = modesConfig.blitzkrieg
-                console.log(`[mode-hooks] Activating Blitzkrieg mode`)
-              } else if (detected.mode === 'search') {
-                console.log(`[mode-hooks] Activating Search mode`)
-              } else if (detected.mode === 'analyze') {
-                console.log(`[mode-hooks] Activating Analyze mode`)
-              } else if (detected.mode === 'ultrathink') {
-                console.log(`[mode-hooks] Activating Ultrathink mode`)
+              if (SHOULD_LOG) {
+                if (detected.mode === 'blitzkrieg') {
+                  console.log(`[mode-hooks] Activating Blitzkrieg mode`)
+                } else if (detected.mode === 'search') {
+                  console.log(`[mode-hooks] Activating Search mode`)
+                } else if (detected.mode === 'analyze') {
+                  console.log(`[mode-hooks] Activating Analyze mode`)
+                } else if (detected.mode === 'ultrathink') {
+                  console.log(`[mode-hooks] Activating Ultrathink mode`)
+                }
               }
             }
           }

@@ -1,6 +1,7 @@
 import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
 import type { Part } from '@opencode-ai/sdk'
+import { SHOULD_LOG } from '../../utils/logger'
 
 export interface AutoSlashCommandConfig {
   enabled?: boolean
@@ -42,7 +43,8 @@ export function createAutoSlashCommand(
 
       for (const [command, action] of Object.entries(config.commands || {})) {
         if (text.startsWith(command)) {
-          console.log(`[auto-slash-command] Detected ${command}, triggering: ${action}`)
+          if (SHOULD_LOG)
+            console.log(`[auto-slash-command] Detected ${command}, triggering: ${action}`)
         }
       }
     },

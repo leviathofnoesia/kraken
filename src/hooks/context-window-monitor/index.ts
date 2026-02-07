@@ -7,6 +7,7 @@
 
 import type { Hooks, PluginInput } from '@opencode-ai/plugin'
 import type { Part } from '@opencode-ai/sdk'
+import { SHOULD_LOG } from '../../utils/logger'
 
 /**
  * Default warning threshold as percentage (70%)
@@ -171,14 +172,16 @@ export function checkContextWindow(
       const tokenLimit = getModelTokenLimit(model)
       const usagePercentage = calculateUsagePercentage(state.totalEstimatedTokens, model)
 
-      if (usagePercentage >= (threshold ?? DEFAULT_WARNING_THRESHOLD) * 100) {
-        console.warn(
-          `⚠️  Context Window Warning: You are at ${usagePercentage}% of ${tokenLimit} token limit (~${state.totalEstimatedTokens}/${tokenLimit} tokens). Consider clearing context.`,
-        )
-      } else {
-        console.log(
-          `ℹ️  Context Window: At ${usagePercentage}% of ${tokenLimit} token limit (~${state.totalEstimatedTokens}/${tokenLimit} tokens, ${state.messageCount} messages).`,
-        )
+      if (SHOULD_LOG) {
+        if (usagePercentage >= (threshold ?? DEFAULT_WARNING_THRESHOLD) * 100) {
+          console.warn(
+            `⚠️  Context Window Warning: You are at ${usagePercentage}% of ${tokenLimit} token limit (~${state.totalEstimatedTokens}/${tokenLimit} tokens). Consider clearing context.`,
+          )
+        } else {
+          console.log(
+            `ℹ️  Context Window: At ${usagePercentage}% of ${tokenLimit} token limit (~${state.totalEstimatedTokens}/${tokenLimit} tokens, ${state.messageCount} messages).`,
+          )
+        }
       }
 
       state.lastWarningAt = now

@@ -6,11 +6,14 @@
  */
 
 import type { Hooks, PluginInput } from '@opencode-ai/plugin'
+import { SHOULD_LOG } from '../../utils/logger'
 
 /**
  * Supported providers that support thinking mode
+ * Currently only Anthropic (and Bedrock when using Anthropic models) have
+ * extended thinking support. Google and OpenAI may add support in the future.
  */
-const THINKING_SUPPORTED_PROVIDERS = ['anthropic', 'bedrock', 'google', 'openai']
+const THINKING_SUPPORTED_PROVIDERS = ['anthropic', 'bedrock']
 
 /**
  * Think keywords to detect (case-insensitive)
@@ -191,7 +194,7 @@ export function createThinkModeHook(input: PluginInput): Hooks {
         const shouldActivate = shouldActivateThinkMode(content)
 
         if (shouldActivate) {
-          console.log(`[think-mode] Activated for session ${sessionID}`)
+          if (SHOULD_LOG) console.log(`[think-mode] Activated for session ${sessionID}`)
           setSessionState(sessionID, true)
         }
       }
@@ -208,29 +211,31 @@ export function createThinkModeHook(input: PluginInput): Hooks {
       const sessionState = getSessionState(sessionID)
 
       if (sessionState?.enabled) {
-        // Switch variant to 'max' for enhanced reasoning
-        paramsOutput.variant = 'max'
+        // Only set variant if not already set
+        if (!paramsOutput.variant) {
+          paramsOutput.variant = 'max'
+        }
 
         // Enable thinking if provider supports it
         const providerID = provider?.info?.id || provider?.options?.providerID || ''
         if (isThinkingSupported(providerID)) {
-          console.log(`[think-mode] Applying think mode settings for provider ${providerID}`)
-
-          // Enable thinking in options
           if (!paramsOutput.options) {
             paramsOutput.options = {}
           }
 
-          // Set thinking configuration (varies by provider)
-          // Claude uses thinking budget
-          if (providerID.includes('anthropic')) {
-            paramsOutput.options.thinking = {
-              budget_tokens: 20000, // Increased thinking budget
-              type: 'auto',
+          // DON'T override if agent already has thinking configured
+          if (!paramsOutput.options.thinking) {
+            if (SHOULD_LOG)
+              console.log(`[think-mode] Applying think mode settings for provider ${providerID}`)
+
+            // Anthropic and Bedrock (with Anthropic models) support extended thinking
+            if (providerID.includes('anthropic') || providerID.includes('bedrock')) {
+              paramsOutput.options.thinking = {
+                budget_tokens: 32000,
+                type: 'enabled',
+              }
             }
           }
-          // Google may use different configuration
-          // This can be extended as needed
         }
       }
 
