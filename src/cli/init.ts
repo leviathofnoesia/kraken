@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
-// @ts-expect-error - jsonc-parser exports parseJsonc but LSP may not resolve correctly
-import { parseJsonc } from 'jsonc-parser'
+import { parse as parseJsonc } from 'jsonc-parser'
 import * as path from 'path'
 import * as os from 'os'
 import color from 'picocolors'
