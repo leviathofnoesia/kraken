@@ -2,6 +2,7 @@ import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
 import { readFileSync, existsSync } from 'node:fs'
 import path from 'node:path'
+import { SHOULD_LOG } from '../../utils/logger'
 
 export interface DirectoryAgentsInjectorConfig {
   enabled?: boolean
@@ -21,9 +22,9 @@ export function createDirectoryAgentsInjector(
       if (existsSync(agentFile)) {
         try {
           const content = readFileSync(agentFile, 'utf-8')
-          console.log('[directory-agents-injector] Found local agent definitions')
+          if (SHOULD_LOG) console.log('[directory-agents-injector] Found local agent definitions')
         } catch {
-          console.log('[directory-agents-injector] Could not read agent file')
+          if (SHOULD_LOG) console.log('[directory-agents-injector] Could not read agent file')
         }
       }
     },

@@ -1,6 +1,7 @@
 import type { Hooks } from '@opencode-ai/plugin'
 import type { PluginInput } from '@opencode-ai/plugin'
 import type { Part } from '@opencode-ai/sdk'
+import { SHOULD_LOG } from '../../utils/logger'
 
 export interface CompactionContextInjectorConfig {
   enabled?: boolean
@@ -25,11 +26,15 @@ export function createCompactionContextInjector(
       if (!config.enabled) return
       const text = getTextFromParts(output.parts)
       if (!text) return
-      console.log('[compaction-context-injector] Processing message before compaction')
+      if (SHOULD_LOG) {
+        console.log('[compaction-context-injector] Processing message before compaction')
+      }
     },
     'experimental.session.compacting': async (input, output) => {
       if (!config.enabled) return
-      console.log('[compaction-context-injector] Adding context for session compaction')
+      if (SHOULD_LOG) {
+        console.log('[compaction-context-injector] Adding context for session compaction')
+      }
     },
   }
 }

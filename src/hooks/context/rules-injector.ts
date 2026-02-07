@@ -3,6 +3,7 @@ import * as path from 'path'
 import type { Hooks, PluginInput } from '@opencode-ai/plugin'
 import type { Part } from '@opencode-ai/sdk'
 import { z } from 'zod'
+import { SHOULD_LOG } from '../../utils/logger'
 
 const RULE_EXTENSION = '.md'
 const RULE_EXTENSIONS = ['.md', '.mdc']
@@ -146,7 +147,8 @@ function loadRuleFiles(directory: string): RuleFile[] {
               rules,
             })
           } catch (error) {
-            console.error(`[rules-injector] Error loading rule file ${fullPath}:`, error)
+            // Always report file-load failures (critical errors)
+            console.warn(`[rules-injector] Error loading rule file ${fullPath}:`, error)
           }
         }
       }
@@ -294,18 +296,16 @@ ${rules}
         })
         .join('\n\n')
 
-      const existingText = text
-      const newText = `${rulesText}\n\n${existingText}`
-
-      output.parts = [
-        {
-          type: 'text' as const,
-          text: newText,
-          id: `rule-${Date.now()}`,
-          sessionID: '',
-          messageID: '',
-        },
-      ]
+      const textPartIndex = parts.findIndex((p: any) => p.type === 'text')
+      if (textPartIndex >= 0) {
+        const textPart = parts[textPartIndex] as any
+        const updatedPart = { ...textPart, text: `${rulesText}\n\n${textPart.text || ''}` }
+        output.parts = [
+          ...parts.slice(0, textPartIndex),
+          updatedPart,
+          ...parts.slice(textPartIndex + 1),
+        ] as Part[]
+      }
     },
   }
 }

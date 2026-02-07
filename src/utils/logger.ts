@@ -1,3 +1,8 @@
+export const SHOULD_LOG =
+  process.env.ANTIGRAVITY_DEBUG === '1' ||
+  process.env.DEBUG === '1' ||
+  process.env.KRAKEN_LOG === '1'
+
 export enum LogLevel {
   DEBUG = 'debug',
   INFO = 'info',
