@@ -2,7 +2,9 @@ import { promises as fs } from 'fs'
 import { join, dirname } from 'path'
 import * as os from 'os'
 import type { OpenCodeTodo, TodoFile } from './types'
+import { createLogger } from '../utils/logger'
 
+const logger = createLogger('todo-manager')
 const TODO_VERSION = '1.0'
 const TODO_ENCODING = 'utf-8'
 
@@ -28,9 +30,7 @@ export async function loadTodoFile(
     const todoFile: TodoFile = JSON.parse(content)
 
     if (todoFile.version !== TODO_VERSION) {
-      console.warn(
-        `[todo-manager] Todo file version mismatch: ${todoFile.version} (expected ${TODO_VERSION})`,
-      )
+      logger.warn(`Todo file version mismatch: ${todoFile.version} (expected ${TODO_VERSION})`)
       return null
     }
 
@@ -40,7 +40,7 @@ export async function loadTodoFile(
       return []
     }
 
-    console.error(`[todo-manager] Error loading todo file from ${todoPath}:`, error)
+    logger.error(`Error loading todo file from ${todoPath}:`, error)
     return null
   }
 }
@@ -62,10 +62,10 @@ export async function saveTodoFile(
 
     await fs.writeFile(todoPath, JSON.stringify(todoFile, null, 2), TODO_ENCODING)
 
-    console.log(`[todo-manager] Saved ${todos.length} todos to ${todoPath}`)
+    logger.debug(`Saved ${todos.length} todos to ${todoPath}`)
     return true
   } catch (error) {
-    console.error(`[todo-manager] Error saving todo file to ${todoPath}:`, error)
+    logger.error(`Error saving todo file to ${todoPath}:`, error)
     return false
   }
 }
@@ -75,14 +75,14 @@ export async function deleteTodoFile(sessionId: string, customPath?: string): Pr
 
   try {
     await fs.unlink(todoPath)
-    console.log(`[todo-manager] Deleted todo file: ${todoPath}`)
+    logger.debug(`Deleted todo file: ${todoPath}`)
     return true
   } catch (error: any) {
     if (error?.code === 'ENOENT') {
       return true
     }
 
-    console.error(`[todo-manager] Error deleting todo file ${todoPath}:`, error)
+    logger.error(`Error deleting todo file ${todoPath}:`, error)
     return false
   }
 }
@@ -104,10 +104,10 @@ export async function saveOpenCodeTodos(
     const todoPath = join(todoDir, `${sessionId}.json`)
     await fs.writeFile(todoPath, JSON.stringify(todoFile, null, 2), TODO_ENCODING)
 
-    console.log(`[todo-manager] Saved ${todos.length} todos to OpenCode API`)
+    logger.debug(`Saved ${todos.length} todos to OpenCode API`)
     return true
   } catch (error) {
-    console.error(`[todo-manager] Error saving todos to OpenCode API:`, error)
+    logger.error(`Error saving todos to OpenCode API:`, error)
     return false
   }
 }
@@ -120,7 +120,7 @@ export async function loadOpenCodeTodos(sessionId: string): Promise<OpenCodeTodo
     const todoFile: TodoFile = JSON.parse(content)
 
     if (todoFile.version !== TODO_VERSION) {
-      console.warn(`[todo-manager] Todo file version mismatch: ${todoFile.version}`)
+      logger.warn(`Todo file version mismatch: ${todoFile.version}`)
       return null
     }
 
@@ -130,7 +130,7 @@ export async function loadOpenCodeTodos(sessionId: string): Promise<OpenCodeTodo
       return []
     }
 
-    console.error(`[todo-manager] Error loading todos from OpenCode API:`, error)
+    logger.error(`Error loading todos from OpenCode API:`, error)
     return null
   }
 }
@@ -140,20 +140,20 @@ export function validateTodo(todo: OpenCodeTodo): boolean {
 
   for (const field of requiredFields) {
     if (!(todo as any)[field]) {
-      console.warn(`[todo-manager] Invalid todo: missing field "${field}"`)
+      logger.warn(`Invalid todo: missing field "${field}"`)
       return false
     }
   }
 
   const validStatuses = ['pending', 'in_progress', 'completed', 'cancelled']
   if (!validStatuses.includes(todo.status)) {
-    console.warn(`[todo-manager] Invalid todo status: ${todo.status}`)
+    logger.warn(`Invalid todo status: ${todo.status}`)
     return false
   }
 
   const validPriorities = ['high', 'medium', 'low']
   if (!validPriorities.includes(todo.priority)) {
-    console.warn(`[todo-manager] Invalid todo priority: ${todo.priority}`)
+    logger.warn(`Invalid todo priority: ${todo.priority}`)
     return false
   }
 

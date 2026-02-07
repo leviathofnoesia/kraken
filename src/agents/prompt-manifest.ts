@@ -6,6 +6,9 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as crypto from 'crypto'
+import { createLogger } from '../utils/logger'
+
+const logger = createLogger('prompt-manifest')
 
 const MANIFEST_PATH = path.join(__dirname, '../compression/data/prompt_manifest.json')
 const CACHE = new Map<string, string>()
@@ -81,7 +84,7 @@ export function preloadCache(keys: string[]): void {
       }
     }
   } catch (error) {
-    console.error(`Failed to preload cache: ${error}`)
+    logger.error(`Failed to preload cache: ${error}`)
   }
 }
 

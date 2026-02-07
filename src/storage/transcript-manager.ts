@@ -2,7 +2,9 @@ import { promises as fs } from 'fs'
 import { join, dirname } from 'path'
 import * as os from 'os'
 import type { Part } from '@opencode-ai/sdk'
+import { createLogger } from '../utils/logger'
 
+const logger = createLogger('transcript-manager')
 const _TRANSCRIPT_VERSION = '1.0'
 const TRANSCRIPT_ENCODING = 'utf-8'
 
@@ -54,7 +56,7 @@ export async function appendTranscriptEntry(
     const jsonlLine = JSON.stringify(entryWithTimestamp) + '\n'
     await fs.appendFile(transcriptPath, jsonlLine, TRANSCRIPT_ENCODING)
   } catch (error) {
-    console.error(`[transcript-manager] Error appending transcript entry:`, error)
+    logger.error(`Error appending transcript entry:`, error)
   }
 }
 
@@ -133,7 +135,7 @@ export async function buildTranscriptFromSession(
 
     return transcript || null
   } catch (error) {
-    console.error(`[transcript-manager] Error building transcript from session:`, error)
+    logger.error(`Error building transcript from session:`, error)
     return null
   }
 }
@@ -141,14 +143,14 @@ export async function buildTranscriptFromSession(
 export async function deleteTempTranscript(path: string): Promise<boolean> {
   try {
     await fs.unlink(path)
-    console.log(`[transcript-manager] Deleted temp transcript: ${path}`)
+    logger.debug(`Deleted temp transcript: ${path}`)
     return true
   } catch (error: any) {
     if (error?.code === 'ENOENT') {
       return true
     }
 
-    console.error(`[transcript-manager] Error deleting temp transcript:`, error)
+    logger.error(`Error deleting temp transcript:`, error)
     return false
   }
 }
@@ -171,7 +173,7 @@ export async function readTranscript(
           const entry = JSON.parse(line) as TranscriptEntry
           entries.push(entry)
         } catch (parseError) {
-          console.warn(`[transcript-manager] Failed to parse transcript line:`, parseError)
+          logger.warn(`Failed to parse transcript line:`, parseError)
         }
       }
     }
@@ -182,7 +184,7 @@ export async function readTranscript(
       return []
     }
 
-    console.error(`[transcript-manager] Error reading transcript:`, error)
+    logger.error(`Error reading transcript:`, error)
     return []
   }
 }
@@ -192,31 +194,31 @@ export async function clearTranscript(sessionId: string, customPath?: string): P
 
   try {
     await fs.unlink(transcriptPath)
-    console.log(`[transcript-manager] Cleared transcript for session ${sessionId}`)
+    logger.debug(`Cleared transcript for session ${sessionId}`)
     return true
   } catch (error: any) {
     if (error?.code === 'ENOENT') {
       return true
     }
 
-    console.error(`[transcript-manager] Error clearing transcript:`, error)
+    logger.error(`Error clearing transcript:`, error)
     return false
   }
 }
 
 export function validateTranscriptEntry(entry: TranscriptEntry): boolean {
   if (!entry.role || (entry.role !== 'user' && entry.role !== 'assistant')) {
-    console.warn(`[transcript-manager] Invalid transcript entry: invalid role "${entry.role}"`)
+    logger.warn(`Invalid transcript entry: invalid role "${entry.role}"`)
     return false
   }
 
   if (entry.role === 'assistant' && !entry.content && !entry.toolName) {
-    console.warn(`[transcript-manager] Invalid assistant entry: must have content or toolName`)
+    logger.warn(`Invalid assistant entry: must have content or toolName`)
     return false
   }
 
   if (entry.role === 'user' && !entry.content) {
-    console.warn(`[transcript-manager] Invalid user entry: must have content`)
+    logger.warn(`Invalid user entry: must have content`)
     return false
   }
 
