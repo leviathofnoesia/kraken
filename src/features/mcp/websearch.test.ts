@@ -50,13 +50,15 @@ describe('websearch MCP provider configuration', () => {
     expect(result.headers).toEqual({ Authorization: `Bearer ${tavilyKey}` })
   })
 
-  test('throws error when provider is tavily but TAVILY_API_KEY missing', () => {
+  test('returns disabled config when provider is tavily but TAVILY_API_KEY missing', () => {
     delete process.env.TAVILY_API_KEY
     const config = { provider: 'tavily' as const }
 
-    const createTavilyConfig = () => createWebsearchConfig(config)
+    const result = createWebsearchConfig(config)
 
-    expect(createTavilyConfig).toThrow('TAVILY_API_KEY environment variable is required')
+    expect(result.enabled).toBe(false)
+    expect(result.url).toContain('mcp.tavily.com')
+    expect(result.name).toBe('websearch')
   })
 
   test('returns Exa when both keys present but no explicit provider', () => {

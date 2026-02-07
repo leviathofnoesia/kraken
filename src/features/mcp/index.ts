@@ -7,12 +7,8 @@
 
 import type { RemoteMcpConfig } from './types'
 
-// External dependencies
-import { tool } from '@opencode-ai/plugin'
-import { z } from 'zod'
-
 // Import all built-in MCP remote configurations
-import { createWebsearchConfig } from './websearch'
+import { createWebsearchConfig, setActiveWebsearchConfig } from './websearch'
 import { context7 } from './context7'
 import { grep_app } from './grep-app'
 
@@ -127,7 +123,10 @@ export function createBuiltinMcpConfigs(
 
   // Original MCPs
   if (!disabledMcps.includes('websearch')) {
-    mcps.websearch = createWebsearchConfig(config?.websearch)
+    const websearchConfig = createWebsearchConfig(config?.websearch)
+    mcps.websearch = websearchConfig
+    // Set active config for tools to use
+    setActiveWebsearchConfig(websearchConfig)
   }
 
   if (!disabledMcps.includes('context7')) {
@@ -169,3 +168,4 @@ export { additionalMcpConfigs, additionalMcpNames } from './additional-mcps'
 export { mcpLoader } from './mcp-loader'
 export { mcpAgentTools } from './mcp-agent-tools'
 export { existingMcpAgentTools } from './existing-mcp-agent-tools'
+export { setActiveWebsearchConfig, getActiveWebsearchConfig } from './websearch'

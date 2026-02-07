@@ -14,6 +14,7 @@ import { mcpLoader } from './mcp-loader'
  * Websearch Provider Configuration
  *
  * Returns configuration pointing to Exa AI or Tavily remote MCP server.
+ * If Tavily provider is selected but TAVILY_API_KEY is missing, returns a disabled config.
  */
 export function createWebsearchConfig(config?: { provider?: 'exa' | 'tavily' }): RemoteMcpConfig {
   const provider = config?.provider || 'exa'
@@ -21,7 +22,14 @@ export function createWebsearchConfig(config?: { provider?: 'exa' | 'tavily' }):
   if (provider === 'tavily') {
     const tavilyKey = process.env.TAVILY_API_KEY
     if (!tavilyKey) {
-      throw new Error('TAVILY_API_KEY environment variable is required for Tavily provider')
+      // Return disabled config instead of throwing
+      return {
+        type: 'remote' as const,
+        url: 'https://mcp.tavily.com/mcp/',
+        enabled: false,
+        name: 'websearch',
+        oauth: false as const,
+      }
     }
 
     return {
@@ -46,6 +54,25 @@ export function createWebsearchConfig(config?: { provider?: 'exa' | 'tavily' }):
 }
 
 /**
+ * Store the active websearch config for use by tools
+ */
+let _activeWebsearchConfig: RemoteMcpConfig | null = null
+
+/**
+ * Set the active websearch configuration (called during plugin initialization)
+ */
+export function setActiveWebsearchConfig(config: RemoteMcpConfig): void {
+  _activeWebsearchConfig = config
+}
+
+/**
+ * Get the active websearch configuration
+ */
+export function getActiveWebsearchConfig(): RemoteMcpConfig | null {
+  return _activeWebsearchConfig
+}
+
+/**
  * Websearch Agent Tool
  *
  * Search the web using Exa AI or Tavily. Does NOT auto-inject results.
@@ -63,7 +90,7 @@ export const websearchTool = tool({
   },
   async execute(args) {
     try {
-      const config = createWebsearchConfig()
+      const config = _activeWebsearchConfig || createWebsearchConfig()
       const result = await mcpLoader.callTool('search', args, config)
       return JSON.stringify(result, null, 2)
     } catch (err) {
@@ -92,7 +119,7 @@ export const webfetchTool = tool({
   },
   async execute(args) {
     try {
-      const config = createWebsearchConfig()
+      const config = _activeWebsearchConfig || createWebsearchConfig()
       const result = await mcpLoader.callTool('fetch', args, config)
       return JSON.stringify(result, null, 2)
     } catch (err) {
