@@ -1,6 +1,9 @@
 import type { SoundEvent } from './sound-player'
 import { getNotificationCommand } from './platform-detector'
 import { playSound, type SoundConfig } from './sound-player'
+import { createLogger } from '../utils/logger'
+
+const logger = createLogger('notification-manager')
 
 export type { SoundEvent }
 
@@ -51,7 +54,7 @@ class NotificationManager {
       retryCount: 0,
     })
 
-    console.log(`[notification-manager] Enqueued: ${notificationId} - ${title}`)
+    logger.debug(`Enqueued: ${notificationId} - ${title}`)
 
     this.processQueue()
 
@@ -96,7 +99,7 @@ class NotificationManager {
     const commandResult = await getNotificationCommand()
 
     if (!commandResult) {
-      console.log(`[notification-manager] No notification command available for ${notification.id}`)
+      logger.debug(`No notification command available for ${notification.id}`)
       return false
     }
 
@@ -117,7 +120,7 @@ class NotificationManager {
 
       return success
     } catch (error) {
-      console.error(`[notification-manager] Error sending notification ${notification.id}:`, error)
+      logger.error(`Error sending notification ${notification.id}:`, error)
 
       if (notification.retryCount < this.config.maxRetries) {
         notification.retryCount++
@@ -221,7 +224,7 @@ class NotificationManager {
   clearQueue(): void {
     this.queue = []
     this.sentNotifications.clear()
-    console.log('[notification-manager] Queue cleared')
+    logger.debug('Queue cleared')
   }
 
   getQueueLength(): number {

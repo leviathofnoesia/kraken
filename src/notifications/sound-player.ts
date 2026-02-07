@@ -1,4 +1,7 @@
 import { getPlatform, type Platform } from './platform-detector'
+import { createLogger } from '../utils/logger'
+
+const logger = createLogger('sound-player')
 
 export interface SoundConfig {
   enabled: boolean
@@ -94,7 +97,7 @@ export async function playSound(
 
   const soundPath = getSoundPath(event, config)
   if (!soundPath) {
-    console.log(`[sound-player] No sound path for event ${event.type}`)
+    logger.debug(`No sound path for event ${event.type}`)
     return false
   }
 
@@ -105,7 +108,7 @@ export async function playSound(
       : null
 
   if (!platformCommand) {
-    console.log(`[sound-player] No sound command for platform ${platform}`)
+    logger.debug(`No sound command for platform ${platform}`)
     return false
   }
 
@@ -133,10 +136,10 @@ export async function playSound(
 
     result.unref()
 
-    console.log(`[sound-player] Playing ${event.type} sound for ${platform}`)
+    logger.debug(`Playing ${event.type} sound for ${platform}`)
     return true
   } catch (error) {
-    console.error(`[sound-player] Error playing sound:`, error)
+    logger.error(`Error playing sound:`, error)
     return false
   }
 }

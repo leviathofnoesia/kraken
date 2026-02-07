@@ -1,7 +1,9 @@
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
+import { createLogger } from '../utils/logger'
 
+const logger = createLogger('kraken-todo')
 const KRAKEN_DIR = path.join(os.homedir(), '.kraken')
 const TODO_DIR = path.join(KRAKEN_DIR, 'todos')
 
@@ -47,7 +49,7 @@ export function loadKrakenTodos(sessionId: string): KrakenTodo[] {
       })
       .filter((entry): entry is KrakenTodo => entry !== null)
   } catch (error) {
-    console.error(`[kraken-todo] Error loading todos for session ${sessionId}:`, error)
+    logger.error(`Error loading todos for session ${sessionId}:`, error)
     return []
   }
 }
@@ -58,9 +60,9 @@ export function saveKrakenTodos(sessionId: string, todos: KrakenTodo[]): void {
     const filePath = getTodoPath(sessionId)
     const lines = todos.map((todo) => JSON.stringify({ ...todo, timestamp: Date.now() }))
     fs.writeFileSync(filePath, lines.join('\n'))
-    console.log(`[kraken-todo] Saved ${todos.length} todos for session ${sessionId}`)
+    logger.debug(`Saved ${todos.length} todos for session ${sessionId}`)
   } catch (error) {
-    console.error(`[kraken-todo] Error saving todos for session ${sessionId}:`, error)
+    logger.error(`Error saving todos for session ${sessionId}:`, error)
   }
 }
 
@@ -69,10 +71,10 @@ export function deleteKrakenTodos(sessionId: string): void {
     const filePath = getTodoPath(sessionId)
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath)
-      console.log(`[kraken-todo] Deleted todos for session ${sessionId}`)
+      logger.debug(`Deleted todos for session ${sessionId}`)
     }
   } catch (error) {
-    console.error(`[kraken-todo] Error deleting todos for session ${sessionId}:`, error)
+    logger.error(`Error deleting todos for session ${sessionId}:`, error)
   }
 }
 
@@ -89,10 +91,10 @@ export function cleanupOldTodos(maxAgeDays: number = 30): void {
 
       if (now - stats.mtimeMs > maxAge) {
         fs.unlinkSync(filePath)
-        console.log(`[kraken-todo] Cleaned up old todo file: ${file}`)
+        logger.debug(`Cleaned up old todo file: ${file}`)
       }
     }
   } catch (error) {
-    console.error('[kraken-todo] Error cleaning up old todos:', error)
+    logger.error('Error cleaning up old todos:', error)
   }
 }
