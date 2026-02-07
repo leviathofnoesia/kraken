@@ -5,37 +5,14 @@
  * Includes agent-accessible MCP tools for ALL MCPs (new + existing).
  */
 
-import type { RemoteMcpConfig, WebsearchConfig } from './types'
+import type { RemoteMcpConfig } from './types'
+
+// External dependencies
+import { tool } from '@opencode-ai/plugin'
+import { z } from 'zod'
 
 // Import all built-in MCP remote configurations
 import { createWebsearchConfig } from './websearch'
-
-// Export a lazy getter that calls createWebsearchConfig() on demand
-const _websearchValue = () => createWebsearchConfig()
-
-const websearchConfig: any = {
-  get type() {
-    return _websearchValue().type
-  },
-  get name() {
-    return _websearchValue().name
-  },
-  get url() {
-    return _websearchValue().url
-  },
-  get enabled() {
-    return _websearchValue().enabled
-  },
-  get headers() {
-    return _websearchValue().headers
-  },
-  get oauth() {
-    return _websearchValue().oauth
-  },
-}
-
-export const websearch = websearchConfig
-
 import { context7 } from './context7'
 import { grep_app } from './grep-app'
 
@@ -48,6 +25,50 @@ import { existingMcpAgentTools } from './existing-mcp-agent-tools'
 
 // Import MCP loader
 import { mcpLoader } from './mcp-loader'
+
+// Cache websearch config to avoid repeated calls
+let _cachedWebsearchConfig: RemoteMcpConfig | null = null
+
+const websearchConfig: RemoteMcpConfig = {
+  get type() {
+    if (!_cachedWebsearchConfig) {
+      _cachedWebsearchConfig = createWebsearchConfig()
+    }
+    return _cachedWebsearchConfig.type
+  },
+  get name() {
+    if (!_cachedWebsearchConfig) {
+      _cachedWebsearchConfig = createWebsearchConfig()
+    }
+    return _cachedWebsearchConfig.name
+  },
+  get url() {
+    if (!_cachedWebsearchConfig) {
+      _cachedWebsearchConfig = createWebsearchConfig()
+    }
+    return _cachedWebsearchConfig.url
+  },
+  get enabled() {
+    if (!_cachedWebsearchConfig) {
+      _cachedWebsearchConfig = createWebsearchConfig()
+    }
+    return _cachedWebsearchConfig.enabled
+  },
+  get headers() {
+    if (!_cachedWebsearchConfig) {
+      _cachedWebsearchConfig = createWebsearchConfig()
+    }
+    return _cachedWebsearchConfig.headers
+  },
+  get oauth() {
+    if (!_cachedWebsearchConfig) {
+      _cachedWebsearchConfig = createWebsearchConfig()
+    }
+    return _cachedWebsearchConfig.oauth
+  },
+}
+
+export const websearch = websearchConfig
 
 /**
  * Built-in MCP Server Names

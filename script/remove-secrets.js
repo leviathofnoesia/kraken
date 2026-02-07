@@ -18,45 +18,39 @@ try {
   // Read current replacements.txt
   let content = readFileSync(replacementsPath, 'utf-8')
 
-  // Check if file already has header
-  const hasHeader = content.trim().startsWith('#!')
+  const HEADER_SENTINEL = '# REDACT SECRETS CONFIGURATION'
 
-  // Remove lines containing real secrets
-  const lines = content.split('\n')
-  const safeLines = lines.filter((line) => {
-    // Skip lines with real secrets
-    if (!line || line.trim() === '') return true
-    const lower = line.toLowerCase()
-
-    // Skip if contains real secrets
-    const hasRealSecret =
+  // Helper function to check if a line contains secrets
+  function isSecretLine(line) {
+    if (!line || line.trim() === '') return false
+    return (
       line.includes('GOCSPX') ||
       line.includes('1.apps.googleusercontent.com') ||
       (line.includes('==') && line.includes('.apps.googleusercontent.com'))
+    )
+  }
 
-    return !hasRealSecret
-  })
+  // Remove lines containing real secrets
+  const lines = content.split('\n')
+  const safeLines = lines.filter((line) => !isSecretLine(line))
 
-  // Build new content with header only once
+  // Find header sentinel index
+  const headerIndex = lines.indexOf(HEADER_SENTINEL)
+
+  // Build new content with header
   let newContent
-  if (hasHeader) {
-    // Keep existing header, compute safeLines from content after header
-    const safeLinesAfterHeader = lines.slice(2).filter((line) => {
-      // Skip lines with real secrets
-      if (!line || line.trim() === '') return true
-      const lower = line.toLowerCase()
-
-      // Skip if contains real secrets
-      const hasRealSecret =
-        line.includes('GOCSPX') ||
-        line.includes('1.apps.googleusercontent.com') ||
-        (line.includes('==') && line.includes('.apps.googleusercontent.com'))
-
-      return !hasRealSecret
-    })
-    newContent = lines.slice(0, 2).concat(safeLinesAfterHeader).join('\n')
+  if (headerIndex !== -1) {
+    // Header exists, keep it and filter secrets from after header
+    const headerLength = 1
+    const safeLinesAfterHeader = lines
+      .slice(headerIndex + headerLength)
+      .filter((line) => !isSecretLine(line))
+    newContent = lines
+      .slice(0, headerIndex + headerLength)
+      .concat(safeLinesAfterHeader)
+      .join('\n')
   } else {
-    // Add header first, then safe lines (plain text, no Python shebang)
+    // No header, add it with safe lines
     newContent =
       '# REDACT SECRETS CONFIGURATION\n\n# This file processes replacements from replacements.txt\n# \n# SECURITY: replacements.txt should NOT be committed to git\n# It is added to .gitignore to prevent accidental secret commits\n\n'.concat(
         safeLines.join('\n'),

@@ -62,9 +62,14 @@ export const websearchTool = tool({
       .describe('Number of results to return (default: 10)'),
   },
   async execute(args) {
-    const config = createWebsearchConfig()
-    const result = await mcpLoader.callTool('search', args, config)
-    return JSON.stringify(result, null, 2)
+    try {
+      const config = createWebsearchConfig()
+      const result = await mcpLoader.callTool('search', args, config)
+      return JSON.stringify(result, null, 2)
+    } catch (err) {
+      const error = err as Error
+      return JSON.stringify({ error: 'Websearch failed', details: error.message }, null, 2)
+    }
   },
 })
 
@@ -86,8 +91,13 @@ export const webfetchTool = tool({
     timeout: z.number().optional().describe('Request timeout in milliseconds (default: 60000)'),
   },
   async execute(args) {
-    const config = createWebsearchConfig()
-    const result = await mcpLoader.callTool('fetch', args, config)
-    return JSON.stringify(result, null, 2)
+    try {
+      const config = createWebsearchConfig()
+      const result = await mcpLoader.callTool('fetch', args, config)
+      return JSON.stringify(result, null, 2)
+    } catch (err) {
+      const error = err as Error
+      return JSON.stringify({ error: 'Webfetch failed', details: error.message }, null, 2)
+    }
   },
 })

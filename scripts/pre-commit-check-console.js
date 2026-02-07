@@ -18,7 +18,7 @@ console.log('🔍 Checking for unguarded console statements in hooks...')
 // Run ESLint with the no-unguarded-console config
 const result = spawnSync(
   'eslint',
-  ['--config', '.eslintrc.no-unguarded-console.js', '--no-ignore', 'src/hooks/*.ts'],
+  ['--config', '.eslintrc.no-unguarded-console.js', '--no-ignore', 'src/hooks/**/*.ts'],
   { encoding: 'utf-8', stdio: 'pipe' },
 )
 

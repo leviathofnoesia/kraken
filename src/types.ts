@@ -64,8 +64,8 @@ export type BuiltinAgentName =
   | 'Coral'
   | 'Siren'
   | 'Leviathan'
-  | 'Poseidon (Plan Consultant)'
-  | 'Scylla (Plan Reviewer)'
+  | 'Poseidon'
+  | 'Scylla'
   | 'Cartographer'
   | 'orchestrator-kraken'
 

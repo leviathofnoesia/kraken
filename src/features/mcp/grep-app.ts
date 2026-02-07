@@ -43,8 +43,12 @@ export const grepSearchTool = tool({
     page: z.number().optional().default(1).describe('Page number for pagination (default: 1)'),
   },
   async execute(args) {
-    const result = await mcpLoader.callTool('search', args, grep_app)
-    return JSON.stringify(result, null, 2)
+    try {
+      const result = await mcpLoader.callTool('search', args, grep_app)
+      return JSON.stringify(result, null, 2)
+    } catch (err) {
+      return JSON.stringify({ error: 'failed to search grep.app', details: String(err) }, null, 2)
+    }
   },
 })
 
@@ -63,7 +67,15 @@ export const grepGetFileTool = tool({
     ref: z.string().optional().describe('Git branch or commit ref (default: main)'),
   },
   async execute(args) {
-    const result = await mcpLoader.callTool('get_file', args, grep_app)
-    return JSON.stringify(result, null, 2)
+    try {
+      const result = await mcpLoader.callTool('get_file', args, grep_app)
+      return JSON.stringify(result, null, 2)
+    } catch (err) {
+      return JSON.stringify(
+        { error: 'failed to get file from grep.app', details: String(err) },
+        null,
+        2,
+      )
+    }
   },
 })

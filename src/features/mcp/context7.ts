@@ -50,8 +50,13 @@ export const context7SearchTool = tool({
     maxTokens: z.number().optional().describe('Maximum tokens for response (default: 5000)'),
   },
   async execute(args) {
-    const result = await mcpLoader.callTool('search', args, context7)
-    return JSON.stringify(result, null, 2)
+    try {
+      const result = await mcpLoader.callTool('search', args, context7)
+      return JSON.stringify(result, null, 2)
+    } catch (err) {
+      const error = err as Error
+      return JSON.stringify({ success: false, error: error.message }, null, 2)
+    }
   },
 })
 
@@ -69,7 +74,12 @@ export const context7GetTool = tool({
     version: z.string().optional().describe('Library version (default: latest)'),
   },
   async execute(args) {
-    const result = await mcpLoader.callTool('get', args, context7)
-    return JSON.stringify(result, null, 2)
+    try {
+      const result = await mcpLoader.callTool('get', args, context7)
+      return JSON.stringify(result, null, 2)
+    } catch (err) {
+      const error = err as Error
+      return JSON.stringify({ success: false, error: error.message }, null, 2)
+    }
   },
 })

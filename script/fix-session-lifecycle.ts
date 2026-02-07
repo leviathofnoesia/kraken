@@ -14,9 +14,20 @@ const loggerCreation = `const logger = createLogger('session-lifecycle')\n\n`
 
 // Insert after the imports section (after line 2)
 const importEndMarker = `import type { Hooks, PluginInput } from '@opencode-ai/plugin'\n`
-const insertionIndex = content.indexOf(importEndMarker) + importEndMarker.length
-content =
-  content.slice(0, insertionIndex) + loggerImport + loggerCreation + content.slice(insertionIndex)
+const idx = content.indexOf(importEndMarker)
+
+if (idx === -1) {
+  throw new Error('Import end marker not found in file')
+}
+
+// Check if logger already exists to make this idempotent
+if (content.includes(loggerImport.trim()) || content.includes(loggerCreation.trim())) {
+  console.log('✅ Logger already exists, skipping insertion')
+} else {
+  const insertionIndex = idx + importEndMarker.length
+  content =
+    content.slice(0, insertionIndex) + loggerImport + loggerCreation + content.slice(insertionIndex)
+}
 
 // Replace all console.log with logger.debug
 content = content.replace(/console\.log\(/g, 'logger.debug(')

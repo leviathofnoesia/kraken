@@ -24,7 +24,7 @@ const agentFactories: Record<string, (...args: any[]) => AgentConfig> = {
   Maelstrom: createMaelstromConfig,
   Nautilus: createNautilusConfig,
   Scylla: createScyllaConfig,
-  'Poseidon (Plan Consultant)': createPoseidonConfig,
+  Poseidon: createPoseidonConfig,
   Abyssal: createAbyssalConfig,
   Coral: createCoralConfig,
   Siren: createSirenConfig,

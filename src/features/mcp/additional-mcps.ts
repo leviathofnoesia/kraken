@@ -42,7 +42,7 @@ export const semgrep: RemoteMcpConfig = {
  */
 export const sequential_thinking: RemoteMcpConfig = {
   type: 'remote',
-  url: '',
+  url: 'https://remote-mcp-servers.org/sequential-thinking/mcp',
   enabled: false,
   headers: undefined,
   oauth: false,
@@ -56,7 +56,7 @@ export const sequential_thinking: RemoteMcpConfig = {
  */
 export const bridgemind: RemoteMcpConfig = {
   type: 'remote',
-  url: '',
+  url: 'https://remote-mcp-servers.org/bridgemind/mcp',
   enabled: false,
   headers: undefined,
   oauth: false,
@@ -68,7 +68,14 @@ export const bridgemind: RemoteMcpConfig = {
 export const additionalMcpConfigs: Record<string, RemoteMcpConfig> = {
   deepwiki,
   semgrep,
+  sequential_thinking,
+  bridgemind,
 }
 
-export const additionalMcpNames = ['deepwiki', 'semgrep'] as const
+export const additionalMcpNames = [
+  'deepwiki',
+  'semgrep',
+  'sequential_thinking',
+  'bridgemind',
+] as const
 export type AdditionalMcpName = (typeof additionalMcpNames)[number]

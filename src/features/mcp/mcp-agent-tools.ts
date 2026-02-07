@@ -22,8 +22,13 @@ export const mcpDeepwikiSearch = tool({
     query: z.string().min(1).describe('Search query for knowledge base'),
   },
   async execute(args) {
-    const result = await mcpLoader.callTool('search', args, deepwiki)
-    return JSON.stringify(result, null, 2)
+    try {
+      const result = await mcpLoader.callTool('search', args, deepwiki)
+      return JSON.stringify(result, null, 2)
+    } catch (err) {
+      const error = err as Error
+      return JSON.stringify({ error: 'DeepWiki search failed', details: error.message }, null, 2)
+    }
   },
 })
 
@@ -40,8 +45,13 @@ export const mcpSemgrepSearch = tool({
     language: z.string().optional().describe('Filter by programming language'),
   },
   async execute(args) {
-    const result = await mcpLoader.callTool('search', args, semgrep)
-    return JSON.stringify(result, null, 2)
+    try {
+      const result = await mcpLoader.callTool('search', args, semgrep)
+      return JSON.stringify(result, null, 2)
+    } catch (err) {
+      const error = err as Error
+      return JSON.stringify({ error: 'Semgrep search failed', details: error.message }, null, 2)
+    }
   },
 })
 
@@ -62,8 +72,17 @@ export const mcpSequentialThinking = tool({
       .describe('Number of reasoning steps to take (default: 5)'),
   },
   async execute(args) {
-    const result = await mcpLoader.callTool('think', args, sequential_thinking)
-    return JSON.stringify(result, null, 2)
+    try {
+      const result = await mcpLoader.callTool('think', args, sequential_thinking)
+      return JSON.stringify(result, null, 2)
+    } catch (err) {
+      const error = err as Error
+      return JSON.stringify(
+        { error: 'Sequential thinking failed', details: error.message },
+        null,
+        2,
+      )
+    }
   },
 })
 
@@ -83,8 +102,13 @@ export const mcpBridgemind = tool({
     mapId: z.string().optional().describe('ID of existing mind map to explore'),
   },
   async execute(args) {
-    const result = await mcpLoader.callTool(args.action, args, bridgemind)
-    return JSON.stringify(result, null, 2)
+    try {
+      const result = await mcpLoader.callTool(args.action, args, bridgemind)
+      return JSON.stringify(result, null, 2)
+    } catch (err) {
+      const error = err as Error
+      return JSON.stringify({ error: 'Bridgemind failed', details: error.message }, null, 2)
+    }
   },
 })
 

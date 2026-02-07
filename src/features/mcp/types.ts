@@ -80,4 +80,11 @@ export interface WebsearchConfig {
    * - "tavily": Tavily (requires TAVILY_API_KEY)
    */
   provider?: 'exa' | 'tavily'
+  enabled?: boolean
+  apiKey?: string
+  timeout?: number
+  numResults?: number
+  livecrawl?: 'fallback' | 'preferred'
+  searchType?: 'auto' | 'fast' | 'deep'
+  contextMaxCharacters?: number
 }

@@ -8,7 +8,7 @@
  * @see https://eslint.org/docs/latest/extend-rules
  */
 
-module.exports = {
+const rule = {
   meta: {
     type: 'problem',
     docs: {
@@ -30,9 +30,9 @@ module.exports = {
     // Check if logger is imported in this file
     const sourceText = sourceCode.getText()
     const hasLoggerImport =
-      /import\s+.*logger['"]/.test(sourceText) ||
-      /from\s+['"][^'"]*logger['"]/.test(sourceText) ||
-      /require\s*\(\s*logger\s*\)/.test(sourceText)
+      /import\s+['"][^'"]*logger\b['"]/.test(sourceText) ||
+      /import\s+.*\s+from\s+['"][^'"]*logger\b['"]/.test(sourceText) ||
+      /require\s*\(\s*['"][^'"]*logger['"]\s*\)/.test(sourceText)
 
     return {
       MemberExpression(node) {
@@ -75,32 +75,34 @@ module.exports = {
                   data: { method },
                   fix: (fixer) => {
                     // Find the last import statement
-                    const lastImport = sourceCode
-                      .getAST()
-                      .body.findLast(
-                        (node) =>
-                          node.type === 'ImportDeclaration' ||
-                          node.type === 'VariableDeclaration' ||
-                          (node.type === 'ExpressionStatement' &&
-                            node.expression.type === 'CallExpression' &&
-                            node.expression.callee.type === 'Identifier' &&
-                            node.expression.callee.name === 'require'),
-                      )
+                    const lastImport = sourceCode.ast.body.findLast(
+                      (node) =>
+                        node.type === 'ImportDeclaration' ||
+                        (node.type === 'ExpressionStatement' &&
+                          node.expression.type === 'CallExpression' &&
+                          node.expression.callee.type === 'Identifier' &&
+                          node.expression.callee.name === 'require'),
+                    )
 
                     if (lastImport) {
-                      // Add import and logger creation after last import
-                      const insertPoint = sourceCode.getTokenAfter(lastImport)
+                      // Compute safe insertion position
+                      const insertPoint =
+                        sourceCode.getLastToken(lastImport) || sourceCode.getTokenAfter(lastImport)
                       if (insertPoint) {
                         return [
-                          fixer.insertTextAfter(insertPoint, `\n${loggerImport}`),
-                          fixer.insertTextAfter(insertPoint, loggerCreation),
+                          fixer.insertTextAfter(insertPoint, `${loggerImport}${loggerCreation}`),
                           fixer.replaceText(node.object, 'logger'),
                         ]
                       }
                     }
 
+                    // Fallback: insert after lastImport.range[1] or at file top
+                    const insertPosition = lastImport ? lastImport.range[1] : 0
                     return [
-                      fixer.insertTextBefore(sourceCode.ast, `${loggerImport}${loggerCreation}`),
+                      fixer.insertTextBeforeRange(
+                        [insertPosition, insertPosition],
+                        `${loggerImport}${loggerCreation}`,
+                      ),
                       fixer.replaceText(node.object, 'logger'),
                     ]
                   },
@@ -111,5 +113,11 @@ module.exports = {
         }
       },
     }
+  },
+}
+
+module.exports = {
+  rules: {
+    'no-unguarded-console-in-hooks': rule,
   },
 }

@@ -70,6 +70,15 @@ export class MCPLoader {
     args: Record<string, unknown>,
     mcpConfig: RemoteMcpConfig,
   ): Promise<unknown> {
+    // Validate config
+    if (mcpConfig.enabled === false) {
+      throw new Error(`MCP ${mcpConfig.name || this.deriveNameFromUrl(mcpConfig.url)} is disabled`)
+    }
+
+    if (!mcpConfig.url) {
+      throw new Error('MCP config requires a URL')
+    }
+
     // Use mcpConfig.name for tool routing, or derive from URL if not provided
     const mcpName = mcpConfig.name || this.deriveNameFromUrl(mcpConfig.url)
 
