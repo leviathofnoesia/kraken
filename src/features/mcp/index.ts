@@ -1,190 +1,87 @@
 /**
  * MCP (Model Context Protocol) Integration Index
  *
- * Exports all built-in MCP servers and provides utility functions for MCP management.
+ * Exports all built-in MCP remote configurations and provides utility functions.
  */
 
-import type { MCPServerDefinition } from './types'
-import { createLogger } from '../../utils/logger'
+import type { RemoteMcpConfig, WebsearchConfig } from './types'
 
-// Import all built-in MCP servers
-import { websearchMCP } from './websearch'
-import { context7MCP } from './context7'
-import { grepAppMCP } from './grep-app'
-
-const SHOULD_LOG =
-  process.env.ANTIGRAVITY_DEBUG === '1' ||
-  process.env.DEBUG === '1' ||
-  process.env.KRAKEN_LOG === '1'
-const logger = createLogger('mcp-index')
+// Import all built-in MCP configurations
+import { createWebsearchConfig, websearch } from './websearch'
+import { context7 } from './context7'
+import { grep_app } from './grep-app'
 
 /**
- * Built-in MCP Servers
- *
- * These are MCP servers that are built into Kraken Code and available by default.
+ * Built-in MCP Server Names
  */
-export const builtinMCPs: MCPServerDefinition[] = [websearchMCP, context7MCP, grepAppMCP]
+export const builtinMcpNames: readonly ['websearch', 'context7', 'grep_app'] = [
+  'websearch',
+  'context7',
+  'grep_app',
+] as const
+
+export type BuiltinMcpName = (typeof builtinMcpNames)[number]
 
 /**
- * MCP Server Names
- *
- * Returns a list of all built-in MCP server names.
+ * Built-in MCP Remote Configurations
  */
-export function getBuiltinMcpNames(): string[] {
-  return builtinMCPs.map((mcp) => mcp.name)
+export const builtinMcpConfigs: Record<BuiltinMcpName, RemoteMcpConfig> = {
+  websearch,
+  context7,
+  grep_app,
 }
 
 /**
- * Get MCP Server Information
+ * Get Built-in MCP Names
  *
- * Returns detailed information about a specific built-in MCP server.
- *
- * @param name - The name of the MCP server
- * @returns MCP server information or undefined if not found
+ * Returns list of all built-in MCP server names.
  */
-export function getBuiltinMcpInfo(name: string): MCPServerDefinition | undefined {
-  return builtinMCPs.find((mcp) => mcp.name === name)
+export function getBuiltinMcpNames(): readonly string[] {
+  return builtinMcpNames
 }
 
 /**
- * Get MCP Server Tools
+ * Get Built-in MCP Configuration
  *
- * Returns all tools provided by a specific built-in MCP server.
+ * Returns remote configuration for a specific built-in MCP.
  *
- * @param name - The name of the MCP server
- * @returns Array of tools or empty array if server not found
+ * @param name - The name of MCP server
+ * @returns MCP server configuration or undefined if not found
  */
-export function getBuiltinMcpTools(name: string) {
-  const mcp = getBuiltinMcpInfo(name)
-  return mcp?.tools ?? []
+export function getBuiltinMcpConfig(name: BuiltinMcpName): RemoteMcpConfig | undefined {
+  return builtinMcpConfigs[name]
 }
 
 /**
- * Get All MCP Server Tools
+ * Create Built-in MCPs for Plugin
  *
- * Returns all tools from all built-in MCP servers.
+ * Returns a map of remote MCP configurations for plugin integration.
  *
- * @returns Array of all tools from all built-in MCP servers
+ * @param disabledMcps - List of MCP names to exclude
+ * @param config - Optional configuration for websearch provider
  */
-export function getAllBuiltinMcpTools() {
-  return builtinMCPs.flatMap((mcp) => mcp.tools)
-}
+export function createBuiltinMcpConfigs(
+  disabledMcps: string[] = [],
+  config?: { websearch?: WebsearchConfig },
+): Record<string, RemoteMcpConfig> {
+  const mcps: Record<string, RemoteMcpConfig> = {}
 
-/**
- * Get Enabled MCP Servers
- *
- * Returns all built-in MCP servers that are currently enabled.
- *
- * @returns Array of enabled MCP servers
- */
-export function getEnabledMcpServers(): MCPServerDefinition[] {
-  return builtinMCPs.filter((mcp) => {
-    // Check if MCP is enabled in its config
-    const enabled = mcp.configSchema?.enabled
-    return enabled !== false // Default to true if not specified
-  })
-}
-
-/**
- * Initialize All MCP Servers
- *
- * Initializes all built-in MCP servers with their configurations.
- *
- * @param configs - Configuration object with server-specific configs
- */
-export async function initializeAllMcpServers(
-  configs: Record<string, Record<string, unknown>> = {},
-): Promise<void> {
-  for (const mcp of builtinMCPs) {
-    const config = configs[mcp.name] || {}
-    if (mcp.initialize) {
-      try {
-        await mcp.initialize(config)
-      } catch (error) {
-        if (SHOULD_LOG) {
-          logger.warn(`Failed to initialize MCP server '${mcp.name}':`, error)
-        }
-        throw error
-      }
-    }
-  }
-}
-
-/**
- * Shutdown All MCP Servers
- *
- * Shuts down all built-in MCP servers and performs cleanup.
- */
-export async function shutdownAllMcpServers(): Promise<void> {
-  for (const mcp of builtinMCPs) {
-    if (mcp.shutdown) {
-      try {
-        await mcp.shutdown()
-      } catch (error) {
-        if (SHOULD_LOG) {
-          logger.warn(`Failed to shutdown MCP server '${mcp.name}':`, error)
-        }
-      }
-    }
-  }
-}
-
-/**
- * Check MCP Server Health
- *
- * Performs health checks on all built-in MCP servers.
- *
- * @returns Object with server names and health status
- */
-export async function checkAllMcpHealth(): Promise<Record<string, boolean>> {
-  const healthStatus: Record<string, boolean> = {}
-
-  for (const mcp of builtinMCPs) {
-    try {
-      if (mcp.healthCheck) {
-        healthStatus[mcp.name] = await mcp.healthCheck()
-      } else {
-        healthStatus[mcp.name] = true // Assume healthy if no health check
-      }
-    } catch (error) {
-      if (SHOULD_LOG) {
-        logger.warn(`Health check failed for MCP server '${mcp.name}':`, error)
-      }
-      healthStatus[mcp.name] = false
-    }
+  if (!disabledMcps.includes('websearch')) {
+    mcps.websearch = createWebsearchConfig(config?.websearch)
   }
 
-  return healthStatus
+  if (!disabledMcps.includes('context7')) {
+    mcps.context7 = context7
+  }
+
+  if (!disabledMcps.includes('grep_app')) {
+    mcps.grep_app = grep_app
+  }
+
+  return mcps
 }
 
 /**
- * Re-export types for external use
+ * Re-export types
  */
-export type {
-  MCPServerDefinition,
-  MCPTool,
-  BaseMCPConfig,
-  WebsearchConfig,
-  Context7Config,
-  GrepAppConfig,
-  WebsearchResult,
-  DocumentationResult,
-  GrepResult,
-  MCPError,
-  MCPRateLimitError,
-  MCPAuthenticationError,
-  MCPTimeoutError,
-} from './types'
-
-// Re-export utility classes
-export { RateLimiter } from './types'
-
-// Re-export specific MCP server implementations
-export { websearchMCP, websearchTool, webfetchTool } from './websearch'
-export {
-  context7MCP,
-  context7SearchToolMCP,
-  context7GetToolMCP,
-  clearContext7Cache,
-} from './context7'
-export { grepAppMCP, grepSearchToolMCP, grepGetFileToolMCP } from './grep-app'
+export type { RemoteMcpConfig, WebsearchConfig } from './types'

@@ -89,15 +89,7 @@ import { createBlitzkriegEvidenceVerifierHook } from './hooks/blitzkrieg-evidenc
 import { createBlitzkriegPlannerConstraintsHook } from './hooks/blitzkrieg-planner-constraints'
 
 // MCP & Features
-import { initializeAllMcpServers, shutdownAllMcpServers } from './features/mcp/index'
-import {
-  context7GetToolMCP,
-  context7SearchToolMCP,
-  grepGetFileToolMCP,
-  grepSearchToolMCP,
-  webfetchTool,
-  websearchTool,
-} from './features/mcp'
+import { createBuiltinMcpConfigs } from './features/mcp/index'
 import { initializeLearning } from './features/memory'
 
 // CLI & Skills
@@ -173,12 +165,6 @@ const builtinTools: Record<string, any> = {
   'kraken-compress': opencodeXCompress,
   'model-switcher': modelSwitcher,
   'ralph-loop': ralphLoop,
-  websearch: websearchTool,
-  webfetch: webfetchTool,
-  'context7-search': context7SearchToolMCP,
-  'context7-get': context7GetToolMCP,
-  'grep-search': grepSearchToolMCP,
-  'grep-get-file': grepGetFileToolMCP,
   learning_add_experience,
   learning_search_experiences,
   learning_add_knowledge_node,
@@ -267,8 +253,13 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         (async () => {
           try {
             const mcpConfig = pluginConfig.mcp || {}
-            await initializeAllMcpServers(mcpConfig)
-            logger.debug('MCP servers initialized')
+            const builtinMcpConfigs = createBuiltinMcpConfigs(
+              (mcpConfig as any)?.disabled_mcps || [],
+              { websearch: (mcpConfig as any)?.websearch },
+            )
+            // Merge built-in MCP configs into plugin config
+            Object.assign(pluginConfig.mcp as Record<string, unknown>, builtinMcpConfigs)
+            logger.debug('MCP server configs added')
           } catch (e) {
             if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
               logger.error('Error initializing MCP servers:', e)
@@ -348,11 +339,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
 
   // 7. MCP Shutdown on plugin exit
   process.on('exit', async () => {
-    try {
-      await shutdownAllMcpServers()
-    } catch (e) {
-      console.error('Kraken Code: Error shutting down services', e)
-    }
+    // No shutdown needed for remote MCP configurations
   })
 
   return mergeHooks(...hooks)
