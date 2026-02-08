@@ -47,7 +47,12 @@ See [Installation Guide](./docs/INSTALLATION.md) for additional methods (NPM, Ho
 - [Installation](./docs/INSTALLATION.md) - Complete setup guide
 - [Commands](./docs/COMMANDS.md) - CLI reference
 - [Skills](./docs/SKILLS.md) - Writing and using skills
-- [Contributing](./CONTRIBUTING.md) - Development setup and guidelines
+- [Contributing](./docs/CONTRIBUTING.md) - Development setup and guidelines
+
+## More Projects
+
+- [AgentCompiler](https://github.com/leviathofnoesia/AgentCompiler) - Converts framework docs into AI agent-readable indexes
+- [AgentCompiler API](https://github.com/leviathofnoesia/agentcompiler-api) - REST API for autonomous doc compilation with x402 payments
 
 ## Quick Reference
 
