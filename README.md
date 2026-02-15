@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/v1.2.1-brightgreen?labelColor=0e8fd0&style=flat-square)
+![Version](https://img.shields.io/badge/v1.5.4-brightgreen?labelColor=0e8fd0&style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT?labelColor=black&style=flat-square)
 ![Bun](https://img.shields.io/badge/bun-1.2%2B-white?labelColor=%231F27&style=flat-square)
 ![OpenCode](https://img.shields.io/badge/compatibility-green?label=OpenCode&style=flat-square)
