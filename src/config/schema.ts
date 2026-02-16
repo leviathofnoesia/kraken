@@ -37,6 +37,11 @@ export const OpenCodeXHookNameSchema = z.enum([
   'blitzkrieg-tdd-workflow',
   'blitzkrieg-evidence-verifier',
   'blitzkrieg-planner-constraints',
+  // Token Efficiency Hooks
+  'thinking-budget-optimizer',
+  'prompt-compression',
+  'smart-context-injection',
+  'transcript-summarization',
 ])
 
 export const OpenCodeXBuiltinCommandNameSchema = z.enum(['init-deep'])
@@ -331,6 +336,43 @@ export const ClaudeCodeCompatibilityConfigSchema = z
   })
   .optional()
 
+// Token Efficiency Config Schemas
+export const ThinkingBudgetOptimizerConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  model: z.string().optional(),
+  budgets: z
+    .object({
+      simple: z.number().default(4000),
+      medium: z.number().default(8000),
+      complex: z.number().default(16000),
+      full: z.number().default(32000),
+    })
+    .optional(),
+  autoClassify: z.boolean().default(true),
+})
+
+export const PromptCompressionConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  threshold: z.number().default(2000),
+  level: z.enum(['cache_hit', 'partial', 'full']).default('partial'),
+  excludePatterns: z.array(z.string()).optional(),
+})
+
+export const SmartContextInjectionConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  maxTokens: z.number().default(2000),
+  chunkSize: z.number().default(500),
+  minRelevanceScore: z.number().default(0.1),
+  filePatterns: z.array(z.string()).optional(),
+})
+
+export const TranscriptSummarizationConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  messageThreshold: z.number().default(30),
+  summaryRatio: z.number().default(0.3),
+  preserveRecent: z.number().default(5),
+})
+
 export const OpenCodeXConfigSchema = z.object({
   $schema: z.string().optional(),
   disabled_hooks: z.array(OpenCodeXHookNameSchema).optional(),
@@ -359,6 +401,11 @@ export const OpenCodeXConfigSchema = z.object({
   skillMcp: SkillMcpConfigSchema.optional(),
   commandLoader: CommandLoaderConfigSchema.optional(),
   claudeCodeCompatibility: ClaudeCodeCompatibilityConfigSchema.optional(),
+  // Token Efficiency Config
+  thinkingBudgetOptimizer: ThinkingBudgetOptimizerConfigSchema.optional(),
+  promptCompression: PromptCompressionConfigSchema.optional(),
+  smartContextInjection: SmartContextInjectionConfigSchema.optional(),
+  transcriptSummarization: TranscriptSummarizationConfigSchema.optional(),
 })
 
 export type OpenCodeXConfig = z.infer<typeof OpenCodeXConfigSchema>
@@ -388,3 +435,7 @@ export type ModesConfig = z.infer<typeof ModesConfigSchema>
 export type SkillMcpConfig = z.infer<typeof SkillMcpConfigSchema>
 export type CommandLoaderConfig = z.infer<typeof CommandLoaderConfigSchema>
 export type ClaudeCodeCompatibilityConfig = z.infer<typeof ClaudeCodeCompatibilityConfigSchema>
+export type ThinkingBudgetOptimizerConfig = z.infer<typeof ThinkingBudgetOptimizerConfigSchema>
+export type PromptCompressionConfig = z.infer<typeof PromptCompressionConfigSchema>
+export type SmartContextInjectionConfig = z.infer<typeof SmartContextInjectionConfigSchema>
+export type TranscriptSummarizationConfig = z.infer<typeof TranscriptSummarizationConfigSchema>

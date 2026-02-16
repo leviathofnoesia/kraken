@@ -88,6 +88,12 @@ import { createBlitzkriegTddWorkflowHook } from './hooks/blitzkrieg-tdd-workflow
 import { createBlitzkriegEvidenceVerifierHook } from './hooks/blitzkrieg-evidence-verifier'
 import { createBlitzkriegPlannerConstraintsHook } from './hooks/blitzkrieg-planner-constraints'
 
+// Token Efficiency Hooks
+import { createThinkingBudgetOptimizerHook } from './hooks/thinking-budget-optimizer'
+import { createPromptCompressionHook } from './hooks/prompt-compression'
+import { createSmartContextInjectionHook } from './hooks/smart-context-injection'
+import { createTranscriptSummarizationHook } from './hooks/transcript-summarization'
+
 // MCP & Features
 import { createBuiltinMcpConfigs, getMcpAgentTools } from './features/mcp/index'
 import { initializeLearning } from './features/memory'
@@ -314,6 +320,12 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     hooks.push(createBlitzkriegTddWorkflowHook())
     hooks.push(createBlitzkriegEvidenceVerifierHook())
     hooks.push(createBlitzkriegPlannerConstraintsHook())
+
+    // Token Efficiency Hooks (Phase 1 & 2)
+    hooks.push(createThinkingBudgetOptimizerHook(input))
+    hooks.push(createPromptCompressionHook(input))
+    hooks.push(createSmartContextInjectionHook(input))
+    hooks.push(createTranscriptSummarizationHook(input))
   } catch (e) {
     if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
       logger.error('Error initializing hooks:', e)

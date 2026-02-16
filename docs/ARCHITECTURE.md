@@ -55,6 +55,20 @@ Hooks are used to intercept OpenCode lifecycle events (`tool.execute.before`, `t
 - Session storage
 - Learning initialization
 
+### Token Efficiency Hooks
+
+Kraken includes intelligent token optimization hooks that reduce context usage:
+
+- **Thinking Budget Optimizer** (`thinking-budget-optimizer`) - Classifies task complexity (simple/medium/complex/full) and adjusts thinking budgets accordingly. Simple fixes get 4K tokens, complex refactors get 16K, ultrathink mode gets 32K.
+
+- **Prompt Compression** (`prompt-compression`) - Compresses verbose prompts while preserving semantic meaning. Removes redundancy and normalizes formatting.
+
+- **Smart Context Injection** (`smart-context-injection`) - Intelligently injects only relevant context based on current task. Uses keyword matching to filter files.
+
+- **Transcript Summarization** (`transcript-summarization`) - Summarizes old transcript entries to reduce context window usage while preserving key decisions.
+
+These hooks run automatically when enabled and can reduce token usage by 30-50% on typical sessions.
+
 ## Configuration Flow
 
 1. `~/.config/opencode/kraken-code.json` is parsed by the config manager.

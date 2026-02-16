@@ -34,7 +34,11 @@
           "blitzkrieg-test-plan-enforcer",
           "blitzkrieg-tdd-workflow",
           "blitzkrieg-evidence-verifier",
-          "blitzkrieg-planner-constraints"
+          "blitzkrieg-planner-constraints",
+          "thinking-budget-optimizer",
+          "prompt-compression",
+          "smart-context-injection",
+          "transcript-summarization"
         ]
       }
     },
@@ -2228,6 +2232,119 @@
               }
             }
           }
+        }
+      }
+    },
+    "thinkingBudgetOptimizer": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "model": {
+          "type": "string"
+        },
+        "budgets": {
+          "type": "object",
+          "properties": {
+            "simple": {
+              "default": 4000,
+              "type": "number"
+            },
+            "medium": {
+              "default": 8000,
+              "type": "number"
+            },
+            "complex": {
+              "default": 16000,
+              "type": "number"
+            },
+            "full": {
+              "default": 32000,
+              "type": "number"
+            }
+          }
+        },
+        "autoClassify": {
+          "default": true,
+          "type": "boolean"
+        }
+      }
+    },
+    "promptCompression": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "threshold": {
+          "default": 2000,
+          "type": "number"
+        },
+        "level": {
+          "default": "partial",
+          "type": "string",
+          "enum": [
+            "cache_hit",
+            "partial",
+            "full"
+          ]
+        },
+        "excludePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "smartContextInjection": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "maxTokens": {
+          "default": 2000,
+          "type": "number"
+        },
+        "chunkSize": {
+          "default": 500,
+          "type": "number"
+        },
+        "minRelevanceScore": {
+          "default": 0.1,
+          "type": "number"
+        },
+        "filePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "transcriptSummarization": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "messageThreshold": {
+          "default": 30,
+          "type": "number"
+        },
+        "summaryRatio": {
+          "default": 0.3,
+          "type": "number"
+        },
+        "preserveRecent": {
+          "default": 5,
+          "type": "number"
         }
       }
     }
