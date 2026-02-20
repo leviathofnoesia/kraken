@@ -7,10 +7,10 @@ import {
 
 describe('Cartographer v2', () => {
   describe('createCartographerConfig', () => {
-    it('should create agent config with correct default model', () => {
+    it('should create agent config without forcing a default model', () => {
       const config = createCartographerConfig()
       expect(config).toBeDefined()
-      expect(config.model).toBe('anthropic/claude-opus-4-5')
+      expect(config.model).toBeUndefined()
     })
 
     it('should accept custom model', () => {
@@ -33,8 +33,8 @@ describe('Cartographer v2', () => {
       expect(config.temperature).toBe(0.2)
     })
 
-    it('should enable extended thinking with 100k budget for Claude models', () => {
-      const config = createCartographerConfig()
+    it('should enable extended thinking with 100k budget for non-GPT custom models', () => {
+      const config = createCartographerConfig('anthropic/claude-opus-4-5')
       expect(config.thinking).toEqual({
         type: 'enabled',
         budgetTokens: 100000,
@@ -46,12 +46,22 @@ describe('Cartographer v2', () => {
       expect((config as any).reasoningEffort).toBe('high')
     })
 
-    it('should block write and edit but allow task delegation', () => {
+    it('should enforce read-only constraints and still allow task delegation', () => {
       const config = createCartographerConfig()
-      expect(config.tools?.write).toBe(false)
-      expect(config.tools?.edit).toBe(false)
+      const perm = config.permission as Record<string, unknown> | undefined
+
+      // write is in legacy tools, edit/bash are in new permission system
+      const writeDenied = config.tools?.write === false
+      const editDenied = perm?.edit === 'deny'
+      const bashDenied = config.tools?.bash === false || perm?.bash === 'deny'
+
+      expect(writeDenied).toBe(true)
+      expect(editDenied).toBe(true)
+      expect(bashDenied).toBe(true)
+
       // task should NOT be disabled - Cartographer must delegate to subagents
       expect(config.tools?.task).toBeUndefined()
+      expect(perm?.task).toBeUndefined()
     })
 
     it('should inject PRIMARY MODE context when interactive', () => {
@@ -153,7 +163,7 @@ describe('Cartographer v2', () => {
   describe('cartographerAgent default export', () => {
     it('should export a valid default config', () => {
       expect(cartographerAgent).toBeDefined()
-      expect(cartographerAgent.model).toBe('anthropic/claude-opus-4-5')
+      expect(cartographerAgent.model).toBeUndefined()
       expect(cartographerAgent.mode).toBe('primary')
     })
   })
@@ -209,10 +219,9 @@ describe('Cartographer v2', () => {
       expect(merged.mode).toBe('primary')
     })
 
-    it('should retain thinking config when only temperature overridden', () => {
+    it('should retain core fields when only temperature overridden', () => {
       const config = createCartographerConfig()
       const merged = { ...config, temperature: 0.5 }
-      expect(merged.thinking).toBeDefined()
       expect(merged.prompt).toBeDefined()
       expect(merged.temperature).toBe(0.5)
     })

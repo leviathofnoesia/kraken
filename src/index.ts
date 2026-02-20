@@ -97,6 +97,8 @@ import { createTranscriptSummarizationHook } from './hooks/transcript-summarizat
 // MCP & Features
 import { createBuiltinMcpConfigs, getMcpAgentTools } from './features/mcp/index'
 import { initializeLearning } from './features/memory'
+import { isUniversalTarget, type UniversalMode, type UniversalTarget } from './universal/targets'
+import { wrapToolsWithPolicy } from './universal/tool-wrapper'
 
 // CLI & Skills
 import { initializeCommandLoader } from './features/command-loader'
@@ -160,6 +162,20 @@ function mergeHooks(...hooks: Hooks[]): Hooks {
   return result
 }
 
+async function withTimeout<T>(work: Promise<T>, timeoutMs: number): Promise<T | null> {
+  let timeoutHandle: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      work,
+      new Promise<null>((resolve) => {
+        timeoutHandle = setTimeout(() => resolve(null), timeoutMs)
+      }),
+    ])
+  } finally {
+    if (timeoutHandle) clearTimeout(timeoutHandle)
+  }
+}
+
 const builtinTools: Record<string, any> = {
   ast_grep_search,
   ast_grep_replace,
@@ -183,6 +199,22 @@ const builtinTools: Record<string, any> = {
   learning_create_state_machine,
   learning_list_state_machines,
   ...getMcpAgentTools(),
+}
+
+function resolveRuntimeTarget(): UniversalTarget {
+  const raw = process.env.KRAKEN_TARGET
+  if (raw && isUniversalTarget(raw)) {
+    return raw
+  }
+  return 'opencode'
+}
+
+function resolveRuntimeMode(): UniversalMode {
+  const raw = process.env.KRAKEN_MODE
+  if (raw === 'strict' || raw === 'standard') {
+    return raw
+  }
+  return 'standard'
 }
 
 const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
@@ -212,7 +244,12 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
   Object.assign(hooks, claudeCodeHooks)
 
   // 4. Basic tools
-  hooks.push({ tool: builtinTools })
+  hooks.push({
+    tool: wrapToolsWithPolicy(builtinTools, {
+      target: resolveRuntimeTarget(),
+      mode: resolveRuntimeMode(),
+    }),
+  })
 
   // 5. Configuration Hook
   hooks.push({
@@ -239,8 +276,12 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
       await Promise.all([
         (async () => {
           try {
-            await initializeCommandLoader()
-            logger.debug('Command loader initialized')
+            const result = await withTimeout(initializeCommandLoader(), 3000)
+            if (result === null) {
+              logger.warn('Command loader initialization timed out')
+            } else {
+              logger.debug('Command loader initialized')
+            }
           } catch (e) {
             if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
               logger.error('Error initializing command loader:', e)
@@ -249,8 +290,15 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         })(),
         (async () => {
           try {
-            await initializeSkillMcpManager()
-            logger.debug('Skill MCP manager initialized')
+            const result = await withTimeout(
+              initializeSkillMcpManager(),
+              3000,
+            )
+            if (result === null) {
+              logger.warn('Skill MCP manager initialization timed out')
+            } else {
+              logger.debug('Skill MCP manager initialized')
+            }
           } catch (e) {
             if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
               logger.error('Error initializing skill MCP manager:', e)
@@ -275,8 +323,12 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         })(),
         (async () => {
           try {
-            await initializeLearning()
-            logger.debug('Learning system initialized')
+            const result = await withTimeout(initializeLearning(), 3000)
+            if (result === null) {
+              logger.warn('Learning system initialization timed out')
+            } else {
+              logger.debug('Learning system initialized')
+            }
           } catch (e) {
             if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
               logger.error('Error initializing learning system:', e)
@@ -290,7 +342,13 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
   // 6. Feature/Lifecycle Hooks
   try {
     hooks.push(createThinkModeHook(input))
-    hooks.push({ tool: createBackgroundAgentFeature(input).tools })
+    const backgroundFeature = createBackgroundAgentFeature(input)
+    hooks.push({
+      tool: wrapToolsWithPolicy(backgroundFeature.tools as Record<string, any>, {
+        target: resolveRuntimeTarget(),
+        mode: resolveRuntimeMode(),
+      }),
+    })
     hooks.push(createContextWindowMonitorHook(input))
     hooks.push(createRalphLoopHook(input))
     hooks.push(createKeywordDetector(input))

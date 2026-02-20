@@ -1,6 +1,6 @@
 {
   "name": "kraken-code",
-  "version": "1.5.4",
+  "version": "1.6.0",
   "description": "Kraken Code - Transforms OpenCode into an autonomous, high-density development environment",
   "type": "module",
   "main": "dist/index.js",
@@ -46,6 +46,7 @@
     "format:check": "prettier --check \"src/**/*.ts\"",
     "test": "bun test",
     "test:watch": "bun test --watch",
+    "release:cut": "bash scripts/release-cut.sh",
     "install:curl": "bash scripts/install-curl.sh",
     "agent:docs": "npx skill-compiler compile",
     "agent:docs:watch": "npx skill-compiler watch",

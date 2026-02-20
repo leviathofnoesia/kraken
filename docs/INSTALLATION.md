@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - **Node.js 18+** or **Bun 1.2+**
-- **OpenCode** (required)
+- One host client: **OpenCode**, **Codex**, **Claude Code**, **Cline**, **Cursor**, **VS Code/Antigravity**, or CI agent runtime
 
 ## Installation Methods
 
@@ -65,6 +65,43 @@ kraken-code --version
 kraken-code status
 kraken-code doctor
 ```
+
+## Universal Client Setup
+
+Use `--target` to install outside OpenCode:
+
+```bash
+kraken-code init --target codex
+kraken-code init --target claude
+kraken-code init --target cursor
+kraken-code init --target cline
+kraken-code init --target vscode
+kraken-code init --target ci
+```
+
+This writes:
+
+- Shared config: `~/.config/kraken/kraken.json`
+- Target profile: `~/.config/kraken/targets/<target>.json`
+- Host adapter registration:
+  - `codex`: `~/.codex/config.json`
+  - `claude`: `~/.claude/settings.local.json`
+  - `cline`: `~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`
+  - `cursor`: `~/.cursor/mcp.json`
+  - `vscode`: VS Code user `settings.json` (`mcp.servers.kraken`)
+  - `ci`: `~/.config/kraken/ci/bridge.json`
+
+Verification commands:
+
+```bash
+kraken-code status --target <target>
+kraken-code doctor --target <target>
+kraken-code validate --target <target>
+```
+
+Acceptance checklist with copy-paste snippets:
+
+- `docs/UNIVERSAL_ACCEPTANCE.md`
 
 ## Updating
 

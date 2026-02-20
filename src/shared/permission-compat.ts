@@ -47,6 +47,20 @@ export function createAgentToolRestrictions(denyTools: string[]): VersionAwareRe
   }
 }
 
+export function createReadOnlyRestrictions(options?: {
+  allowTaskDelegation?: boolean
+  denyBash?: boolean
+}): VersionAwareRestrictions {
+  const denyTools = ['write', 'edit']
+  if (options?.allowTaskDelegation === false) {
+    denyTools.push('task')
+  }
+  if (options?.denyBash !== false) {
+    denyTools.push('bash')
+  }
+  return createAgentToolRestrictions(denyTools)
+}
+
 export function migrateToolsToPermission(
   tools: Record<string, boolean>,
 ): Record<string, PermissionValue> {

@@ -1,8 +1,7 @@
 import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
 import { isGptModel } from './types'
-
-const DEFAULT_MODEL = 'anthropic/claude-opus-4-5'
+import { createReadOnlyRestrictions } from '../shared/permission-compat'
 
 const CARTOGRAPHER_SYSTEM_PROMPT = `# Cartographer - Planning Engine
 
@@ -224,7 +223,7 @@ Always include a verification section showing that Phase 4 checks passed.
 8. **Never present a plan without a Definition of Done.** Every plan must have verifiable completion criteria.`
 
 export function createCartographerConfig(
-  model: string = DEFAULT_MODEL,
+  model?: string,
   options?: {
     mode?: 'primary' | 'subagent'
     interactive?: boolean
@@ -256,20 +255,24 @@ export function createCartographerConfig(
       'Advanced planning engine with verification gates, quantitative rigor, and interactive user collaboration. ' +
       'Produces correct, complete, verifiable plans through multi-seed search, local improvement, and mandatory self-checks.',
     mode,
-    model,
     temperature: 0.2,
     prompt: finalPrompt,
-    tools: {
-      write: false,
-      edit: false,
-    },
+    ...createReadOnlyRestrictions({ allowTaskDelegation: true, denyBash: true }),
   }
 
-  if (isGptModel(model)) {
+  if (model) {
+    base.model = model
+  }
+
+  if (model && isGptModel(model)) {
     return { ...base, reasoningEffort: 'high', textVerbosity: 'high' } as AgentConfig
   }
 
-  return { ...base, thinking: { type: 'enabled', budgetTokens: 100000 } } as AgentConfig
+  if (model) {
+    return { ...base, thinking: { type: 'enabled', budgetTokens: 100000 } } as AgentConfig
+  }
+
+  return base as AgentConfig
 }
 
 export const cartographerAgent = createCartographerConfig()

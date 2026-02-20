@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/v1.5.4-brightgreen?labelColor=0e8fd0&style=flat-square)
+![Version](https://img.shields.io/badge/v1.6.0-brightgreen?labelColor=0e8fd0&style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT?labelColor=black&style=flat-square)
 ![Bun](https://img.shields.io/badge/bun-1.2%2B-white?labelColor=%231F27&style=flat-square)
 ![OpenCode](https://img.shields.io/badge/compatibility-green?label=OpenCode&style=flat-square)
@@ -39,7 +39,15 @@ kraken-code init --full
 opencode
 ```
 
-See [Installation Guide](./docs/INSTALLATION.md) for additional methods (NPM, Homebrew, Docker, binaries).
+Universal targets:
+
+```bash
+kraken-code init --target codex
+kraken-code init --target claude
+kraken-code validate --target codex
+```
+
+See [Installation Guide](./docs/INSTALLATION.md) for additional methods (NPM, Homebrew, Docker, binaries) and [Universal Acceptance](./docs/UNIVERSAL_ACCEPTANCE.md).
 
 ## Documentation
 
@@ -62,6 +70,9 @@ kraken-code --version
 
 # System status
 kraken-code status
+
+# Fast validation
+kraken-code validate --target codex
 
 # View help
 kraken-code --help

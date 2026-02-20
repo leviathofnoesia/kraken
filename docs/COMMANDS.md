@@ -35,6 +35,15 @@ Run system diagnostics to verify installation.
 kraken-code doctor
 ```
 
+### kraken-code validate
+
+Run fast target validation (adapter schema + bridge launchability).
+
+```bash
+kraken-code validate --target codex
+kraken-code validate --target claude
+```
+
 ### kraken-code init
 
 Initialize Kraken Code with OpenCode.
@@ -45,6 +54,10 @@ kraken-code init --minimal
 
 # Full setup (all features)
 kraken-code init --full
+
+# Universal targets
+kraken-code init --target codex
+kraken-code init --target cursor
 ```
 
 ## Learning Commands

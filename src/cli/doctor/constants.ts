@@ -33,6 +33,10 @@ export const CHECK_IDS = {
   MCP_BUILTIN: 'mcp-builtin',
   MCP_USER: 'mcp-user',
   VERSION_STATUS: 'version-status',
+  UNIVERSAL_BOOTSTRAP: 'universal-bootstrap',
+  BRIDGE_BINARY: 'bridge-binary',
+  HOST_ADAPTER: 'host-adapter',
+  CLAUDE_MCP: 'claude-mcp',
 } as const
 
 export const CHECK_NAMES: Record<string, string> = {
@@ -51,6 +55,10 @@ export const CHECK_NAMES: Record<string, string> = {
   [CHECK_IDS.MCP_BUILTIN]: 'Built-in MCP Servers',
   [CHECK_IDS.MCP_USER]: 'User MCP Configuration',
   [CHECK_IDS.VERSION_STATUS]: 'Version Status',
+  [CHECK_IDS.UNIVERSAL_BOOTSTRAP]: 'Universal Target Bootstrap',
+  [CHECK_IDS.BRIDGE_BINARY]: 'Bridge Binary',
+  [CHECK_IDS.HOST_ADAPTER]: 'Host Adapter Registration',
+  [CHECK_IDS.CLAUDE_MCP]: 'Claude MCP Registration',
 } as const
 
 export const CATEGORY_NAMES: Record<string, string> = {

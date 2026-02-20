@@ -1,8 +1,8 @@
 import * as fs from 'fs'
 import * as path from 'path'
-import * as os from 'os'
+import { getHomeDir } from '../shared/home-dir'
 
-const STORAGE_DIR = path.join(os.homedir(), '.opencode', 'kraken-code')
+const STORAGE_DIR = path.join(getHomeDir(), '.opencode', 'kraken-code')
 const SESSIONS_DIR = path.join(STORAGE_DIR, 'sessions')
 
 export interface RalphLoopState {

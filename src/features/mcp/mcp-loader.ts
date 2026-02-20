@@ -9,15 +9,32 @@
 import type { RemoteMcpConfig } from './types'
 
 /**
- * MCP Connection (simulated for remote MCPs)
- *
- * For now, this is a placeholder that simulates MCP connection.
- * Future enhancement would use stdio to connect to actual MCP servers.
+ * MCP Connection metadata for remote MCPs.
  */
 interface MCPConnection {
   config: RemoteMcpConfig
   tools: string[]
   initialized: boolean
+}
+
+interface JsonRpcRequest {
+  jsonrpc: '2.0'
+  id: number
+  method: string
+  params: Record<string, unknown>
+}
+
+interface JsonRpcError {
+  code: number
+  message: string
+  data?: unknown
+}
+
+interface JsonRpcResponse {
+  jsonrpc?: '2.0'
+  id?: number
+  result?: unknown
+  error?: JsonRpcError
 }
 
 /**
@@ -29,6 +46,7 @@ interface MCPConnection {
 export class MCPLoader {
   private initialized = new Map<string, boolean>()
   private connections = new Map<string, MCPConnection>()
+  private requestCounter = 1
 
   /**
    * Initialize MCP connection lazily
@@ -85,12 +103,7 @@ export class MCPLoader {
     // Lazy initialization
     await this.initMCP(mcpName, mcpConfig)
 
-    // For now, return a simulated response
-    // Future: Use stdio connection to actual MCP server
-    return {
-      result: `Tool '${toolName}' called with args: ${JSON.stringify(args)}`,
-      server: mcpConfig.url,
-    }
+    return this.callRemoteMcpTool(mcpConfig, toolName, args)
   }
 
   /**
@@ -139,6 +152,64 @@ export class MCPLoader {
         return ['create', 'explore']
       default:
         return []
+    }
+  }
+
+  private async callRemoteMcpTool(
+    config: RemoteMcpConfig,
+    toolName: string,
+    args: Record<string, unknown>,
+  ): Promise<unknown> {
+    const requestBody: JsonRpcRequest = {
+      jsonrpc: '2.0',
+      id: this.requestCounter++,
+      method: 'tools/call',
+      params: {
+        name: toolName,
+        arguments: args,
+      },
+    }
+
+    const response = await fetch(config.url, {
+      method: 'POST',
+      headers: this.buildRequestHeaders(config),
+      body: JSON.stringify(requestBody),
+      signal: AbortSignal.timeout(30000),
+    })
+
+    const responseText = await response.text()
+    if (!response.ok) {
+      throw new Error(`MCP request failed (${response.status}): ${responseText || response.statusText}`)
+    }
+
+    const contentType = response.headers.get('content-type') || ''
+    if (contentType.includes('application/json') || responseText.trim().startsWith('{')) {
+      let parsed: JsonRpcResponse
+      try {
+        parsed = JSON.parse(responseText) as JsonRpcResponse
+      } catch {
+        throw new Error(`MCP returned invalid JSON: ${responseText}`)
+      }
+
+      if (parsed.error) {
+        throw new Error(`MCP error ${parsed.error.code}: ${parsed.error.message}`)
+      }
+
+      if (parsed.result !== undefined) {
+        return parsed.result
+      }
+
+      return parsed
+    }
+
+    return { result: responseText }
+  }
+
+  private buildRequestHeaders(config: RemoteMcpConfig): Record<string, string> {
+    return {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      ...(config.headers || {}),
     }
   }
 

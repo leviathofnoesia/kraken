@@ -8,6 +8,7 @@
  */
 
 import type { Hooks } from '@opencode-ai/plugin'
+import { readFile } from 'node:fs/promises'
 import { getBlitzkriegConfig as getConfig } from '../../config/manager'
 import {
   evaluateTddCompliance,
@@ -52,12 +53,16 @@ function clearSession(sessionId: string): void {
 
 /**
  * Get previous file content (for refactor detection)
- * This is a simplified implementation - in production would read from file system
  */
 async function getPreviousFileContent(filePath: string): Promise<string | undefined> {
-  // In a real implementation, this would read file from filesystem
-  // For now, we return undefined which means we can't detect refactors
-  return undefined
+  try {
+    return await readFile(filePath, 'utf-8')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return undefined
+    }
+    return undefined
+  }
 }
 
 /**

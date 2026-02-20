@@ -2,8 +2,17 @@
 import { writeFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs'
 import { parse as parseJsonc } from 'jsonc-parser'
 import * as path from 'path'
-import * as os from 'os'
 import color from 'picocolors'
+import { getHomeDir } from '../shared/home-dir'
+import { applyTargetAdapter } from '../universal/adapters'
+import {
+  TARGET_DEFINITIONS,
+  UNIVERSAL_TARGETS,
+  isUniversalTarget,
+  type UniversalTarget,
+} from '../universal/targets'
+
+type InitTarget = UniversalTarget
 
 // Simple deep merge utility for nested object merging
 function deepMerge<T = Record<string, any>>(base: T, override: Partial<T>): T {
@@ -28,14 +37,32 @@ function deepMerge<T = Record<string, any>>(base: T, override: Partial<T>): T {
   return result as T
 }
 
-export async function runInit(options: { minimal?: boolean; full?: boolean; verbose?: boolean }) {
+export async function runInit(options: {
+  minimal?: boolean
+  full?: boolean
+  verbose?: boolean
+  target?: InitTarget
+}) {
   if (options.verbose) {
     console.log(color.dim('🐙 Initializing Kraken Code with verbose output...'))
   } else {
     console.log(color.cyan('🐙 Initializing Kraken Code...'))
   }
 
-  const configDir = path.join(os.homedir(), '.config', 'opencode')
+  const target = options.target ?? 'opencode'
+  if (!isUniversalTarget(target)) {
+    console.error(color.red(`❌ Unsupported target: ${target}`))
+    console.error(color.dim(`Supported targets: ${UNIVERSAL_TARGETS.join(', ')}`))
+    process.exit(1)
+  }
+
+  if (target !== 'opencode') {
+    await runInitForUniversalTarget(target, options.verbose)
+    return
+  }
+
+  const home = getHomeDir()
+  const configDir = path.join(home, '.config', 'opencode')
   const opencodeConfigPath = path.join(configDir, 'opencode.json')
   const krakenConfigPath = path.join(configDir, 'kraken-code.json')
 
@@ -265,7 +292,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
     console.log(color.dim('\n🔍 Verifying installation...'))
   }
   try {
-    const opencodeConfigPath = path.join(os.homedir(), '.config', 'opencode', 'opencode.json')
+    const opencodeConfigPath = path.join(home, '.config', 'opencode', 'opencode.json')
     const opencodeConfig = parseJsonc(readFileSync(opencodeConfigPath, 'utf-8'))
 
     if (opencodeConfig.plugin && opencodeConfig.plugin.includes('kraken-code')) {
@@ -278,7 +305,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
       )
     }
 
-    const krakenConfigPath = path.join(os.homedir(), '.config', 'opencode', 'kraken-code.json')
+    const krakenConfigPath = path.join(home, '.config', 'opencode', 'kraken-code.json')
     if (existsSync(krakenConfigPath)) {
       console.log(color.green('✓ Kraken Code configuration file exists'))
     } else {
@@ -312,7 +339,7 @@ export async function runInit(options: { minimal?: boolean; full?: boolean; verb
 }
 
 async function installSkillTemplates() {
-  const skillDir = path.join(os.homedir(), '.config', 'opencode', 'skill')
+  const skillDir = path.join(getHomeDir(), '.config', 'opencode', 'skill')
 
   if (!existsSync(skillDir)) {
     mkdirSync(skillDir, { recursive: true })
@@ -349,5 +376,93 @@ async function installSkillTemplates() {
     }
   } else {
     console.log(color.dim('  ✓ Skill templates ready (manual install)'))
+  }
+}
+
+async function runInitForUniversalTarget(target: Exclude<InitTarget, 'opencode'>, verbose = false) {
+  const krakenDir = path.join(getHomeDir(), '.config', 'kraken')
+  const targetsDir = path.join(krakenDir, 'targets')
+  const krakenConfigPath = path.join(krakenDir, 'kraken.json')
+  const targetConfigPath = path.join(targetsDir, `${target}.json`)
+
+  if (!existsSync(targetsDir)) {
+    mkdirSync(targetsDir, { recursive: true })
+  }
+
+  const sharedConfig = {
+    profile: target,
+    bridge: {
+      protocol: 'mcp',
+      command: 'kraken-code',
+      args: ['bridge', 'start', '--protocol', 'mcp', '--target', target, '--mode', 'standard'],
+    },
+    mode: TARGET_DEFINITIONS[target].mode,
+    capabilities: TARGET_DEFINITIONS[target].capabilities,
+  }
+
+  writeFileSync(krakenConfigPath, JSON.stringify(sharedConfig, null, 2))
+  writeFileSync(targetConfigPath, JSON.stringify(buildTargetConfig(target), null, 2))
+
+  const generatedTarget = buildTargetConfig(target) as {
+    mcpServer: { command: string; args?: string[]; env?: Record<string, string> }
+  }
+  const adapterResult = applyTargetAdapter(target, generatedTarget.mcpServer)
+
+  console.log(color.green(`✓ Kraken universal profile written: ${targetConfigPath}`))
+  console.log(color.green(`✓ Shared Kraken config written: ${krakenConfigPath}`))
+  if (adapterResult.configured) {
+    console.log(color.green(`✓ ${adapterResult.message}: ${adapterResult.path}`))
+  } else {
+    console.log(color.yellow(`⚠ ${adapterResult.message}: ${adapterResult.path}`))
+  }
+  console.log(color.green('\n🎉 Kraken Code initialized for universal target'))
+  console.log(color.dim(`Target: ${target}`))
+  console.log(color.dim('\nNext steps:'))
+  console.log(
+    color.dim(
+      `  1. Start bridge: kraken-code bridge start --protocol mcp --target ${target} --mode ${TARGET_DEFINITIONS[target].mode}`,
+    ),
+  )
+  console.log(color.dim(`  2. Import config snippet: ${targetConfigPath}`))
+
+  if (verbose) {
+    console.log(color.dim(`ℹ️  Generated MCP bootstrap payload for ${target}`))
+  }
+}
+
+export function buildTargetConfig(target: Exclude<InitTarget, 'opencode'>): Record<string, unknown> {
+  const definition = TARGET_DEFINITIONS[target]
+  const mcpServer = {
+    command: 'kraken-code',
+    args: [
+      'bridge',
+      'start',
+      '--protocol',
+      'mcp',
+      '--target',
+      target,
+      '--mode',
+      definition.mode,
+    ],
+  }
+
+  if (target === 'ci') {
+    return {
+      target,
+      mode: definition.mode,
+      capabilities: definition.capabilities,
+      mcpServer,
+      instructions:
+        'Run kraken-code bridge as a background process and connect your CI agent to the MCP endpoint over stdio.',
+    }
+  }
+
+  return {
+    target,
+    mode: definition.mode,
+    capabilities: definition.capabilities,
+    mcpServer,
+    instructions:
+      'Register this MCP server in your client and restart the host so Kraken tools are discoverable.',
   }
 }

@@ -1,5 +1,6 @@
 import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
+import { createAgentToolRestrictions } from '../shared/permission-compat'
 
 const DEFAULT_MODEL = 'anthropic/claude-opus-4-5'
 
@@ -141,7 +142,7 @@ export function createLeviathanConfig(model: string = DEFAULT_MODEL): AgentConfi
     mode: 'subagent' as const,
     model,
     temperature: 0.2,
-    tools: { write: false, edit: false },
+    ...createAgentToolRestrictions(['write', 'edit', 'task']),
     prompt: LEVIATHAN_SYSTEM_PROMPT,
     thinking: { type: 'enabled', budgetTokens: 32000 },
   } as AgentConfig

@@ -30,6 +30,8 @@ export interface DoctorOptions {
   verbose?: boolean
   json?: boolean
   category?: CheckCategory
+  strict?: boolean
+  target?: 'opencode' | 'codex' | 'claude' | 'cline' | 'cursor' | 'vscode' | 'ci'
 }
 
 export interface DoctorSummary {

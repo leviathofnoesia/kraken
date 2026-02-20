@@ -103,7 +103,7 @@ async function saveCache(config: AutoUpdateCheckerConfig, cache: UpdateCache): P
 
 async function checkNpmRegistry(): Promise<string | null> {
   return new Promise((resolve) => {
-    exec(`npm view ${PACKAGE_NAME} version`, (error, stdout, stderr) => {
+    exec(`npm view ${PACKAGE_NAME} version`, { timeout: 1500 }, (error, stdout, stderr) => {
       if (error) {
         if (SHOULD_LOG) {
           logger.warn('Failed to check npm registry:', error)

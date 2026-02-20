@@ -70,3 +70,74 @@ jobs:
         with:
           files: ./coverage/*.json
           fail_ci_if_error: false
+
+  universal-matrix:
+    runs-on: ubuntu-latest
+    needs: typecheck
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [codex, claude, cline, cursor, vscode, ci]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Build CLI
+        run: bun run build:cli
+
+      - name: Run universal profile checks
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/kraken-home-$TARGET"
+          mkdir -p "$HOME"
+
+          bun run dist/cli/index.js init --target "$TARGET" --minimal
+          bun run dist/cli/index.js install --target "$TARGET"
+          bun run dist/cli/index.js status --target "$TARGET"
+          bun run dist/cli/index.js doctor --target "$TARGET" --category installation --strict
+          bun run dist/cli/index.js validate --target "$TARGET" --json | tee "validate-$TARGET.json"
+
+      - name: Upload validate output
+        uses: actions/upload-artifact@v4
+        with:
+          name: validate-${{ matrix.target }}
+          path: validate-${{ matrix.target }}.json
+          retention-days: 7
+
+      - name: Verify bridge policy (standard vs strict)
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/kraken-home-$TARGET"
+
+          STANDARD_OUTPUT=$(
+            printf '%s\n' \
+              '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
+              '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"ast_grep_replace","arguments":{"pattern":"x","replacement":"y","language":"typescript"}}}' \
+              | bun run dist/cli/index.js bridge start --target "$TARGET" --mode standard
+          )
+
+          if echo "$STANDARD_OUTPUT" | grep -q '"code":-32001'; then
+            echo "unexpected strict-policy block in standard mode"
+            exit 1
+          fi
+
+          STRICT_OUTPUT=$(
+            printf '%s\n' \
+              '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}' \
+              '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"ast_grep_replace","arguments":{"pattern":"x","replacement":"y","language":"typescript"}}}' \
+              | bun run dist/cli/index.js bridge start --target "$TARGET" --mode strict
+          )
+
+          echo "$STRICT_OUTPUT" | grep -q '"code":-32001'

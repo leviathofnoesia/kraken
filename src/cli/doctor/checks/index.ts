@@ -8,6 +8,7 @@ import { getGhCliCheckDefinition } from './gh'
 import { getLspCheckDefinition } from './lsp'
 import { getMcpCheckDefinitions } from './mcp'
 import { getVersionCheckDefinition } from './version'
+import { getTargetCheckDefinitions } from './targets'
 
 export * from './opencode'
 export * from './plugin'
@@ -18,17 +19,23 @@ export * from './gh'
 export * from './lsp'
 export * from './mcp'
 export * from './version'
+export * from './targets'
 
-export function getAllCheckDefinitions(): CheckDefinition[] {
+export function getAllCheckDefinitions(target?: string): CheckDefinition[] {
+  const isOpenCodeTarget = !target || target === 'opencode'
+
+  const baseInstallationChecks = isOpenCodeTarget
+    ? [getOpenCodeCheckDefinition(), getPluginCheckDefinition(), getConfigCheckDefinition()]
+    : []
+
   return [
-    getOpenCodeCheckDefinition(),
-    getPluginCheckDefinition(),
-    getConfigCheckDefinition(),
+    ...baseInstallationChecks,
     ...getAuthCheckDefinitions(),
     ...getDependencyCheckDefinitions(),
     getGhCliCheckDefinition(),
     getLspCheckDefinition(),
     ...getMcpCheckDefinitions(),
     getVersionCheckDefinition(),
+    ...getTargetCheckDefinitions(target),
   ]
 }

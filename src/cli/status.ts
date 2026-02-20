@@ -1,14 +1,28 @@
 #!/usr/bin/env bun
 import { readFileSync, existsSync } from 'node:fs'
 import * as path from 'path'
-import * as os from 'os'
 import color from 'picocolors'
+import { getHomeDir } from '../shared/home-dir'
+import { verifyTargetAdapter } from '../universal/adapters'
+import { isUniversalTarget, type UniversalTarget } from '../universal/targets'
 
-export async function runStatus() {
+export async function runStatus(options?: { target?: UniversalTarget }) {
+  const target = options?.target ?? 'opencode'
+  if (!isUniversalTarget(target)) {
+    console.log(color.red(`✗ Unsupported target: ${target}`))
+    return
+  }
+
+  if (target !== 'opencode') {
+    runUniversalStatus(target)
+    return
+  }
+
   console.log(color.cyan('🐙 Kraken Code Status\n'))
 
-  const opencodeConfigPath = path.join(os.homedir(), '.config', 'opencode', 'opencode.json')
-  const krakenConfigPath = path.join(os.homedir(), '.config', 'opencode', 'kraken-code.json')
+  const home = getHomeDir()
+  const opencodeConfigPath = path.join(home, '.config', 'opencode', 'opencode.json')
+  const krakenConfigPath = path.join(home, '.config', 'opencode', 'kraken-code.json')
 
   // Check OpenCode config for plugin registration
   if (!existsSync(opencodeConfigPath)) {
@@ -88,5 +102,35 @@ export async function runStatus() {
       console.log(color.bold('\nActive Modes:'))
       console.log(`  ${modeNames.join(', ')}`)
     }
+  }
+}
+
+function runUniversalStatus(target: Exclude<UniversalTarget, 'opencode'>) {
+  console.log(color.cyan(`🐙 Kraken Universal Status (${target})\n`))
+
+  const home = getHomeDir()
+  const krakenConfigPath = path.join(home, '.config', 'kraken', 'kraken.json')
+  const targetConfigPath = path.join(home, '.config', 'kraken', 'targets', `${target}.json`)
+
+  console.log(color.bold('Bootstrap:'))
+  if (existsSync(krakenConfigPath)) {
+    console.log(color.green(`  ✓ Shared config: ${krakenConfigPath}`))
+  } else {
+    console.log(color.red(`  ✗ Missing shared config: ${krakenConfigPath}`))
+  }
+
+  if (existsSync(targetConfigPath)) {
+    console.log(color.green(`  ✓ Target config: ${targetConfigPath}`))
+  } else {
+    console.log(color.red(`  ✗ Missing target config: ${targetConfigPath}`))
+  }
+
+  const adapter = verifyTargetAdapter(target)
+  if (adapter.ok) {
+    console.log(color.green(`\n✓ Host adapter configured: ${adapter.path}`))
+  } else {
+    console.log(color.red(`\n✗ Host adapter missing: ${adapter.path}`))
+    console.log(color.dim(`  ${adapter.message}`))
+    console.log(color.dim(`  Run: kraken-code init --target ${target}`))
   }
 }

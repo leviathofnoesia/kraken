@@ -6,10 +6,10 @@
  */
 
 import { promises as fs } from 'node:fs'
-import * as os from 'node:os'
 import * as path from 'node:path'
 
 import { getLearningConfig, getMemoryConfig } from '../../config/manager'
+import { getHomeDir } from '../../shared/home-dir'
 
 export interface ExperienceEntryInput {
   summary: string
@@ -130,7 +130,7 @@ export interface LearningConfig {
   }
 }
 
-const DEFAULT_STORAGE_PATH = path.join(os.homedir(), '.kraken', 'learning')
+const DEFAULT_STORAGE_PATH = path.join(getHomeDir(), '.kraken', 'learning')
 const STATE_FILE = 'learning-state.json'
 let learningState: LearningState = {
   experiences: [],
@@ -474,7 +474,7 @@ function resolveStoragePath(storagePath?: string): string {
     return DEFAULT_STORAGE_PATH
   }
   if (storagePath.startsWith('~/')) {
-    return path.join(os.homedir(), storagePath.slice(2))
+    return path.join(getHomeDir(), storagePath.slice(2))
   }
   return storagePath
 }

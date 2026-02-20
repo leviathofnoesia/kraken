@@ -2,9 +2,13 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import * as jsoncParser from 'jsonc-parser'
 import path from 'node:path'
-import os from 'node:os'
 import color from 'picocolors'
 import { PACKAGE_NAME } from './doctor/constants'
+import { runInit } from './init'
+import { getHomeDir } from '../shared/home-dir'
+import { isUniversalTarget, type UniversalTarget } from '../universal/targets'
+
+type InstallTarget = UniversalTarget
 
 export interface InstallResult {
   success: boolean
@@ -13,7 +17,7 @@ export interface InstallResult {
 }
 
 function getOpenCodeConfigPaths(): { configJson: string; configJsonc: string } {
-  const crossPlatformDir = path.join(os.homedir(), '.config', 'opencode')
+  const crossPlatformDir = path.join(getHomeDir(), '.config', 'opencode')
   return {
     configJson: path.join(crossPlatformDir, 'opencode.json'),
     configJsonc: path.join(crossPlatformDir, 'opencode.jsonc'),
@@ -84,7 +88,15 @@ function createDefaultConfig(): string {
 `
 }
 
-export async function install(): Promise<InstallResult> {
+export async function install(target: InstallTarget = 'opencode'): Promise<InstallResult> {
+  if (target !== 'opencode') {
+    await runInit({ target, minimal: true })
+    return {
+      success: true,
+      message: `Kraken bootstrap generated for ${target}`,
+    }
+  }
+
   const paths = getOpenCodeConfigPaths()
   const configInfo = detectConfigPath()
 
@@ -157,8 +169,17 @@ function printResult(result: InstallResult): void {
   }
 }
 
-export async function runInstall(): Promise<void> {
-  const result = await install()
+export async function runInstall(options?: { target?: InstallTarget }): Promise<void> {
+  const rawTarget = options?.target ?? 'opencode'
+  if (!isUniversalTarget(rawTarget)) {
+    printResult({
+      success: false,
+      message: `Unsupported target: ${rawTarget}`,
+    })
+    process.exit(1)
+  }
+
+  const result = await install(rawTarget)
   printResult(result)
   process.exit(result.success ? 0 : 1)
 }

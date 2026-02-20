@@ -52,9 +52,11 @@ export function calculateSummary(results: CheckResult[], duration: number): Doct
   }
 }
 
-export function determineExitCode(results: CheckResult[]): number {
+export function determineExitCode(results: CheckResult[], strict = false): number {
   const hasFailures = results.some((r) => r.status === 'fail')
-  return hasFailures ? EXIT_CODES.FAILURE : EXIT_CODES.SUCCESS
+  if (hasFailures) return EXIT_CODES.FAILURE
+  if (strict && results.some((r) => r.status === 'warn')) return EXIT_CODES.FAILURE
+  return EXIT_CODES.SUCCESS
 }
 
 export function filterChecksByCategory(
@@ -90,7 +92,7 @@ const CATEGORY_ORDER: CheckCategory[] = [
 
 export async function runDoctor(options: DoctorOptions): Promise<DoctorResult> {
   const start = performance.now()
-  const allChecks = getAllCheckDefinitions()
+  const allChecks = getAllCheckDefinitions(options.target)
   const filteredChecks = filterChecksByCategory(allChecks, options.category)
   const groupedChecks = groupChecksByCategory(filteredChecks)
 
@@ -120,7 +122,7 @@ export async function runDoctor(options: DoctorOptions): Promise<DoctorResult> {
 
   const duration = performance.now() - start
   const summary = calculateSummary(results, duration)
-  const exitCode = determineExitCode(results)
+  const exitCode = determineExitCode(results, options.strict ?? false)
 
   const doctorResult: DoctorResult = {
     results,

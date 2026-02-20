@@ -105,6 +105,15 @@ describe("runner", () => {
 
       expect(determineExitCode(results)).toBe(1)
     })
+
+    it("returns 1 on warnings in strict mode", () => {
+      const results: CheckResult[] = [
+        { name: "1", status: "pass", message: "" },
+        { name: "2", status: "warn", message: "" },
+      ]
+
+      expect(determineExitCode(results, true)).toBe(1)
+    })
   })
 
   describe("filterChecksByCategory", () => {
