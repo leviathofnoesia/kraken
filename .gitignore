@@ -40,16 +40,37 @@ __pycache__/
 *.so
 *.egg
 *.egg-info/
+*.py
 
 # Kraken Memory database files
 *.db
 
-# Research and completion artifacts
+# ============================================
+# Internal dev docs (not for release)
+# ============================================
+BLITZKRIEG_STATUS.md
+COMPLETE_REFACTORING_SUMMARY.md
+FINAL_REPORT.md
+IMPROVEMENTS_PHASE*.md
+LSP_IMPLEMENTATION_SUMMARY.md
+PHASE*_IMPLEMENTATION_COMPLETE.md
+PHASE*_COMPLETION_REPORT.md
+PLAN_*.md
+PUBLISHING.md
+RELEASE_SUMMARY.md
+SKILL_CREATION.md
+TUI_LEAKAGE*.md
 COMPLETION_SUMMARY.md
 RESEARCH_REPORT.md
-sbom.cyclonedx.json
-distinction_audit.py
-distinction_audit.json
+
+# Effort router design docs
+docs/EFFORT_ROUTER_*.md
+docs/archive/
+
+# ============================================
+# Internal scripts & tools (not for release)
+# ============================================
+distinction_audit.*
 generate_report.py
 generate_sbom.py
 batch_rename.py
@@ -58,15 +79,18 @@ fix_imports.py
 replace_prompts.py
 rewrite_prompts.py
 prompt_replacements.json
+redact-secrets.py
+replacements.txt
+sbom.cyclonedx.json
 
-# Temporary files
+# ============================================
+# Temporary / user-specific
+# ============================================
 *.tmp
 *.temp
 *~
 .#*
 \#*\#
-
-# Configuration overrides (user-specific)
 .userconfig
 .claude/
 GEMINI.md
