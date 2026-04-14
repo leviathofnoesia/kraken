@@ -126,23 +126,15 @@ export function createBlitzkriegEvidenceVerifierHook(): Hooks {
         )
       }
 
-      // Evidence verification is fully implemented in blitzkrieg-verification.ts
-      // TODO: For full verification, uncomment and use:
-      // const verification = verifyEvidence(
-      //   evidence.testExecutionEvidence || '',
-      //   0,
-      //   evidence.assertionEvidence || '',
-      //   evidence.edgeCaseEvidence || '',
-      //   evidence.coverageOutput || '',
-      //   evidenceConfig,
-      // )
-      // const sufficient = isVerificationSufficient(verification)
-      // if (!sufficient) {
-      //   throw new Error(`Verification failed: ${verification.missingEvidence.join(', ')}`)
-      // }
-      //
-      // For now, simplified check - just verify evidence exists
+      // TODO: Implement proper evidence verification
+      // The verifyEvidence function requires buildOutput, buildExitCode, testOutput, coverageOutput, config
+      // This hook needs to be refactored to collect and pass these values
+      // For now, skip verification and just check if evidence exists
       const evidence = taskEvidence.evidence || createEvidenceReport()
+
+      console.log(
+        `[blitzkrieg-evidence-verifier] Evidence verification is not fully implemented. Skipping verification for task ${taskId}.`,
+      )
     },
 
     /**

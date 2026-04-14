@@ -1,6 +1,8 @@
+import type { Plugin, PluginInput, Hooks, ToolDefinition } from '@opencode-ai/plugin'
+import type { BackgroundManager } from './features/background-agent/manager'
 import type { AgentConfig } from '@opencode-ai/sdk'
-import type { Hooks, Plugin, PluginInput } from '@opencode-ai/plugin'
-
+import { z } from 'zod'
+import type { OpenCodeXConfig } from './config/schema'
 import { getClaudeCodeCompatibilityConfig } from './config/manager'
 import { createLogger } from './utils/logger'
 
@@ -17,32 +19,21 @@ import {
   maelstromAgent,
   leviathanAgent,
   poseidonAgent,
-  cartographerAgent,
 } from './agents'
+
+// Utils
+import { getAvailableAgents } from './utils'
 
 // Tools
 import { opencodeXCompress } from './tools/compression'
-import { modelSwitcher } from './tools/model-switcher'
 import { createRalphLoopHook } from './hooks/ralph-loop'
 import { createAutoUpdateChecker } from './hooks/auto-update-checker'
 import { ast_grep_search, ast_grep_replace } from './tools/ast-grep'
 import { session_list, session_read, session_search, session_info } from './tools/session'
 import { grep } from './tools/grep'
 import { ralphLoop } from './tools/ralph-loop'
+import { call_kraken_agent } from './tools/agent-call'
 import { recordToolUse } from './storage'
-import {
-  learning_add_experience,
-  learning_add_knowledge_node,
-  learning_create_state_machine,
-  learning_get_review_queue,
-  learning_link_knowledge_nodes,
-  learning_list_patterns,
-  learning_list_state_machines,
-  learning_record_pattern,
-  learning_review_node,
-  learning_search_experiences,
-  learning_search_knowledge_nodes,
-} from './tools/learning'
 
 // LSP tools
 import {
@@ -65,6 +56,7 @@ import { createSessionStorageHook } from './hooks/session-storage-hook'
 import { createClaudeCodeHooks } from './hooks/claude-code-hooks'
 import { createThinkModeHook } from './hooks/think-mode'
 import { createBackgroundAgentFeature } from './features/background-agent/manager'
+import { setPluginInput } from './features/background-agent/plugin-input'
 import { createContextWindowMonitorHook } from './hooks/context-window-monitor'
 import { createKeywordDetector } from './hooks/keyword-detector'
 import { createAutoSlashCommand } from './hooks/auto-slash-command'
@@ -82,27 +74,36 @@ import { createPreemptiveCompaction } from './hooks/preemptive-compaction'
 import { createSessionRecovery } from './hooks/session-recovery'
 import { createThinkingBlockValidator } from './hooks/thinking-block-validator'
 import { createCommentChecker } from './hooks/comment-checker'
-import { createMemoryGuard, createToolThrottle, createSessionLifecycle } from './hooks'
 import { createBlitzkriegTestPlanEnforcerHook } from './hooks/blitzkrieg-test-plan-enforcer'
 import { createBlitzkriegTddWorkflowHook } from './hooks/blitzkrieg-tdd-workflow'
 import { createBlitzkriegEvidenceVerifierHook } from './hooks/blitzkrieg-evidence-verifier'
 import { createBlitzkriegPlannerConstraintsHook } from './hooks/blitzkrieg-planner-constraints'
-
-// Token Efficiency Hooks
-import { createThinkingBudgetOptimizerHook } from './hooks/thinking-budget-optimizer'
-import { createPromptCompressionHook } from './hooks/prompt-compression'
-import { createSmartContextInjectionHook } from './hooks/smart-context-injection'
-import { createTranscriptSummarizationHook } from './hooks/transcript-summarization'
+import { createEffortRouterHook } from './hooks/effort-router'
 
 // MCP & Features
-import { createBuiltinMcpConfigs, getMcpAgentTools } from './features/mcp/index'
-import { initializeLearning } from './features/memory'
-import { isUniversalTarget, type UniversalMode, type UniversalTarget } from './universal/targets'
-import { wrapToolsWithPolicy } from './universal/tool-wrapper'
+import { initializeAllMcpServers, shutdownAllMcpServers } from './features/mcp/index'
+import { getBuiltinMcpTools } from './features/mcp/index'
+import { websearchTool, webfetchTool } from './features/mcp/websearch'
+import { context7SearchToolMCP, context7GetToolMCP } from './features/mcp/context7'
+import { grepSearchToolMCP, grepGetFileToolMCP } from './features/mcp/grep-app'
 
 // CLI & Skills
-import { initializeCommandLoader } from './features/command-loader'
-import { initializeSkillMcpManager } from './features/skill-mcp-manager'
+import { initializeCommandLoader as initCmdLoader } from './features/command-loader'
+import { initializeSkillMcpManager as initSkillMcp } from './features/skill-mcp-manager'
+
+// Memory
+import {
+  memoryAddNode,
+  memoryGetNode,
+  memorySearchNodes,
+  memoryLinkNodes,
+  memoryGetConnected,
+  memoryDeleteNode,
+  memoryStats,
+  memoryCompress,
+  memoryDecompress,
+  closeMemory,
+} from './features/memory'
 
 // Helper function
 function getSeaThemedAgents(): Record<string, AgentConfig> {
@@ -118,7 +119,6 @@ function getSeaThemedAgents(): Record<string, AgentConfig> {
     Maelstrom: maelstromAgent,
     Leviathan: leviathanAgent,
     Poseidon: poseidonAgent,
-    Cartographer: cartographerAgent,
   }
 }
 
@@ -162,18 +162,12 @@ function mergeHooks(...hooks: Hooks[]): Hooks {
   return result
 }
 
-async function withTimeout<T>(work: Promise<T>, timeoutMs: number): Promise<T | null> {
-  let timeoutHandle: ReturnType<typeof setTimeout> | undefined
-  try {
-    return await Promise.race([
-      work,
-      new Promise<null>((resolve) => {
-        timeoutHandle = setTimeout(() => resolve(null), timeoutMs)
-      }),
-    ])
-  } finally {
-    if (timeoutHandle) clearTimeout(timeoutHandle)
-  }
+async function initializeCommandLoader(): Promise<void> {
+  await initCmdLoader()
+}
+
+async function initializeSkillMcpManager(): Promise<void> {
+  await initSkillMcp()
 }
 
 const builtinTools: Record<string, any> = {
@@ -184,41 +178,42 @@ const builtinTools: Record<string, any> = {
   session_read,
   session_search,
   session_info,
-  'kraken-compress': opencodeXCompress,
-  'model-switcher': modelSwitcher,
+  'model-switcher': opencodeXCompress,
   'ralph-loop': ralphLoop,
-  learning_add_experience,
-  learning_search_experiences,
-  learning_add_knowledge_node,
-  learning_search_knowledge_nodes,
-  learning_link_knowledge_nodes,
-  learning_record_pattern,
-  learning_list_patterns,
-  learning_get_review_queue,
-  learning_review_node,
-  learning_create_state_machine,
-  learning_list_state_machines,
-  ...getMcpAgentTools(),
+  lsp_hover,
+  lsp_goto_definition,
+  lsp_find_references,
+  lsp_document_symbols,
+  lsp_workspace_symbols,
+  lsp_diagnostics,
+  lsp_prepare_rename,
+  lsp_rename,
+  lsp_code_actions,
+  lsp_code_action_resolve,
+  lsp_servers,
+  'call-kraken-agent': call_kraken_agent,
+  websearch: websearchTool,
+  webfetch: webfetchTool,
+  'context7-search': context7SearchToolMCP,
+  'context7-get': context7GetToolMCP,
+  'grep-search': grepSearchToolMCP,
+  'grep-get-file': grepGetFileToolMCP,
+  'memory-add': memoryAddNode,
+  'memory-get': memoryGetNode,
+  'memory-search': memorySearchNodes,
+  'memory-link': memoryLinkNodes,
+  'memory-connected': memoryGetConnected,
+  'memory-delete': memoryDeleteNode,
+  'memory-stats': memoryStats,
+  'memory-compress': memoryCompress,
+  'memory-decompress': memoryDecompress,
 }
 
-function resolveRuntimeTarget(): UniversalTarget {
-  const raw = process.env.KRAKEN_TARGET
-  if (raw && isUniversalTarget(raw)) {
-    return raw
-  }
-  return 'opencode'
-}
-
-function resolveRuntimeMode(): UniversalMode {
-  const raw = process.env.KRAKEN_MODE
-  if (raw === 'strict' || raw === 'standard') {
-    return raw
-  }
-  return 'standard'
-}
+let backgroundManager: BackgroundManager | null = null
 
 const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
   const logger = createLogger('plugin-main')
+  setPluginInput(input)
 
   const hooks: Hooks[] = []
 
@@ -244,12 +239,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
   Object.assign(hooks, claudeCodeHooks)
 
   // 4. Basic tools
-  hooks.push({
-    tool: wrapToolsWithPolicy(builtinTools, {
-      target: resolveRuntimeTarget(),
-      mode: resolveRuntimeMode(),
-    }),
-  })
+  hooks.push({ tool: builtinTools })
 
   // 5. Configuration Hook
   hooks.push({
@@ -257,82 +247,36 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
       if (!pluginConfig.agent) pluginConfig.agent = {}
       const agents = getSeaThemedAgents()
       for (const [name, agentConfig] of Object.entries(agents)) {
-        // Merge: plugin defaults as base, user overrides on top
-        // This ensures mode, prompt, and other defaults always propagate
-        // even when the user has partial overrides in their config
-        pluginConfig.agent[name] = { ...agentConfig, ...pluginConfig.agent[name] }
+        if (!pluginConfig.agent[name]) pluginConfig.agent[name] = agentConfig
       }
-
-      // Ensure primary agents always retain their mode even after user overrides
-      // Without this, a user override missing 'mode' would demote a primary agent
-      const primaryAgents = ['Kraken', 'Cartographer']
-      for (const name of primaryAgents) {
-        if (pluginConfig.agent[name]) {
-          pluginConfig.agent[name].mode = 'primary'
-        }
-      }
+      if (!pluginConfig.default_agent && pluginConfig.agent['Kraken'])
+        pluginConfig.default_agent = 'Kraken'
 
       // Parallelize initialization for faster startup
       await Promise.all([
         (async () => {
           try {
-            const result = await withTimeout(initializeCommandLoader(), 3000)
-            if (result === null) {
-              logger.warn('Command loader initialization timed out')
-            } else {
-              logger.debug('Command loader initialized')
-            }
+            await initializeCommandLoader()
+            logger.info('Command loader initialized')
           } catch (e) {
-            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
-              logger.error('Error initializing command loader:', e)
-            }
+            logger.error('Error initializing command loader:', e)
           }
         })(),
         (async () => {
           try {
-            const result = await withTimeout(
-              initializeSkillMcpManager(),
-              3000,
-            )
-            if (result === null) {
-              logger.warn('Skill MCP manager initialization timed out')
-            } else {
-              logger.debug('Skill MCP manager initialized')
-            }
+            await initializeSkillMcpManager()
+            logger.info('Skill MCP manager initialized')
           } catch (e) {
-            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
-              logger.error('Error initializing skill MCP manager:', e)
-            }
+            logger.error('Error initializing skill MCP manager:', e)
           }
         })(),
         (async () => {
+          const mcpConfig = pluginConfig.mcp || {}
           try {
-            const mcpConfig = pluginConfig.mcp || {}
-            // Extract option keys that shouldn't be in MCP map
-            const { disabled_mcps, websearch, ...mcpEntries } = mcpConfig as any
-            const builtinMcpConfigs = createBuiltinMcpConfigs(disabled_mcps || [], { websearch })
-            // Merge: built-in configs as defaults, user config takes precedence
-            const mergedMcpConfigs = { ...builtinMcpConfigs, ...mcpEntries }
-            pluginConfig.mcp = mergedMcpConfigs as any
-            logger.debug('MCP server configs added')
+            await initializeAllMcpServers(mcpConfig)
+            logger.info('MCP servers initialized')
           } catch (e) {
-            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
-              logger.error('Error initializing MCP servers:', e)
-            }
-          }
-        })(),
-        (async () => {
-          try {
-            const result = await withTimeout(initializeLearning(), 3000)
-            if (result === null) {
-              logger.warn('Learning system initialization timed out')
-            } else {
-              logger.debug('Learning system initialized')
-            }
-          } catch (e) {
-            if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
-              logger.error('Error initializing learning system:', e)
-            }
+            logger.error('Error initializing MCP servers:', e)
           }
         })(),
       ])
@@ -342,13 +286,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
   // 6. Feature/Lifecycle Hooks
   try {
     hooks.push(createThinkModeHook(input))
-    const backgroundFeature = createBackgroundAgentFeature(input)
-    hooks.push({
-      tool: wrapToolsWithPolicy(backgroundFeature.tools as Record<string, any>, {
-        target: resolveRuntimeTarget(),
-        mode: resolveRuntimeMode(),
-      }),
-    })
+    hooks.push({ tool: createBackgroundAgentFeature(input).tools })
     hooks.push(createContextWindowMonitorHook(input))
     hooks.push(createRalphLoopHook(input))
     hooks.push(createKeywordDetector(input))
@@ -368,26 +306,13 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     hooks.push(createSessionRecovery(input))
     hooks.push(createThinkingBlockValidator(input))
     hooks.push(createCommentChecker(input))
-
-    // Memory leak prevention hooks - ensure these are ordered appropriately
-    hooks.push(createMemoryGuard(input))
-    hooks.push(createToolThrottle(input))
-    hooks.push(createSessionLifecycle(input))
-
     hooks.push(createBlitzkriegTestPlanEnforcerHook())
     hooks.push(createBlitzkriegTddWorkflowHook())
     hooks.push(createBlitzkriegEvidenceVerifierHook())
     hooks.push(createBlitzkriegPlannerConstraintsHook())
-
-    // Token Efficiency Hooks (Phase 1 & 2)
-    hooks.push(createThinkingBudgetOptimizerHook(input))
-    hooks.push(createPromptCompressionHook(input))
-    hooks.push(createSmartContextInjectionHook(input))
-    hooks.push(createTranscriptSummarizationHook(input))
+    hooks.push(createEffortRouterHook(input))
   } catch (e) {
-    if (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1') {
-      logger.error('Error initializing hooks:', e)
-    }
+    logger.error('Error initializing hooks:', e)
   }
 
   // 7. Storage Hooks
@@ -402,7 +327,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
         await recordToolUse(sessionID, tool, output.output.toolInput, output.output.toolOutput)
       }
 
-      if (sessionID && (process.env.ANTIGRAVITY_DEBUG === '1' || process.env.DEBUG === '1')) {
+      if (sessionID) {
         console.log(`[storage-hooks] Tool ${tool} completed for session ${sessionID}`)
       }
     },
@@ -410,7 +335,16 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
 
   // 7. MCP Shutdown on plugin exit
   process.on('exit', async () => {
-    // No shutdown needed for remote MCP configurations
+    try {
+      await shutdownAllMcpServers()
+    } catch (e) {
+      console.error('Kraken Code: Error shutting down services', e)
+    }
+    try {
+      await closeMemory()
+    } catch (e) {
+      console.error('Kraken Code: Error closing memory', e)
+    }
   })
 
   return mergeHooks(...hooks)

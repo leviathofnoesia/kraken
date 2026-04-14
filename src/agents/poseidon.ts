@@ -1,6 +1,6 @@
 import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
-import { createAgentToolRestrictions } from '../shared/permission-compat'
+import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
 const DEFAULT_MODEL = 'anthropic/claude-opus-4-5'
 
@@ -118,8 +118,6 @@ Output structured requirements for the planner:
 
 Remember: Your value lies in ensuring planners have complete, unambiguous requirements. Better constraint analysis prevents planning failures, scope creep, and implementation surprises.`
 
-const poseidonRestrictions = createAgentToolRestrictions(['write', 'edit', 'task'])
-
 export function createPoseidonConfig(model: string = DEFAULT_MODEL): AgentConfig {
   return {
     description:
@@ -127,7 +125,8 @@ export function createPoseidonConfig(model: string = DEFAULT_MODEL): AgentConfig
     mode: 'subagent' as const,
     model,
     temperature: 0.3,
-    ...poseidonRestrictions,
+    permission: buildPermissionConfig('Poseidon'),
+    tools: buildToolsConfig('Poseidon'),
     prompt: POSEIDON_SYSTEM_PROMPT,
     thinking: { type: 'enabled', budgetTokens: 32000 },
   } as AgentConfig

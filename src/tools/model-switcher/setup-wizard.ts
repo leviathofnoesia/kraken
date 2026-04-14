@@ -1,6 +1,6 @@
 import { select, confirm, isCancel } from '@clack/prompts'
 import { join } from 'path'
-import { readFile } from 'fs/promises'
+import { readFile, writeFile } from 'fs/promises'
 import { generateOptimalPresets, type ProviderSubscription } from './catalog'
 import { saveAgentConfig, savePresets, saveSetupComplete } from './config-manager'
 
@@ -74,7 +74,7 @@ async function selectProviderSubscriptions(): Promise<ProviderSubscription[]> {
   }
 
   const hasGoogle = await confirm({
-    message: 'Do you have Google Antigravity access?',
+    message: 'Do you have Google AI access?',
   })
 
   if (!isCancel(hasGoogle) && hasGoogle) {
@@ -82,7 +82,7 @@ async function selectProviderSubscriptions(): Promise<ProviderSubscription[]> {
       message: 'Google subscription tier',
       options: [
         { value: 'free', label: 'Free tier' },
-        { value: 'paid', label: 'Paid (Antigravity)' },
+        { value: 'paid', label: 'Paid' },
       ],
     })
 

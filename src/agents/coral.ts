@@ -1,10 +1,10 @@
 import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
-import { createAgentToolRestrictions } from '../shared/permission-compat'
+import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
 const DEFAULT_MODEL = 'google/gemini-3-pro-preview'
 
-const _CORAL_PROMPT_METADATA: AgentPromptMetadata = {
+const CORAL_PROMPT_METADATA: AgentPromptMetadata = {
   category: 'specialist',
   cost: 'CHEAP',
   promptAlias: 'Coral',
@@ -127,14 +127,13 @@ Apply finishing touches:
 Remember: Your value lies in creating interfaces that users love. Design attention to detail transforms functional code into delightful experiences.`
 
 export function createCoralConfig(model: string = DEFAULT_MODEL): AgentConfig {
-  const restrictions = createAgentToolRestrictions([])
-
   return {
     description:
       'Visual design specialist that implements aesthetically compelling interfaces using design system principles and visual hierarchy.',
     mode: 'subagent' as const,
     model,
-    ...restrictions,
+    permission: buildPermissionConfig('Coral'),
+    tools: buildToolsConfig('Coral'),
     prompt: CORAL_SYSTEM_PROMPT,
   }
 }

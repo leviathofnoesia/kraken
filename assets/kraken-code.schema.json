@@ -35,10 +35,7 @@
           "blitzkrieg-tdd-workflow",
           "blitzkrieg-evidence-verifier",
           "blitzkrieg-planner-constraints",
-          "thinking-budget-optimizer",
-          "prompt-compression",
-          "smart-context-injection",
-          "transcript-summarization"
+          "effort-router"
         ]
       }
     },
@@ -99,153 +96,21 @@
               "type": "string"
             },
             "permission": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {
-                    "type": "string",
-                    "enum": [
-                      "allow",
-                      "ask",
-                      "deny"
-                    ]
-                  }
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "edit": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "bash": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "allow",
-                            "ask",
-                            "deny"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "string",
-                            "enum": [
-                              "allow",
-                              "ask",
-                              "deny"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "webfetch": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "doom_loop": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "external_directory": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    }
-                  },
-                  "additionalProperties": {}
-                }
-              ]
-            }
-          }
-        },
-        "Cartographer": {
-          "type": "object",
-          "properties": {
-            "model": {
-              "type": "string"
-            },
-            "temperature": {
-              "type": "number"
-            },
-            "top_p": {
-              "type": "number"
-            },
-            "prompt": {
-              "type": "string"
-            },
-            "prompt_append": {
-              "type": "string"
-            },
-            "tools": {
               "type": "object",
-              "propertyNames": {
-                "type": "string"
-              },
-              "additionalProperties": {
-                "type": "boolean"
-              }
-            },
-            "disable": {
-              "type": "boolean"
-            },
-            "description": {
-              "type": "string"
-            },
-            "mode": {
-              "type": "string",
-              "enum": [
-                "subagent",
-                "primary",
-                "all"
-              ]
-            },
-            "color": {
-              "type": "string"
-            },
-            "permission": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {
-                    "type": "string",
-                    "enum": [
-                      "allow",
-                      "ask",
-                      "deny"
-                    ]
-                  }
+              "properties": {
+                "edit": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 },
-                {
-                  "type": "object",
-                  "properties": {
-                    "edit": {
+                "bash": {
+                  "default": "ask",
+                  "anyOf": [
+                    {
                       "type": "string",
                       "enum": [
                         "allow",
@@ -253,60 +118,50 @@
                         "deny"
                       ]
                     },
-                    "bash": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "allow",
-                            "ask",
-                            "deny"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "string",
-                            "enum": [
-                              "allow",
-                              "ask",
-                              "deny"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "webfetch": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "doom_loop": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "external_directory": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "allow",
+                          "ask",
+                          "deny"
+                        ]
+                      }
                     }
-                  },
-                  "additionalProperties": {}
+                  ]
+                },
+                "webfetch": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 }
-              ]
+              }
             }
           }
         },
@@ -355,25 +210,21 @@
               "type": "string"
             },
             "permission": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {
-                    "type": "string",
-                    "enum": [
-                      "allow",
-                      "ask",
-                      "deny"
-                    ]
-                  }
+              "type": "object",
+              "properties": {
+                "edit": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 },
-                {
-                  "type": "object",
-                  "properties": {
-                    "edit": {
+                "bash": {
+                  "default": "ask",
+                  "anyOf": [
+                    {
                       "type": "string",
                       "enum": [
                         "allow",
@@ -381,60 +232,50 @@
                         "deny"
                       ]
                     },
-                    "bash": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "allow",
-                            "ask",
-                            "deny"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "string",
-                            "enum": [
-                              "allow",
-                              "ask",
-                              "deny"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "webfetch": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "doom_loop": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "external_directory": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "allow",
+                          "ask",
+                          "deny"
+                        ]
+                      }
                     }
-                  },
-                  "additionalProperties": {}
+                  ]
+                },
+                "webfetch": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 }
-              ]
+              }
             }
           }
         },
@@ -483,25 +324,21 @@
               "type": "string"
             },
             "permission": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {
-                    "type": "string",
-                    "enum": [
-                      "allow",
-                      "ask",
-                      "deny"
-                    ]
-                  }
+              "type": "object",
+              "properties": {
+                "edit": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 },
-                {
-                  "type": "object",
-                  "properties": {
-                    "edit": {
+                "bash": {
+                  "default": "ask",
+                  "anyOf": [
+                    {
                       "type": "string",
                       "enum": [
                         "allow",
@@ -509,60 +346,50 @@
                         "deny"
                       ]
                     },
-                    "bash": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "allow",
-                            "ask",
-                            "deny"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "string",
-                            "enum": [
-                              "allow",
-                              "ask",
-                              "deny"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "webfetch": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "doom_loop": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "external_directory": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "allow",
+                          "ask",
+                          "deny"
+                        ]
+                      }
                     }
-                  },
-                  "additionalProperties": {}
+                  ]
+                },
+                "webfetch": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 }
-              ]
+              }
             }
           }
         },
@@ -611,25 +438,21 @@
               "type": "string"
             },
             "permission": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {
-                    "type": "string",
-                    "enum": [
-                      "allow",
-                      "ask",
-                      "deny"
-                    ]
-                  }
+              "type": "object",
+              "properties": {
+                "edit": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 },
-                {
-                  "type": "object",
-                  "properties": {
-                    "edit": {
+                "bash": {
+                  "default": "ask",
+                  "anyOf": [
+                    {
                       "type": "string",
                       "enum": [
                         "allow",
@@ -637,60 +460,50 @@
                         "deny"
                       ]
                     },
-                    "bash": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "allow",
-                            "ask",
-                            "deny"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "string",
-                            "enum": [
-                              "allow",
-                              "ask",
-                              "deny"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "webfetch": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "doom_loop": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "external_directory": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "allow",
+                          "ask",
+                          "deny"
+                        ]
+                      }
                     }
-                  },
-                  "additionalProperties": {}
+                  ]
+                },
+                "webfetch": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 }
-              ]
+              }
             }
           }
         },
@@ -739,25 +552,21 @@
               "type": "string"
             },
             "permission": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {
-                    "type": "string",
-                    "enum": [
-                      "allow",
-                      "ask",
-                      "deny"
-                    ]
-                  }
+              "type": "object",
+              "properties": {
+                "edit": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 },
-                {
-                  "type": "object",
-                  "properties": {
-                    "edit": {
+                "bash": {
+                  "default": "ask",
+                  "anyOf": [
+                    {
                       "type": "string",
                       "enum": [
                         "allow",
@@ -765,60 +574,50 @@
                         "deny"
                       ]
                     },
-                    "bash": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "allow",
-                            "ask",
-                            "deny"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "string",
-                            "enum": [
-                              "allow",
-                              "ask",
-                              "deny"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "webfetch": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "doom_loop": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "external_directory": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "allow",
+                          "ask",
+                          "deny"
+                        ]
+                      }
                     }
-                  },
-                  "additionalProperties": {}
+                  ]
+                },
+                "webfetch": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 }
-              ]
+              }
             }
           }
         },
@@ -867,25 +666,21 @@
               "type": "string"
             },
             "permission": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {
-                    "type": "string",
-                    "enum": [
-                      "allow",
-                      "ask",
-                      "deny"
-                    ]
-                  }
+              "type": "object",
+              "properties": {
+                "edit": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 },
-                {
-                  "type": "object",
-                  "properties": {
-                    "edit": {
+                "bash": {
+                  "default": "ask",
+                  "anyOf": [
+                    {
                       "type": "string",
                       "enum": [
                         "allow",
@@ -893,60 +688,50 @@
                         "deny"
                       ]
                     },
-                    "bash": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "allow",
-                            "ask",
-                            "deny"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "string",
-                            "enum": [
-                              "allow",
-                              "ask",
-                              "deny"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "webfetch": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "doom_loop": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "external_directory": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "allow",
+                          "ask",
+                          "deny"
+                        ]
+                      }
                     }
-                  },
-                  "additionalProperties": {}
+                  ]
+                },
+                "webfetch": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 }
-              ]
+              }
             }
           }
         },
@@ -995,25 +780,21 @@
               "type": "string"
             },
             "permission": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {
-                    "type": "string",
-                    "enum": [
-                      "allow",
-                      "ask",
-                      "deny"
-                    ]
-                  }
+              "type": "object",
+              "properties": {
+                "edit": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 },
-                {
-                  "type": "object",
-                  "properties": {
-                    "edit": {
+                "bash": {
+                  "default": "ask",
+                  "anyOf": [
+                    {
                       "type": "string",
                       "enum": [
                         "allow",
@@ -1021,64 +802,54 @@
                         "deny"
                       ]
                     },
-                    "bash": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "allow",
-                            "ask",
-                            "deny"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "string",
-                            "enum": [
-                              "allow",
-                              "ask",
-                              "deny"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "webfetch": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "doom_loop": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "external_directory": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "allow",
+                          "ask",
+                          "deny"
+                        ]
+                      }
                     }
-                  },
-                  "additionalProperties": {}
+                  ]
+                },
+                "webfetch": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 }
-              ]
+              }
             }
           }
         },
-        "Poseidon": {
+        "Poseidon (Plan Consultant)": {
           "type": "object",
           "properties": {
             "model": {
@@ -1123,25 +894,21 @@
               "type": "string"
             },
             "permission": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {
-                    "type": "string",
-                    "enum": [
-                      "allow",
-                      "ask",
-                      "deny"
-                    ]
-                  }
+              "type": "object",
+              "properties": {
+                "edit": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 },
-                {
-                  "type": "object",
-                  "properties": {
-                    "edit": {
+                "bash": {
+                  "default": "ask",
+                  "anyOf": [
+                    {
                       "type": "string",
                       "enum": [
                         "allow",
@@ -1149,64 +916,54 @@
                         "deny"
                       ]
                     },
-                    "bash": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "allow",
-                            "ask",
-                            "deny"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "string",
-                            "enum": [
-                              "allow",
-                              "ask",
-                              "deny"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "webfetch": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "doom_loop": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "external_directory": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "allow",
+                          "ask",
+                          "deny"
+                        ]
+                      }
                     }
-                  },
-                  "additionalProperties": {}
+                  ]
+                },
+                "webfetch": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 }
-              ]
+              }
             }
           }
         },
-        "Scylla": {
+        "Scylla (Plan Reviewer)": {
           "type": "object",
           "properties": {
             "model": {
@@ -1251,25 +1008,21 @@
               "type": "string"
             },
             "permission": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {
-                    "type": "string",
-                    "enum": [
-                      "allow",
-                      "ask",
-                      "deny"
-                    ]
-                  }
+              "type": "object",
+              "properties": {
+                "edit": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 },
-                {
-                  "type": "object",
-                  "properties": {
-                    "edit": {
+                "bash": {
+                  "default": "ask",
+                  "anyOf": [
+                    {
                       "type": "string",
                       "enum": [
                         "allow",
@@ -1277,60 +1030,50 @@
                         "deny"
                       ]
                     },
-                    "bash": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "allow",
-                            "ask",
-                            "deny"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "string",
-                            "enum": [
-                              "allow",
-                              "ask",
-                              "deny"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "webfetch": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "doom_loop": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "external_directory": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "allow",
+                          "ask",
+                          "deny"
+                        ]
+                      }
                     }
-                  },
-                  "additionalProperties": {}
+                  ]
+                },
+                "webfetch": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 }
-              ]
+              }
             }
           }
         },
@@ -1379,25 +1122,21 @@
               "type": "string"
             },
             "permission": {
-              "anyOf": [
-                {
-                  "type": "object",
-                  "propertyNames": {
-                    "type": "string"
-                  },
-                  "additionalProperties": {
-                    "type": "string",
-                    "enum": [
-                      "allow",
-                      "ask",
-                      "deny"
-                    ]
-                  }
+              "type": "object",
+              "properties": {
+                "edit": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 },
-                {
-                  "type": "object",
-                  "properties": {
-                    "edit": {
+                "bash": {
+                  "default": "ask",
+                  "anyOf": [
+                    {
                       "type": "string",
                       "enum": [
                         "allow",
@@ -1405,60 +1144,50 @@
                         "deny"
                       ]
                     },
-                    "bash": {
-                      "anyOf": [
-                        {
-                          "type": "string",
-                          "enum": [
-                            "allow",
-                            "ask",
-                            "deny"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "propertyNames": {
-                            "type": "string"
-                          },
-                          "additionalProperties": {
-                            "type": "string",
-                            "enum": [
-                              "allow",
-                              "ask",
-                              "deny"
-                            ]
-                          }
-                        }
-                      ]
-                    },
-                    "webfetch": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "doom_loop": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
-                    },
-                    "external_directory": {
-                      "type": "string",
-                      "enum": [
-                        "allow",
-                        "ask",
-                        "deny"
-                      ]
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "allow",
+                          "ask",
+                          "deny"
+                        ]
+                      }
                     }
-                  },
-                  "additionalProperties": {}
+                  ]
+                },
+                "webfetch": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "default": "ask",
+                  "type": "string",
+                  "enum": [
+                    "allow",
+                    "ask",
+                    "deny"
+                  ]
                 }
-              ]
+              }
             }
           }
         }
@@ -1775,125 +1504,6 @@
               "items": {
                 "type": "string"
               }
-            }
-          }
-        }
-      }
-    },
-    "memory": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": true,
-          "type": "boolean"
-        },
-        "autoSave": {
-          "default": true,
-          "type": "boolean"
-        },
-        "storagePath": {
-          "default": "~/.kraken/memory",
-          "type": "string"
-        }
-      }
-    },
-    "learning": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": true,
-          "type": "boolean"
-        },
-        "autoSave": {
-          "default": true,
-          "type": "boolean"
-        },
-        "storagePath": {
-          "default": "~/.kraken/learning",
-          "type": "string"
-        },
-        "experienceStore": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            },
-            "maxEntries": {
-              "default": 2000,
-              "type": "integer",
-              "minimum": 10,
-              "maximum": 9007199254740991
-            }
-          }
-        },
-        "knowledgeGraph": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            },
-            "maxNodes": {
-              "default": 5000,
-              "type": "integer",
-              "minimum": 10,
-              "maximum": 9007199254740991
-            }
-          }
-        },
-        "patternDetection": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            },
-            "minConfidence": {
-              "default": 0.6,
-              "type": "number",
-              "minimum": 0,
-              "maximum": 1
-            },
-            "maxPatterns": {
-              "default": 500,
-              "type": "integer",
-              "minimum": 1,
-              "maximum": 9007199254740991
-            }
-          }
-        },
-        "spacedRepetition": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
-            },
-            "initialIntervalDays": {
-              "default": 1,
-              "type": "number",
-              "minimum": 1
-            },
-            "easeFactor": {
-              "default": 2.5,
-              "type": "number",
-              "minimum": 1.3,
-              "maximum": 3
-            },
-            "maxIntervalDays": {
-              "default": 365,
-              "type": "number",
-              "minimum": 1
-            }
-          }
-        },
-        "stateMachines": {
-          "type": "object",
-          "properties": {
-            "enabled": {
-              "default": true,
-              "type": "boolean"
             }
           }
         }
@@ -2235,116 +1845,95 @@
         }
       }
     },
-    "thinkingBudgetOptimizer": {
+    "effortRouter": {
       "type": "object",
       "properties": {
         "enabled": {
           "default": true,
           "type": "boolean"
         },
-        "model": {
-          "type": "string"
-        },
-        "budgets": {
-          "type": "object",
-          "properties": {
-            "simple": {
-              "default": 4000,
-              "type": "number"
-            },
-            "medium": {
-              "default": 8000,
-              "type": "number"
-            },
-            "complex": {
-              "default": 16000,
-              "type": "number"
-            },
-            "full": {
-              "default": 32000,
-              "type": "number"
-            }
-          }
-        },
-        "autoClassify": {
-          "default": true,
-          "type": "boolean"
-        }
-      }
-    },
-    "promptCompression": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": true,
-          "type": "boolean"
-        },
-        "threshold": {
-          "default": 2000,
-          "type": "number"
-        },
-        "level": {
-          "default": "partial",
+        "defaultState": {
+          "default": "STANDARD",
           "type": "string",
           "enum": [
-            "cache_hit",
-            "partial",
+            "TRIVIAL",
+            "STANDARD",
+            "ELEVATED",
+            "INTENSIVE",
+            "DEEP_WORK"
+          ]
+        },
+        "rolloutPhase": {
+          "default": "shadow",
+          "type": "string",
+          "enum": [
+            "shadow",
+            "conservative",
             "full"
           ]
         },
-        "excludePatterns": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "smartContextInjection": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": true,
-          "type": "boolean"
+        "thermoclineSensitivity": {
+          "default": 2,
+          "type": "number",
+          "minimum": 1,
+          "maximum": 4
         },
-        "maxTokens": {
-          "default": 2000,
-          "type": "number"
-        },
-        "chunkSize": {
-          "default": 500,
-          "type": "number"
-        },
-        "minRelevanceScore": {
-          "default": 0.1,
-          "type": "number"
-        },
-        "filePatterns": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "transcriptSummarization": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": true,
-          "type": "boolean"
-        },
-        "messageThreshold": {
-          "default": 30,
-          "type": "number"
-        },
-        "summaryRatio": {
-          "default": 0.3,
-          "type": "number"
-        },
-        "preserveRecent": {
+        "thermoclineWindowSize": {
           "default": 5,
-          "type": "number"
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 10
+        },
+        "crystallizationThreshold": {
+          "default": 3,
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 10
+        },
+        "maxCrystallizedPatterns": {
+          "default": 5,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "patternDecayMessages": {
+          "default": 20,
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 100
+        },
+        "signalWeights": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "disabledMicroDirectives": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "logDecisions": {
+              "default": true,
+              "type": "boolean"
+            },
+            "logSignals": {
+              "default": false,
+              "type": "boolean"
+            },
+            "logTransitions": {
+              "default": true,
+              "type": "boolean"
+            }
+          }
         }
       }
     }

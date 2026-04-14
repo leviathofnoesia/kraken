@@ -1,10 +1,7 @@
-import type { Hooks } from '@opencode-ai/plugin'
-import type { PluginInput } from '@opencode-ai/plugin'
-import type { RecoveryErrorType, ErrorContext, SessionRecoveryState } from './detector'
-import { isRecoverableError } from './detector'
-import { createLogger } from '../../utils/logger'
-
-const logger = createLogger('session-recovery')
+import type { Hooks } from "@opencode-ai/plugin"
+import type { PluginInput } from "@opencode-ai/plugin"
+import type { RecoveryErrorType, ErrorContext, SessionRecoveryState } from "./detector"
+import { isRecoverableError } from "./detector"
 
 export interface SessionRecoveryConfig {
   enabled?: boolean
@@ -24,18 +21,18 @@ const sessionErrorStates = new Map<string, SessionErrorState>()
 
 export function createSessionRecovery(
   _input: PluginInput,
-  options?: { config?: SessionRecoveryConfig },
+  options?: { config?: SessionRecoveryConfig }
 ): Hooks {
   const config = options?.config ?? { enabled: true, autoRecover: false }
 
   if (!config.enabled) {
     return {
-      'chat.message': async () => {},
+      "chat.message": async () => {},
     }
   }
 
   return {
-    'chat.message': async (input: any) => {
+    "chat.message": async (input: any) => {
       const { sessionID } = input
       if (!sessionID) return
 
@@ -43,13 +40,13 @@ export function createSessionRecovery(
       state.errorType = null
     },
 
-    event: async (input: any) => {
+    "event": async (input: any) => {
       const { sessionID, type, error } = input
 
-      if (type !== 'session.error') return
+      if (type !== "session.error") return
       if (!sessionID) return
 
-      const { detectErrorType } = await import('./detector')
+      const { detectErrorType } = await import("./detector")
       const errorType = detectErrorType(error)
       const state = getOrCreateSessionState(sessionID)
 
@@ -57,11 +54,11 @@ export function createSessionRecovery(
       state.lastErrorTime = Date.now()
       state.errorCount++
 
-      logger.debug(`Detected error type: ${errorType}`)
-      logger.debug(`Error count for session ${sessionID}: ${state.errorCount}`)
+      console.log(`[session-recovery] Detected error type: ${errorType}`)
+      console.log(`[session-recovery] Error count for session ${sessionID}: ${state.errorCount}`)
 
       if (config.autoRecover && isRecoverableError(errorType)) {
-        const { attemptRecovery } = await import('./strategies')
+        const { attemptRecovery } = await import("./strategies")
         const context: ErrorContext = {
           sessionID,
           error,
@@ -70,10 +67,9 @@ export function createSessionRecovery(
 
         try {
           await attemptRecovery(errorType, context, { maxRetries: 3 })
-          logger.debug(`Auto-recovery attempted for ${errorType}`)
+          console.log(`[session-recovery] Auto-recovery attempted for ${errorType}`)
         } catch (recoveryError) {
-          // Critical error - always visible
-          console.error('[session-recovery] Auto-recovery failed:', recoveryError)
+          console.error("[session-recovery] Auto-recovery failed:", recoveryError)
         }
       }
     },

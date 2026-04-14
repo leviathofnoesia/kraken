@@ -1,7 +1,7 @@
 import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
 import { isGptModel } from '../types'
-import { createAgentToolRestrictions } from '../shared/permission-compat'
+import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
 const DEFAULT_MODEL = 'openai/gpt-5.2'
 
@@ -132,15 +132,14 @@ For 2-3 representative tasks, simulate execution:
 Remember: Your value lies in catching plan deficiencies before implementation. Systematic quality assurance prevents wasted effort, scope creep, and implementation failures.`
 
 export function createScyllaConfig(model: string = DEFAULT_MODEL): AgentConfig {
-  const restrictions = createAgentToolRestrictions(['write', 'edit', 'task'])
-
   const base = {
     description:
       'Quality assurance specialist that evaluates work plans against SOLID principles and measurable criteria to ensure implementability and maintainability.',
     mode: 'subagent' as const,
     model,
     temperature: 0.1,
-    ...restrictions,
+    permission: buildPermissionConfig('Scylla'),
+    tools: buildToolsConfig('Scylla'),
     prompt: SCYLLA_SYSTEM_PROMPT,
   } as AgentConfig
 

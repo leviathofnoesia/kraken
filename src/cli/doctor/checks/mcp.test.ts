@@ -9,7 +9,7 @@ describe('mcp check', () => {
       const servers = mcp.getBuiltinMcpInfo()
 
       // #then should include expected servers
-      expect(servers.length).toBeGreaterThanOrEqual(2)
+      expect(servers.length).toBe(3)
       expect(servers.every((s) => s.type === 'builtin')).toBe(true)
       expect(servers.every((s) => s.enabled === true)).toBe(true)
       expect(servers.map((s) => s.id)).toContain('context7')
@@ -37,7 +37,8 @@ describe('mcp check', () => {
 
       // #then should pass
       expect(result.status).toBe('pass')
-      expect(result.message).toMatch(/\d+ built-in servers enabled/)
+      expect(result.message).toContain('3')
+      expect(result.message).toContain('enabled')
     })
 
     it('lists enabled servers in details', async () => {

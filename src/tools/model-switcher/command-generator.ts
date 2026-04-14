@@ -21,7 +21,7 @@ Parse user input:
 - "history": Show configuration history
 - "status": Show all agent models
 
-Supported agents: Kraken, Cartographer, Maelstrom, Nautilus, Abyssal, Coral, Siren, Leviathan, Poseidon, Scylla, Pearl
+Supported agents: Kraken, Maelstrom, Nautilus, Abyssal, Coral, Siren, Leviathan, Poseidon, Scylla, Pearl
 </command-instruction>
 `,
 
@@ -139,7 +139,7 @@ Use model_switcher tool with action "available" to list all models.
 Display models grouped by provider:
 - Anthropic (Claude)
 - OpenAI (ChatGPT)
-- Google (Antigravity)
+- Google (Gemini)
 
 For each model show:
 - Display name

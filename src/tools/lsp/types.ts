@@ -53,19 +53,13 @@ export interface Diagnostic {
 }
 
 export interface HoverResult {
-  contents:
-    | {
-        kind?: string
-        value: string
-      }
-    | string
-    | Array<
-        | {
-            kind?: string
-            value: string
-          }
-        | string
-      >
+  contents: {
+    kind?: string
+    value: string
+  } | string | Array<{
+    kind?: string
+    value: string
+  } | string>
   range?: Range
 }
 
@@ -88,7 +82,7 @@ export interface TextDocumentEdit {
 }
 
 export interface CreateFile {
-  kind: 'create'
+  kind: "create"
   uri: string
   options?: {
     overwrite?: boolean
@@ -97,7 +91,7 @@ export interface CreateFile {
 }
 
 export interface RenameFile {
-  kind: 'rename'
+  kind: "rename"
   oldUri: string
   newUri: string
   options?: {
@@ -107,7 +101,7 @@ export interface RenameFile {
 }
 
 export interface DeleteFile {
-  kind: 'delete'
+  kind: "delete"
   uri: string
   options?: {
     recursive?: boolean
@@ -165,9 +159,9 @@ export interface ServerLookupInfo {
 }
 
 export type ServerLookupResult =
-  | { status: 'found'; server: ResolvedServer }
-  | { status: 'not_configured'; extension: string; availableServers: string[] }
-  | { status: 'not_installed'; server: ServerLookupInfo; installHint: string }
+  | { status: "found"; server: ResolvedServer }
+  | { status: "not_configured"; extension: string; availableServers: string[] }
+  | { status: "not_installed"; server: ServerLookupInfo; installHint: string }
 
 export interface ResolvedServer {
   id: string
@@ -179,7 +173,7 @@ export interface ResolvedServer {
 }
 
 export interface JSONRPCResponse {
-  jsonrpc: '2.0'
+  jsonrpc: "2.0"
   id: number | string | null
   result?: unknown
   error?: {
@@ -190,14 +184,14 @@ export interface JSONRPCResponse {
 }
 
 export interface JSONRPCRequest {
-  jsonrpc: '2.0'
+  jsonrpc: "2.0"
   id: number | string
   method: string
   params?: unknown
 }
 
 export interface JSONRPCNotification {
-  jsonrpc: '2.0'
+  jsonrpc: "2.0"
   method: string
   params?: unknown
 }

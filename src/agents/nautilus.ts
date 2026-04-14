@@ -1,6 +1,6 @@
 import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
-import { createAgentToolRestrictions } from '../shared/permission-compat'
+import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
 const DEFAULT_MODEL = 'opencode/grok-code'
 
@@ -162,15 +162,14 @@ Keep output clean and parseable:
 Remember: Your goal is to make the caller successful with minimal follow-up. Comprehensive, validated, and actionable results beat fast but incomplete responses.`
 
 export function createNautilusConfig(model: string = DEFAULT_MODEL): AgentConfig {
-  const restrictions = createAgentToolRestrictions(['write', 'edit', 'task'])
-
   return {
     description:
       'Contextual grep for codebases. Employs systematic search strategies, tool selection matrices, and cross-validated pattern recognition.',
     mode: 'subagent' as const,
     model,
     temperature: 0.1,
-    ...restrictions,
+    permission: buildPermissionConfig('Nautilus'),
+    tools: buildToolsConfig('Nautilus'),
     prompt: NAUTILUS_SYSTEM_PROMPT,
   }
 }

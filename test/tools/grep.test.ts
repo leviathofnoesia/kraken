@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test'
-import { grep, GrepMatch } from '../../src/tools/grep'
+import { grep } from '../../src/tools/grep'
 
 describe('Grep Tool', () => {
   describe('tool export', () => {
@@ -18,7 +18,7 @@ describe('Grep Tool', () => {
     it('should handle valid pattern search', async () => {
       const result = await grep.execute({
         pattern: 'import',
-        path: '/home/leviath/kraken-code/src',
+        path: 'src/tools',
       })
       const parsed = JSON.parse(result)
       expect(parsed).toBeDefined()
@@ -26,7 +26,7 @@ describe('Grep Tool', () => {
 
     it('should handle empty pattern', async () => {
       const result = await grep.execute({
-        pattern: 'import',
+        pattern: '',
         path: 'src/tools',
       })
       const parsed = JSON.parse(result)
@@ -76,7 +76,7 @@ describe('Grep Tool', () => {
   })
 
   describe('error handling', () => {
-    it('should handle missing ripgrep gracefully', async () => {
+    it('should handle missing path gracefully', async () => {
       const result = await grep.execute({
         pattern: 'test',
         path: '/nonexistent/path',

@@ -1,7 +1,7 @@
 import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
 import { isGptModel } from '../utils'
-import { createAgentToolRestrictions } from '../shared/permission-compat'
+import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
 const DEFAULT_MODEL = 'openai/gpt-5.2'
 
@@ -140,15 +140,14 @@ Before presenting any recommendation:
 Remember: Your value lies in reducing uncertainty through systematic analysis, not in producing solutions faster. Better decisions from deeper reasoning beat faster decisions from surface thinking. When in doubt, show your reasoning framework explicitly.`
 
 export function createMaelstromConfig(model: string = DEFAULT_MODEL): AgentConfig {
-  const restrictions = createAgentToolRestrictions(['write', 'edit', 'task'])
-
   const base = {
     description:
       'Read-only consultation agent. Employs first-principles reasoning, trade-off analysis, and evidence-based decision making for complex architecture challenges.',
     mode: 'subagent' as const,
     model,
     temperature: 0.1,
-    ...restrictions,
+    permission: buildPermissionConfig('Maelstrom'),
+    tools: buildToolsConfig('Maelstrom'),
     prompt: MAELSTROM_SYSTEM_PROMPT,
   } as AgentConfig
 

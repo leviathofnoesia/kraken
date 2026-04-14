@@ -1,19 +1,31 @@
-import { describe, it, expect } from "bun:test"
-import { initializeSkillMcpManager, getSkillMcpManager } from "../../src/features/skill-mcp-manager"
+import { describe, it, expect, afterEach } from 'bun:test'
+import {
+  initializeSkillMcpManager,
+  getSkillMcpManager,
+  resetSkillMcpManager,
+} from '../../src/features/skill-mcp-manager'
 
-describe("Skill MCP Manager Feature", () => {
-  describe("initializeSkillMcpManager", () => {
-    it("should initialize skill mcp manager", async () => {
+describe('Skill MCP Manager Feature', () => {
+  afterEach(() => {
+    resetSkillMcpManager()
+  })
+
+  describe('initializeSkillMcpManager', () => {
+    it('should initialize skill mcp manager', async () => {
       const result = await initializeSkillMcpManager()
       expect(result).toBeDefined()
     })
   })
 
-  describe("getSkillMcpManager", () => {
-    it("should return manager after initialization", async () => {
+  describe('getSkillMcpManager', () => {
+    it('should return null before initialization', () => {
+      resetSkillMcpManager()
+      expect(getSkillMcpManager()).toBeNull()
+    })
+
+    it('should return manager after initialization', async () => {
       await initializeSkillMcpManager()
-      const manager = getSkillMcpManager()
-      expect(manager).toBeDefined()
+      expect(getSkillMcpManager()).toBeDefined()
     })
   })
 })

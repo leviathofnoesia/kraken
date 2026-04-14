@@ -10,45 +10,45 @@ Comprehensive tooling ecosystem for sea-themed agents: AST-aware code search, fi
 
 ### Core Tools (Full Implemented)
 
-| Category | Tools | Description |
-|----------|-------|-------------|
-| **AST** | `ast_grep_search`, `ast_grep_replace` | Pattern-based code search/replace with 25 language support |
-| **File Search** | `grep`, `glob` | Content and file pattern matching with timeout safety |
-| **Session** | `session_list`, `session_read`, `session_search`, `session_info` | OpenCode session file management |
-| **Background** | `background_task_status`, `background_task_list`, `background_task_cancel` | Async agent task orchestration |
- | **Terminal** | `interactive_bash` | Interactive bash session control |
- | **Ralph Loop** | `ralph_loop_status`, `ralph_loop_cancel`, `ralph_loop_continue` | Iterative task execution with state persistence |
- | **Model Switcher** | `model-switcher-*` | Interactive model selection and configuration |
- | **Compression** | `kraken-compress` | Context compression for efficiency |
- | **Agent Control** | `call_agent` | Spawn specialized explore/librarian agents |
-| **Learning Memory** | `learning_add_experience`, `learning_search_experiences`, `learning_add_knowledge_node`, `learning_search_knowledge_nodes`, `learning_link_knowledge_nodes`, `learning_record_pattern`, `learning_list_patterns`, `learning_get_review_queue`, `learning_review_node`, `learning_create_state_machine`, `learning_list_state_machines` | Unified learning storage and retrieval |
-| **MCP Integration** | `websearch`, `webfetch`, `context7-search`, `context7-get`, `grep-search`, `grep-get-file` | Curated MCP servers for web search, documentation, and code search |
-| **Commands** | `ralph-loop` | Built-in command system |
+| Category            | Tools                                                                                                                                                   | Description                                                        |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| **AST**             | `ast_grep_search`, `ast_grep_replace`                                                                                                                   | Pattern-based code search/replace with 25 language support         |
+| **File Search**     | `grep`, `glob`                                                                                                                                          | Content and file pattern matching with timeout safety              |
+| **Session**         | `session_list`, `session_read`, `session_search`, `session_info`                                                                                        | OpenCode session file management                                   |
+| **Background**      | `background_task_status`, `background_task_list`, `background_task_cancel`                                                                              | Async agent task orchestration                                     |
+| **Terminal**        | `interactive_bash`                                                                                                                                      | Interactive bash session control                                   |
+| **Ralph Loop**      | `ralph_loop_status`, `ralph_loop_cancel`, `ralph_loop_continue`                                                                                         | Iterative task execution with state persistence                    |
+| **Model Switcher**  | `model-switcher-*`                                                                                                                                      | Interactive model selection and configuration                      |
+| **Compression**     | `kraken-compress`                                                                                                                                       | Context compression for efficiency                                 |
+| **Agent Control**   | `call_agent`                                                                                                                                            | Spawn specialized explore/librarian agents                         |
+| **Memory**          | `memory-add`, `memory-get`, `memory-search`, `memory-link`, `memory-connected`, `memory-delete`, `memory-stats`, `memory-compress`, `memory-decompress` | Spatial knowledge graph with vector compression                    |
+| **MCP Integration** | `websearch`, `webfetch`, `context7-search`, `context7-get`, `grep-search`, `grep-get-file`                                                              | Curated MCP servers for web search, documentation, and code search |
+| **Commands**        | `ralph-loop`                                                                                                                                            | Built-in command system                                            |
 
 ### Specialized Features
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| **Blitzkrieg System** | ✅ Full | Complete TDD enforcement: test plans, TDD workflow, evidence verification, planner constraints (4 hooks, integrated into plugin) |
-| **Skills System** | ✅ Full | Dynamic skill discovery and loading from templates/ |
-| **MCP Integration** | ✅ Full | Built-in MCP servers for web search, documentation, and code search |
-| **Context Management** | ✅ Partial | AGENTS.md injector exists, directory-specific instructions support |
-| **Hooks System** | ✅ Extensive | 30+ hooks including: keyword detection, think mode, Ralph Loop, session recovery, auto-update, comment checker, and more |
-| **Google Multi-Account Auth** | ✅ Full | AccountManager class with account rotation, rate limit handling, tier-based selection |
+| Feature                       | Status       | Description                                                                                                                      |
+| ----------------------------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Blitzkrieg System**         | ✅ Full      | Complete TDD enforcement: test plans, TDD workflow, evidence verification, planner constraints (4 hooks, integrated into plugin) |
+| **Skills System**             | ✅ Full      | Dynamic skill discovery and loading from templates/                                                                              |
+| **MCP Integration**           | ✅ Full      | Built-in MCP servers (websearch, context7, grep_app) with full JSON-RPC protocol                                                 |
+| **Context Management**        | ✅ Partial   | AGENTS.md injector exists, directory-specific instructions support                                                               |
+| **Hooks System**              | ✅ Extensive | 30+ hooks including: keyword detection, think mode, Ralph Loop, session recovery, auto-update, comment checker, and more         |
+| **Google Multi-Account Auth** | ✅ Full      | AccountManager class with account rotation, rate limit handling, tier-based selection                                            |
 
-## IMPLEMENTED TOOLS
+## MISSING TOOLS
 
-All previously planned tools are now fully implemented:
+**Note**: The following tools are planned but not yet implemented. These represent high-priority additions for future releases.
 
-| Status | Tools | Description |
-|--------|-------|-------------|
-| ✅ | **LSP Tools** | IDE-like code intelligence (hover, goto definition, find references, document symbols, diagnostics, servers, rename, code actions) |
-| ✅ | **Git Operations** | Git status, commit, push, pull, branch, diff, log, stash, rebase, tag, merge, reset, fetch, checkout |
-| ✅ | **Glob Tool** | Advanced file pattern matching (glob_tool, find_files, find_in_files) |
-| ✅ | **Agent Calling** | Subagent spawning with background mode (call_agent, background_task_status, background_task_list, background_task_cancel) |
-| ✅ | **Multimodal Analysis** | Pearl agent for PDF/image/diagram analysis |
-| ✅ | **Binary Build** | Cross-platform binary compilation (bun build --compile) |
-| ⚠️ | **Bash Session Management** | Session tracking exists (interactive-bash-session hook), tmux integration pending |
+| Priority | Tools                       | Description                                                                                                                        | Est. Effort |
+| -------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| HIGH     | **LSP Tools**               | IDE-like code intelligence (hover, goto definition, find references, document symbols, diagnostics, servers, rename, code actions) | 12-16 hrs   |
+| HIGH     | **Git Operations**          | Git status, commit, push, pull, branch operations                                                                                  | 6-8 hrs     |
+| HIGH     | **Glob Tool**               | Advanced file pattern matching                                                                                                     | 2-3 hrs     |
+| HIGH     | **Agent Calling**           | Explicit explore/librarian agent spawning with background mode                                                                     | 3-4 hrs     |
+| MEDIUM   | **Multimodal Analysis**     | PDF/image analysis via agent-browser                                                                                               | 8-10 hrs    |
+| MEDIUM   | **Bash Session Management** | Tmux session management with creation/switch/info/history                                                                          | 8-12 hrs    |
+| LOW      | **Glob Patterns**           | Advanced glob matching with project rules                                                                                          | 2-3 hrs     |
 
 ## KRATEN-SPECIFIC FEATURES
 
@@ -56,28 +56,28 @@ All previously planned tools are now fully implemented:
 
 Kraken Code uses sea-themed agents with clear specialization:
 
-| Agent | Specialty | Description |
-|--------|-----------|-------------|
-| **Kraken** | Architecture & Orchestration | Primary orchestrator for complex tasks |
-| **Atlas** | Planning & Breakdown | Expert at task decomposition |
-| **Nautilus** | Shell & Infrastructure | CI/CD, shell scripts, infrastructure |
-| **Abyssal** | Deep Analysis | Deep code analysis, debugging, problem investigation |
-| **Coral** | Building & Construction | New feature development |
-| **Siren** | Communication & Documentation | API docs, README files |
-| **Scylla** | Testing & Validation | Comprehensive test creation |
-| **Pearl** | Refactoring & Optimization | Code quality, performance improvements |
-| **Poseidon** | Data & Infrastructure | Databases, data pipelines |
-| **Leviathan** | Large-Scale Projects | Major refactoring, project-wide changes |
+| Agent         | Specialty                     | Description                                          |
+| ------------- | ----------------------------- | ---------------------------------------------------- |
+| **Kraken**    | Architecture & Orchestration  | Primary orchestrator for complex tasks               |
+| **Atlas**     | Planning & Breakdown          | Expert at task decomposition                         |
+| **Nautilus**  | Shell & Infrastructure        | CI/CD, shell scripts, infrastructure                 |
+| **Abyssal**   | Deep Analysis                 | Deep code analysis, debugging, problem investigation |
+| **Coral**     | Building & Construction       | New feature development                              |
+| **Siren**     | Communication & Documentation | API docs, README files                               |
+| **Scylla**    | Testing & Validation          | Comprehensive test creation                          |
+| **Pearl**     | Refactoring & Optimization    | Code quality, performance improvements               |
+| **Poseidon**  | Data & Infrastructure         | Databases, data pipelines                            |
+| **Leviathan** | Large-Scale Projects          | Major refactoring, project-wide changes              |
 
 ### Blitzkrieg TDD System
 
 Complete test-driven development enforcement ensuring code quality:
 
-| Component | Hook | Description |
-|-----------|------|-------------|
-| **Test Plan Enforcer** | `blitzkrieg-test-plan-enforcer` | Requires test plan before implementation |
-| **TDD Workflow** | `blitzkrieg-tdd-workflow` | Enforces test-first development |
-| **Evidence Verifier** | `blitzkrieg-evidence-verifier` | Verifies test execution evidence |
+| Component               | Hook                             | Description                                 |
+| ----------------------- | -------------------------------- | ------------------------------------------- |
+| **Test Plan Enforcer**  | `blitzkrieg-test-plan-enforcer`  | Requires test plan before implementation    |
+| **TDD Workflow**        | `blitzkrieg-tdd-workflow`        | Enforces test-first development             |
+| **Evidence Verifier**   | `blitzkrieg-evidence-verifier`   | Verifies test execution evidence            |
 | **Planner Constraints** | `blitzkrieg-planner-constraints` | Validates planning complexity and structure |
 
 ## TOOL USAGE
@@ -122,35 +122,39 @@ background_task_status
 background_task_list
 ```
 
-### Unified Learning Memory
+### Kraken Memory
 
-Persistent context across sessions:
+Spatial knowledge graph with palace hierarchy and vector search:
 
 ```bash
-# Save an experience
-learning_add_experience --summary "API design decision" --details "Used JWT because..." --tags ["auth", "api"] --confidence 0.8
+# Add a node
+memory-add --id "auth-1" --title "JWT Policy" --content "15min expiry" --type fact
 
-# Search experiences
-learning_search_experiences --query "authentication"
+# Search nodes
+memory-search --text "authentication"
 
-# Record a knowledge node
-learning_add_knowledge_node --title "JWT decision" --content "JWT chosen for stateless auth" --tags ["auth"]
+# Link nodes
+memory-link --sourceId auth-1 --targetId api-2 --relation depends_on --strength 0.8
+
+# Graph statistics
+memory-stats
 ```
 
 ## BEST PRACTICES
 
 1. **Use AST-grep** over string search for code changes - it's language-aware
 2. **Leverage Background Agents** for time-consuming parallel tasks
-3. **Use Learning Memory** for context that spans sessions
+3. **Use Kraken Memory** for context that spans sessions
 4. **Use Blitzkrieg** for TDD-compliant development workflows
 5. **Use Model Switcher** to select optimal models per task type
 
 ## FUTURE ENHANCEMENTS
 
-All planned tools are now implemented. Future enhancements will focus on:
+Planned improvements for future releases:
 
-1. **Enhanced LSP Tools** - Additional language servers, improved diagnostics
-2. **Tmux Integration** - Full tmux session management with attach/detach
-3. **Code Signing** - macOS/Windows code signing for releases
-4. **Auto-Update** - Binary auto-update mechanism
-5. **Plugin System** - Third-party plugin support
+1. **LSP Tools Integration** - Add IDE-like code intelligence (hover, goto definition, find references, document symbols, diagnostics)
+2. **Git Operations** - Native Git SDK integration for version control workflows
+3. **Multimodal Analysis** - PDF/image analysis via agent-browser
+4. **Bash Session Management** - Tmux session management with creation/switch/info/history
+5. **Agent Calling** - Explicit explore/librarian agent spawning with background mode
+6. **Advanced Glob** - Project-rule-based pattern matching

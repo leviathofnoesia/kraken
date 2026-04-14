@@ -36,14 +36,6 @@ export function getBlitzkriegConfig() {
   return getConfigValue('blitzkrieg')
 }
 
-export function getMemoryConfig() {
-  return getConfigValue('memory')
-}
-
-export function getLearningConfig() {
-  return getConfigValue('learning')
-}
-
 export function getModesConfig() {
   return getConfigValue('modes')
 }
@@ -94,4 +86,8 @@ export function getBackgroundTaskConfig() {
 
 export function getRalphLoopConfig() {
   return getConfigValue('ralphLoop')
+}
+
+export function getEffortRouterConfig() {
+  return getConfigValue('effortRouter')
 }

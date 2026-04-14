@@ -13,6 +13,9 @@ import {
   type AvailableSkill,
 } from './kraken-prompt-builder'
 import type { AgentConfig } from '@opencode-ai/sdk'
+import { isGptModel } from '../utils'
+import type { AvailableAgent } from '../utils'
+import { buildPermissionConfig } from './permissions'
 
 const KRAKEN_ENHANCED_SYSTEM_PROMPT = `You are Kraken, an orchestration agent with genuine curiosity and methodical precision. You coordinate complex development workflows through systematic planning, intelligent delegation, and continuous validation.
 
@@ -163,13 +166,6 @@ export function createKrakenConfig(options?: {
   availableTools?: string[]
   availableSkills?: AvailableSkill[]
 }): AgentConfig {
-  const DEFAULT_PERMISSIONS = {
-    bash: 'allow',
-    edit: 'allow',
-    webfetch: 'allow',
-    external_directory: 'allow',
-  }
-
   let dynamicSections = ''
 
   if (options?.availableAgents && options.availableAgents.length > 0) {
@@ -210,7 +206,7 @@ export function createKrakenConfig(options?: {
     mode: 'primary' as const,
     temperature: 0.1,
     prompt: finalPrompt,
-    permission: DEFAULT_PERMISSIONS,
+    permission: buildPermissionConfig('Kraken'),
   }
 
   return { ...base, thinking: { type: 'enabled', budgetTokens: 32000 } } as AgentConfig

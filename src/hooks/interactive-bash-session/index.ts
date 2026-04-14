@@ -72,7 +72,7 @@ function recordCommand(sessionID: string, command: string): void {
     session.commandHistory.push(command)
 
     if (session.commandHistory.length > 100) {
-      session.commandHistory = session.commandHistory.slice(-100)
+      session.commandHistory = session.commandHistory.slice(-100) as string[]
     }
   }
 }
@@ -81,7 +81,9 @@ function getChildPIDs(): number[] {
   try {
     const pids = new Set<number>()
     const { execSync } = require('node:child_process')
-    const result = execSync('pgrep -P "^(bash|sh)" -o pid=', ' -d,').toString().trim()
+      const result = execSync('pgrep -P "^(bash|sh)" -o pid=', ' -d,')
+      .toString()
+      .trim()
 
     if (result) {
       result.split('\n').forEach((line: unknown) => {
@@ -107,7 +109,8 @@ function killSessionProcesses(session: BashSession): void {
   session.childProcesses.forEach((pid) => {
     try {
       process.kill(pid)
-    } catch (e) {}
+    } catch (e) {
+    }
   })
 
   session.childProcesses.clear()
@@ -115,7 +118,7 @@ function killSessionProcesses(session: BashSession): void {
 
 export function createInteractiveBashSession(
   _input: PluginInput,
-  options?: { config?: InteractiveBashSessionConfig },
+  options?: { config?: InteractiveBashSessionConfig }
 ): Hooks {
   const config = options?.config ?? {
     enabled: true,
@@ -164,14 +167,12 @@ export function createInteractiveBashSession(
       if (config.trackHistory) {
         const session = getBashSession(sessionID)
         if (session) {
-          console.log(
-            `[interactive-bash-session] Command history size: ${session.commandHistory.length}`,
-          )
+          console.log(`[interactive-bash-session] Command history size: ${session.commandHistory.length}`)
         }
       }
     },
 
-    event: async (input) => {
+    'event': async (input) => {
       if (!config.enabled) return
 
       const sessionID = (input as { sessionID?: string }).sessionID
@@ -187,11 +188,9 @@ export function createInteractiveBashSession(
           const state = getSessionState(sessionID)
           state.sessions.delete(sessionID)
 
-          console.log(
-            `[interactive-bash-session] Session cleanup completed. ` +
-              `Commands executed: ${session.commandHistory.length}, ` +
-              `Working dir: ${session.workingDirectory}`,
-          )
+          console.log(`[interactive-bash-session] Session cleanup completed. ` +
+            `Commands executed: ${session.commandHistory.length}, ` +
+            `Working dir: ${session.workingDirectory}`)
         }
       }
 

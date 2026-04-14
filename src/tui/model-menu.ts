@@ -1,4 +1,5 @@
 import { select, confirm, isCancel } from '@clack/prompts'
+import { join } from 'path'
 import { readFile, writeFile } from 'fs/promises'
 import {
   loadAgentConfig,
@@ -13,20 +14,8 @@ import {
   MODEL_CATALOG,
   getModelDisplayName,
   getAvailableModelsByProvider,
+  type ModelInfo,
 } from '../tools/model-switcher/catalog'
-import { SHOULD_LOG } from '../utils/logger'
-
-function cliLog(...args: any[]): void {
-  if (SHOULD_LOG || !process.env.OPENCODE_SESSION_ID) {
-    console.log(...args)
-  }
-}
-
-function cliError(...args: any[]): void {
-  if (SHOULD_LOG || !process.env.OPENCODE_SESSION_ID) {
-    console.error(...args)
-  }
-}
 
 export async function showModelMenu(worktree: string): Promise<void> {
   const currentConfig = await loadAgentConfig(worktree)
@@ -108,7 +97,7 @@ async function selectAgentModel(worktree: string, currentConfig: AgentConfig): P
     options: [
       { value: 'anthropic', label: '🤖 Anthropic' },
       { value: 'openai', label: '🧠 OpenAI' },
-      { value: 'google', label: '🔍 Google (Antigravity)' },
+      { value: 'google', label: '🔍 Google' },
     ],
   })
 
@@ -130,7 +119,7 @@ async function selectAgentModel(worktree: string, currentConfig: AgentConfig): P
   await saveAgentConfig(worktree, { [agent]: { model } })
   await addToHistory(worktree, { type: 'agent', agent, model })
 
-  cliLog(`\n  ✅ ${agent} now using ${getModelDisplayName(model)}\n`)
+  console.log(`\n  ✅ ${agent} now using ${getModelDisplayName(model)}\n`)
 }
 
 async function setAllAgentsModel(worktree: string): Promise<void> {
@@ -174,7 +163,7 @@ async function setAllAgentsModel(worktree: string): Promise<void> {
   await saveAgentConfig(worktree, updates)
   await addToHistory(worktree, { type: 'all', model })
 
-  cliLog(`\n  ✅ All agents now using ${getModelDisplayName(model)}\n`)
+  console.log(`\n  ✅ All agents now using ${getModelDisplayName(model)}\n`)
 }
 
 async function selectPreset(worktree: string): Promise<void> {
@@ -195,15 +184,15 @@ async function selectPreset(worktree: string): Promise<void> {
   await addToHistory(worktree, { type: 'preset', name: preset })
 
   const agentCount = Object.keys(presets[preset].config).length
-  cliLog(`\n  ✅ ${agentCount} agents configured with '${preset}' preset\n`)
+  console.log(`\n  ✅ ${agentCount} agents configured with '${preset}' preset\n`)
 }
 
 async function createCustomPreset(worktree: string): Promise<void> {
-  cliLog('\n  Creating custom preset from current configuration...\n')
+  console.log('\n  Creating custom preset from current configuration...\n')
 
   const name = await promptText('Preset name')
   if (!name) {
-    cliLog('  ⚠️  Preset name is required\n')
+    console.log('  ⚠️  Preset name is required\n')
     return
   }
 
@@ -216,7 +205,7 @@ async function createCustomPreset(worktree: string): Promise<void> {
     createdAt: Date.now(),
   })
 
-  cliLog(`\n  ✅ Custom preset '${name}' saved. Use /models preset ${name} to apply.\n`)
+  console.log(`\n  ✅ Custom preset '${name}' saved. Use /models preset ${name} to apply.\n`)
 }
 
 async function promptText(message: string): Promise<string | null> {
@@ -226,8 +215,8 @@ async function promptText(message: string): Promise<string | null> {
 
   if (isCancel(result) || !result) return null
 
-  cliLog(`\n  Note: Interactive text input requires additional TUI setup.`)
-  cliLog(`  Please use command line: /models create-preset <name>\n`)
+  console.log(`\n  Note: Interactive text input requires additional TUI setup.`)
+  console.log(`  Please use the command line: /models create-preset <name>\n`)
 
   return null
 }
@@ -236,21 +225,21 @@ async function showHistoryMenu(worktree: string): Promise<void> {
   const history = await getHistory(worktree)
 
   if (history.length === 0) {
-    cliLog('\n  ⚠️  No configuration history yet.\n')
+    console.log('\n  ⚠️  No configuration history yet.\n')
     return
   }
 
-  cliLog('\n  📜 Configuration History\n')
+  console.log('\n  📜 Configuration History\n')
 
   for (let i = 0; i < history.length; i++) {
     const entry = history[i]
     const timestamp = new Date(entry.timestamp).toLocaleString()
     const description = formatHistoryEntry(entry)
-    cliLog(`  [${i}] ${description}`)
-    cliLog(`      ${timestamp}\n`)
+    console.log(`  [${i}] ${description}`)
+    console.log(`      ${timestamp}\n`)
   }
 
-  cliLog('  Use /model-rollback <index> to restore a configuration.\n')
+  console.log('  Use /model-rollback <index> to restore a configuration.\n')
 }
 
 function formatHistoryEntry(entry: any): string {
@@ -264,15 +253,15 @@ function formatHistoryEntry(entry: any): string {
 }
 
 async function showStatusTable(currentConfig: AgentConfig): Promise<void> {
-  cliLog('\n  📊 Current Configuration\n')
-  cliLog('  Agent'.padEnd(25) + 'Model'.padEnd(35) + 'Provider')
-  cliLog('  ' + '─'.repeat(75))
+  console.log('\n  📊 Current Configuration\n')
+  console.log('  Agent'.padEnd(25) + 'Model'.padEnd(35) + 'Provider')
+  console.log('  ' + '─'.repeat(75))
 
   for (const [agent, cfg] of Object.entries(currentConfig)) {
     const modelInfo = MODEL_CATALOG[cfg.model]
     const provider = modelInfo?.provider.toUpperCase() || 'UNKNOWN'
-    cliLog(`  ${agent}`.padEnd(25) + `${getModelDisplayName(cfg.model)}`.padEnd(35) + provider)
+    console.log(`  ${agent}`.padEnd(25) + `${getModelDisplayName(cfg.model)}`.padEnd(35) + provider)
   }
 
-  cliLog()
+  console.log()
 }

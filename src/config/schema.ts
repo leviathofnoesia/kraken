@@ -2,15 +2,14 @@ import { z } from 'zod'
 
 export const OpenCodeXBuiltinAgentNameSchema = z.enum([
   'Kraken',
-  'Cartographer',
   'Maelstrom',
   'Nautilus',
   'Abyssal',
   'Coral',
   'Siren',
   'Leviathan',
-  'Poseidon',
-  'Scylla',
+  'Poseidon (Plan Consultant)',
+  'Scylla (Plan Reviewer)',
   'Pearl',
 ])
 
@@ -37,30 +36,23 @@ export const OpenCodeXHookNameSchema = z.enum([
   'blitzkrieg-tdd-workflow',
   'blitzkrieg-evidence-verifier',
   'blitzkrieg-planner-constraints',
-  // Token Efficiency Hooks
-  'thinking-budget-optimizer',
-  'prompt-compression',
-  'smart-context-injection',
-  'transcript-summarization',
+  'effort-router',
 ])
 
 export const OpenCodeXBuiltinCommandNameSchema = z.enum(['init-deep'])
 
-const PermissionValueSchema = z.enum(['allow', 'ask', 'deny'])
-const PermissionMapSchema = z.record(z.string(), PermissionValueSchema)
-
-export const AgentPermissionSchema = z.union([
-  PermissionMapSchema,
-  z
-    .object({
-      edit: PermissionValueSchema.optional(),
-      bash: z.union([PermissionValueSchema, PermissionMapSchema]).optional(),
-      webfetch: PermissionValueSchema.optional(),
-      doom_loop: PermissionValueSchema.optional(),
-      external_directory: PermissionValueSchema.optional(),
-    })
-    .passthrough(),
-])
+export const AgentPermissionSchema = z.object({
+  edit: z.enum(['allow', 'ask', 'deny']).default('ask'),
+  bash: z
+    .union([
+      z.enum(['allow', 'ask', 'deny']),
+      z.record(z.string(), z.enum(['allow', 'ask', 'deny'])),
+    ])
+    .default('ask'),
+  webfetch: z.enum(['allow', 'ask', 'deny']).default('ask'),
+  doom_loop: z.enum(['allow', 'ask', 'deny']).default('ask'),
+  external_directory: z.enum(['allow', 'ask', 'deny']).default('ask'),
+})
 
 export const AgentOverrideConfigSchema = z.object({
   model: z.string().optional(),
@@ -78,15 +70,14 @@ export const AgentOverrideConfigSchema = z.object({
 
 export const AgentOverridesSchema = z.object({
   Kraken: AgentOverrideConfigSchema.optional(),
-  Cartographer: AgentOverrideConfigSchema.optional(),
   Maelstrom: AgentOverrideConfigSchema.optional(),
   Nautilus: AgentOverrideConfigSchema.optional(),
   Abyssal: AgentOverrideConfigSchema.optional(),
   Coral: AgentOverrideConfigSchema.optional(),
   Siren: AgentOverrideConfigSchema.optional(),
   Leviathan: AgentOverrideConfigSchema.optional(),
-  Poseidon: AgentOverrideConfigSchema.optional(),
-  Scylla: AgentOverrideConfigSchema.optional(),
+  'Poseidon (Plan Consultant)': AgentOverrideConfigSchema.optional(),
+  'Scylla (Plan Reviewer)': AgentOverrideConfigSchema.optional(),
   Pearl: AgentOverrideConfigSchema.optional(),
 })
 
@@ -184,50 +175,6 @@ export const MCPConfigSchema = z.object({
   websearch: WebsearchMCPConfigSchema.optional(),
   context7: Context7MCPConfigSchema.optional(),
   grep_app: GrepAppMCPConfigSchema.optional(),
-})
-
-export const MemoryConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  autoSave: z.boolean().default(true),
-  storagePath: z.string().default('~/.kraken/memory'),
-})
-
-export const ExperienceStoreConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  maxEntries: z.number().int().min(10).default(2000),
-})
-
-export const KnowledgeGraphConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  maxNodes: z.number().int().min(10).default(5000),
-})
-
-export const PatternDetectionConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  minConfidence: z.number().min(0).max(1).default(0.6),
-  maxPatterns: z.number().int().min(1).default(500),
-})
-
-export const SpacedRepetitionConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  initialIntervalDays: z.number().min(1).default(1),
-  easeFactor: z.number().min(1.3).max(3).default(2.5),
-  maxIntervalDays: z.number().min(1).default(365),
-})
-
-export const StateMachinesConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-})
-
-export const LearningConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  autoSave: z.boolean().default(true),
-  storagePath: z.string().default('~/.kraken/learning'),
-  experienceStore: ExperienceStoreConfigSchema.optional(),
-  knowledgeGraph: KnowledgeGraphConfigSchema.optional(),
-  patternDetection: PatternDetectionConfigSchema.optional(),
-  spacedRepetition: SpacedRepetitionConfigSchema.optional(),
-  stateMachines: StateMachinesConfigSchema.optional(),
 })
 
 export const LSPConfigSchema = z.object({
@@ -336,41 +283,27 @@ export const ClaudeCodeCompatibilityConfigSchema = z
   })
   .optional()
 
-// Token Efficiency Config Schemas
-export const ThinkingBudgetOptimizerConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  model: z.string().optional(),
-  budgets: z
-    .object({
-      simple: z.number().default(4000),
-      medium: z.number().default(8000),
-      complex: z.number().default(16000),
-      full: z.number().default(32000),
-    })
-    .optional(),
-  autoClassify: z.boolean().default(true),
+// Effort Router Configuration
+export const EffortRouterLoggingConfigSchema = z.object({
+  logDecisions: z.boolean().default(true),
+  logSignals: z.boolean().default(false),
+  logTransitions: z.boolean().default(true),
 })
 
-export const PromptCompressionConfigSchema = z.object({
+export const EffortRouterConfigSchema = z.object({
   enabled: z.boolean().default(true),
-  threshold: z.number().default(2000),
-  level: z.enum(['cache_hit', 'partial', 'full']).default('partial'),
-  excludePatterns: z.array(z.string()).optional(),
-})
-
-export const SmartContextInjectionConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  maxTokens: z.number().default(2000),
-  chunkSize: z.number().default(500),
-  minRelevanceScore: z.number().default(0.1),
-  filePatterns: z.array(z.string()).optional(),
-})
-
-export const TranscriptSummarizationConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  messageThreshold: z.number().default(30),
-  summaryRatio: z.number().default(0.3),
-  preserveRecent: z.number().default(5),
+  defaultState: z
+    .enum(['TRIVIAL', 'STANDARD', 'ELEVATED', 'INTENSIVE', 'DEEP_WORK'])
+    .default('STANDARD'),
+  rolloutPhase: z.enum(['shadow', 'conservative', 'full']).default('shadow'),
+  thermoclineSensitivity: z.number().min(1.0).max(4.0).default(2.0),
+  thermoclineWindowSize: z.number().int().min(3).max(10).default(5),
+  crystallizationThreshold: z.number().int().min(2).max(10).default(3),
+  maxCrystallizedPatterns: z.number().int().min(1).max(10).default(5),
+  patternDecayMessages: z.number().int().min(5).max(100).default(20),
+  signalWeights: z.record(z.string(), z.number()).optional(),
+  disabledMicroDirectives: z.array(z.string()).default([]),
+  logging: EffortRouterLoggingConfigSchema.optional(),
 })
 
 export const OpenCodeXConfigSchema = z.object({
@@ -384,8 +317,6 @@ export const OpenCodeXConfigSchema = z.object({
   compression: CompressionConfigSchema.optional(),
   blitzkrieg: BlitzkriegConfigSchema.optional(),
   mcp: MCPConfigSchema.optional(),
-  memory: MemoryConfigSchema.optional(),
-  learning: LearningConfigSchema.optional(),
   lsp: LSPConfigSchema.optional(),
   notifications: NotificationsConfigSchema.optional(),
   enhanced: z
@@ -401,11 +332,7 @@ export const OpenCodeXConfigSchema = z.object({
   skillMcp: SkillMcpConfigSchema.optional(),
   commandLoader: CommandLoaderConfigSchema.optional(),
   claudeCodeCompatibility: ClaudeCodeCompatibilityConfigSchema.optional(),
-  // Token Efficiency Config
-  thinkingBudgetOptimizer: ThinkingBudgetOptimizerConfigSchema.optional(),
-  promptCompression: PromptCompressionConfigSchema.optional(),
-  smartContextInjection: SmartContextInjectionConfigSchema.optional(),
-  transcriptSummarization: TranscriptSummarizationConfigSchema.optional(),
+  effortRouter: EffortRouterConfigSchema.optional(),
 })
 
 export type OpenCodeXConfig = z.infer<typeof OpenCodeXConfigSchema>
@@ -423,19 +350,10 @@ export type WebsearchMCPConfig = z.infer<typeof WebsearchMCPConfigSchema>
 export type Context7MCPConfig = z.infer<typeof Context7MCPConfigSchema>
 export type GrepAppMCPConfig = z.infer<typeof GrepAppMCPConfigSchema>
 export type MCPConfig = z.infer<typeof MCPConfigSchema>
-export type MemoryConfig = z.infer<typeof MemoryConfigSchema>
-export type ExperienceStoreConfig = z.infer<typeof ExperienceStoreConfigSchema>
-export type KnowledgeGraphConfig = z.infer<typeof KnowledgeGraphConfigSchema>
-export type PatternDetectionConfig = z.infer<typeof PatternDetectionConfigSchema>
-export type SpacedRepetitionConfig = z.infer<typeof SpacedRepetitionConfigSchema>
-export type StateMachinesConfig = z.infer<typeof StateMachinesConfigSchema>
-export type LearningConfig = z.infer<typeof LearningConfigSchema>
 export type LSPConfig = z.infer<typeof LSPConfigSchema>
 export type ModesConfig = z.infer<typeof ModesConfigSchema>
 export type SkillMcpConfig = z.infer<typeof SkillMcpConfigSchema>
 export type CommandLoaderConfig = z.infer<typeof CommandLoaderConfigSchema>
 export type ClaudeCodeCompatibilityConfig = z.infer<typeof ClaudeCodeCompatibilityConfigSchema>
-export type ThinkingBudgetOptimizerConfig = z.infer<typeof ThinkingBudgetOptimizerConfigSchema>
-export type PromptCompressionConfig = z.infer<typeof PromptCompressionConfigSchema>
-export type SmartContextInjectionConfig = z.infer<typeof SmartContextInjectionConfigSchema>
-export type TranscriptSummarizationConfig = z.infer<typeof TranscriptSummarizationConfigSchema>
+export type EffortRouterLoggingConfig = z.infer<typeof EffortRouterLoggingConfigSchema>
+export type EffortRouterConfig = z.infer<typeof EffortRouterConfigSchema>

@@ -11,7 +11,8 @@ const OPENCODE_JSONC = join(OPENCODE_CONFIG_DIR, 'opencode.jsonc')
 
 const AUTH_PLUGINS: Record<AuthProviderId, { plugin: string; name: string }> = {
   anthropic: { plugin: 'builtin', name: 'Anthropic (Claude)' },
-  openai: { plugin: 'opencode-openai-codex-auth', name: 'OpenAI (ChatGPT)' },
+  openai: { plugin: 'builtin', name: 'OpenAI (ChatGPT)' },
+  google: { plugin: 'builtin', name: 'Google (Gemini)' },
 }
 
 function getOpenCodeConfig(): { plugin?: string[] } | null {
@@ -48,7 +49,7 @@ export function getAuthProviderInfo(providerId: AuthProviderId): AuthProviderInf
 
 export async function checkAuthProvider(providerId: AuthProviderId): Promise<CheckResult> {
   const info = getAuthProviderInfo(providerId)
-  const checkId = `auth-${providerId}`
+  const checkId = `auth-${providerId}` as keyof typeof CHECK_NAMES
   const checkName = CHECK_NAMES[checkId] || info.name
 
   if (!info.pluginInstalled) {
@@ -80,6 +81,10 @@ export async function checkOpenAIAuth(): Promise<CheckResult> {
   return checkAuthProvider('openai')
 }
 
+export async function checkGoogleAuth(): Promise<CheckResult> {
+  return checkAuthProvider('google')
+}
+
 export function getAuthCheckDefinitions(): CheckDefinition[] {
   return [
     {
@@ -94,6 +99,13 @@ export function getAuthCheckDefinitions(): CheckDefinition[] {
       name: CHECK_NAMES[CHECK_IDS.AUTH_OPENAI],
       category: 'authentication',
       check: checkOpenAIAuth,
+      critical: false,
+    },
+    {
+      id: CHECK_IDS.AUTH_GOOGLE,
+      name: CHECK_NAMES[CHECK_IDS.AUTH_GOOGLE],
+      category: 'authentication',
+      check: checkGoogleAuth,
       critical: false,
     },
   ]

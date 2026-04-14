@@ -1,9 +1,5 @@
-import type { RecoveryErrorType, ErrorContext } from './detector'
-import { createLogger } from '../../utils/logger'
-
-export type { isRecoverableError } from './detector'
-
-const logger = createLogger('session-recovery')
+import type { RecoveryErrorType, ErrorContext } from "./detector"
+export type { isRecoverableError } from "./detector"
 
 export interface RecoveryStrategy {
   errorType: RecoveryErrorType
@@ -19,87 +15,85 @@ export interface RecoveryOptions {
 }
 
 const toolResultMissingStrategy: RecoveryStrategy = {
-  errorType: 'tool_result_missing',
-  canRecover: async function (context: ErrorContext): Promise<boolean> {
+  errorType: "tool_result_missing",
+  canRecover: async function(context: ErrorContext): Promise<boolean> {
     return context.sessionID !== undefined && context.toolOutput === undefined
   },
-  recover: async function (context: ErrorContext): Promise<boolean> {
-    logger.debug('Attempting to recover tool_result_missing for session ' + context.sessionID)
-    logger.debug('[session recovered - continuing previous task]')
+  recover: async function(context: ErrorContext): Promise<boolean> {
+    console.log("[session-recovery] Attempting to recover tool_result_missing for session " + context.sessionID)
+    console.log("[session-recovery] [session recovered - continuing previous task]")
     return true
   },
-  description: 'Retry of tool execution or continue with alternative approach',
+  description: "Retry of tool execution or continue with alternative approach",
 }
 
 const thinkingBlockOrderStrategy: RecoveryStrategy = {
-  errorType: 'thinking_block_order',
-  canRecover: async function (context: ErrorContext): Promise<boolean> {
+  errorType: "thinking_block_order",
+  canRecover: async function(context: ErrorContext): Promise<boolean> {
     return context.sessionID !== undefined && context.thinkingBlocks !== undefined
   },
-  recover: async function (context: ErrorContext): Promise<boolean> {
-    logger.debug('Recovering thinking_block_order by reordering blocks')
+  recover: async function(context: ErrorContext): Promise<boolean> {
+    console.log("[session-recovery] Recovering thinking_block_order by reordering blocks")
     if (context.thinkingBlocks) {
       const blocks = Array.isArray(context.thinkingBlocks)
         ? context.thinkingBlocks
         : [context.thinkingBlocks]
       const reversed = blocks.reverse()
-      logger.debug('Reordered ' + reversed.length + ' thinking blocks')
+      console.log("[session-recovery] Reordered " + reversed.length + " thinking blocks")
       return true
     }
     return false
   },
-  description: 'Reorder thinking blocks to correct order',
+  description: "Reorder thinking blocks to correct order",
 }
 
 const thinkingDisabledViolationStrategy: RecoveryStrategy = {
-  errorType: 'thinking_disabled_violation',
-  canRecover: async function (): Promise<boolean> {
+  errorType: "thinking_disabled_violation",
+  canRecover: async function(): Promise<boolean> {
     return true
   },
-  recover: async function (): Promise<boolean> {
-    logger.debug('Ignoring thinking_disabled_violation - will re-enable thinking mode')
+  recover: async function(): Promise<boolean> {
+    console.log("[session-recovery] Ignoring thinking_disabled_violation - will re-enable thinking mode")
     return true
   },
-  description: 'Re-enable thinking mode in next request',
+  description: "Re-enable thinking mode in next request",
 }
 
 const networkTimeoutStrategy: RecoveryStrategy = {
-  errorType: 'network_timeout',
-  canRecover: async function (): Promise<boolean> {
+  errorType: "network_timeout",
+  canRecover: async function(): Promise<boolean> {
     return true
   },
-  recover: async function (): Promise<boolean> {
-    logger.debug('Network timeout detected - will retry')
+  recover: async function(): Promise<boolean> {
+    console.log("[session-recovery] Network timeout detected - will retry")
     return true
   },
-  description: 'Retry of request with exponential backoff',
+  description: "Retry of request with exponential backoff",
 }
 
 const rateLimitStrategy: RecoveryStrategy = {
-  errorType: 'rate_limit',
-  canRecover: async function (): Promise<boolean> {
+  errorType: "rate_limit",
+  canRecover: async function(): Promise<boolean> {
     return true
   },
-  recover: async function (): Promise<boolean> {
-    logger.debug('Rate limit hit - implementing delay')
-    await new Promise(function (resolve) {
-      setTimeout(resolve, 5000)
-    })
+  recover: async function(): Promise<boolean> {
+    console.log("[session-recovery] Rate limit hit - implementing delay")
+    await new Promise(function(resolve) { setTimeout(resolve, 5000) })
     return true
   },
-  description: 'Wait and retry with exponential backoff',
+  description: "Wait and retry with exponential backoff",
 }
 
 const authErrorStrategy: RecoveryStrategy = {
-  errorType: 'auth_error',
-  canRecover: async function (): Promise<boolean> {
+  errorType: "auth_error",
+  canRecover: async function(): Promise<boolean> {
     return false
   },
-  recover: async function (): Promise<boolean> {
-    logger.error('Authentication error - cannot recover automatically')
+  recover: async function(): Promise<boolean> {
+    console.log("[session-recovery] Authentication error - cannot recover automatically")
     return false
   },
-  description: 'User must re-authenticate manually',
+  description: "User must re-authenticate manually",
 }
 
 const strategies: Partial<Record<RecoveryErrorType, RecoveryStrategy>> = {
@@ -118,13 +112,13 @@ export async function attemptRecovery(
 ): Promise<boolean> {
   const strategy = strategies[errorType]
   if (!strategy) {
-    logger.debug('No recovery strategy for error type: ' + errorType)
+    console.log("[session-recovery] No recovery strategy for error type: " + errorType)
     return false
   }
 
   const canRecover = await strategy.canRecover(context)
   if (!canRecover) {
-    logger.debug('Cannot recover from ' + errorType)
+    console.log("[session-recovery] Cannot recover from " + errorType)
     return false
   }
 
@@ -132,8 +126,8 @@ export async function attemptRecovery(
     return await strategy.recover(context)
   }
 
-  logger.debug('Recovery option: ' + strategy.description)
-  logger.debug('[session recovered - continuing previous task]')
+  console.log("[session-recovery] Recovery option: " + strategy.description)
+  console.log("[session-recovery] [session recovered - continuing previous task]")
 
   return await strategy.recover(context)
 }
@@ -153,13 +147,11 @@ export async function retryWithBackoff<T>(
 
       if (attempt < maxRetries) {
         const delay = baseDelay * Math.pow(2, attempt)
-        logger.debug('Retry ' + (attempt + 1) + '/' + maxRetries + ' after ' + delay + 'ms')
-        await new Promise(function (resolve) {
-          setTimeout(resolve, delay)
-        })
+        console.log("[session-recovery] Retry " + (attempt + 1) + "/" + maxRetries + " after " + delay + "ms")
+        await new Promise(function(resolve) { setTimeout(resolve, delay) })
       }
     }
   }
 
-  throw lastError || new Error('Max retries exceeded')
+  throw lastError || new Error("Max retries exceeded")
 }

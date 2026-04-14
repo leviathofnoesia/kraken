@@ -1,14 +1,12 @@
-import * as fs from 'fs'
-import * as path from 'path'
-import * as os from 'os'
-import { createLogger } from '../utils/logger'
+import * as fs from "fs"
+import * as path from "path"
+import * as os from "os"
 
-const logger = createLogger('kraken-transcript')
-const KRAKEN_DIR = path.join(os.homedir(), '.kraken')
-const TRANSCRIPT_DIR = path.join(KRAKEN_DIR, 'transcripts')
+const KRAKEN_DIR = path.join(os.homedir(), ".kraken")
+const TRANSCRIPT_DIR = path.join(KRAKEN_DIR, "transcripts")
 
 export interface KrakenTranscriptEntry {
-  role: 'user' | 'assistant'
+  role: "user" | "assistant"
   content: string
   timestamp?: number
 }
@@ -33,14 +31,17 @@ export function getTranscriptPath(sessionId: string): string {
   return path.join(TRANSCRIPT_DIR, `${sessionId}.jsonl`)
 }
 
-export function appendTranscriptEntry(sessionId: string, entry: KrakenTranscriptEntry): void {
+export function appendTranscriptEntry(
+  sessionId: string,
+  entry: KrakenTranscriptEntry
+): void {
   try {
     ensureDirectories()
     const filePath = getTranscriptPath(sessionId)
     const line = JSON.stringify({ ...entry, timestamp: entry.timestamp || Date.now() })
-    fs.appendFileSync(filePath, line + '\n')
+    fs.appendFileSync(filePath, line + "\n")
   } catch (error) {
-    logger.error(`Error appending transcript entry for session ${sessionId}:`, error)
+    console.error(`[kraken-transcript] Error appending transcript entry for session ${sessionId}:`, error)
   }
 }
 
@@ -48,13 +49,13 @@ export function recordToolUse(
   sessionId: string,
   toolName: string,
   toolInput: any,
-  toolOutput: any,
+  toolOutput: any
 ): void {
   try {
     ensureDirectories()
     const filePath = getTranscriptPath(sessionId)
     const entry: ToolUseEntry = {
-      role: 'assistant',
+      role: "assistant",
       content: `Tool use: ${toolName}`,
       toolName,
       toolInput,
@@ -62,15 +63,15 @@ export function recordToolUse(
       timestamp: Date.now(),
     }
     const line = JSON.stringify(entry)
-    fs.appendFileSync(filePath, line + '\n')
+    fs.appendFileSync(filePath, line + "\n")
   } catch (error) {
-    logger.error(`Error recording tool use for session ${sessionId}:`, error)
+    console.error(`[kraken-transcript] Error recording tool use for session ${sessionId}:`, error)
   }
 }
 
 export function recordUserMessage(sessionId: string, content: string): void {
   appendTranscriptEntry(sessionId, {
-    role: 'user',
+    role: "user",
     content,
     timestamp: Date.now(),
   })
@@ -78,7 +79,7 @@ export function recordUserMessage(sessionId: string, content: string): void {
 
 export function recordAssistantMessage(sessionId: string, content: string): void {
   appendTranscriptEntry(sessionId, {
-    role: 'assistant',
+    role: "assistant",
     content,
     timestamp: Date.now(),
   })
@@ -92,11 +93,11 @@ export function loadTranscript(sessionId: string): KrakenTranscriptEntry[] {
       return []
     }
 
-    const content = fs.readFileSync(filePath, 'utf-8')
-    const lines = content.trim().split('\n')
+    const content = fs.readFileSync(filePath, "utf-8")
+    const lines = content.trim().split("\n")
 
     return lines
-      .map((line) => {
+      .map(line => {
         try {
           return JSON.parse(line)
         } catch {
@@ -105,7 +106,7 @@ export function loadTranscript(sessionId: string): KrakenTranscriptEntry[] {
       })
       .filter((entry): entry is KrakenTranscriptEntry => entry !== null)
   } catch (error) {
-    logger.error(`Error loading transcript for session ${sessionId}:`, error)
+    console.error(`[kraken-transcript] Error loading transcript for session ${sessionId}:`, error)
     return []
   }
 }
@@ -115,10 +116,10 @@ export function deleteTranscript(sessionId: string): void {
     const filePath = getTranscriptPath(sessionId)
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath)
-      logger.debug(`Deleted transcript for session ${sessionId}`)
+      console.log(`[kraken-transcript] Deleted transcript for session ${sessionId}`)
     }
   } catch (error) {
-    logger.error(`Error deleting transcript for session ${sessionId}:`, error)
+    console.error(`[kraken-transcript] Error deleting transcript for session ${sessionId}:`, error)
   }
 }
 
@@ -126,10 +127,10 @@ export function deleteTempTranscript(path: string): void {
   try {
     if (fs.existsSync(path)) {
       fs.unlinkSync(path)
-      logger.debug(`Deleted temp transcript: ${path}`)
+      console.log(`[kraken-transcript] Deleted temp transcript: ${path}`)
     }
   } catch (error) {
-    logger.error(`Error deleting temp transcript: ${path}`, error)
+    console.error(`[kraken-transcript] Error deleting temp transcript: ${path}`, error)
   }
 }
 
@@ -146,10 +147,10 @@ export function cleanupOldTranscripts(maxAgeDays: number = 7): void {
 
       if (now - stats.mtimeMs > maxAge) {
         fs.unlinkSync(filePath)
-        logger.debug(`Cleaned up old transcript: ${file}`)
+        console.log(`[kraken-transcript] Cleaned up old transcript: ${file}`)
       }
     }
   } catch (error) {
-    logger.error('Error cleaning up old transcripts:', error)
+    console.error("[kraken-transcript] Error cleaning up old transcripts:", error)
   }
 }

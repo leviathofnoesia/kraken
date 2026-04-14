@@ -1,174 +1,172 @@
 /**
  * MCP (Model Context Protocol) Integration Index
  *
- * Exports all built-in MCP remote configurations and provides utility functions.
- * Includes agent-accessible MCP tools for ALL MCPs (new + existing).
+ * Exports all built-in MCP servers and provides utility functions for MCP management.
  */
 
-import type { RemoteMcpConfig } from './types'
+import type { MCPServerDefinition } from './types'
 
-// Import all built-in MCP remote configurations
-import { createWebsearchConfig, setActiveWebsearchConfig } from './websearch'
-import { context7 } from './context7'
-import { grep_app } from './grep-app'
+// Import all built-in MCP servers
+import { websearchMCP } from './websearch'
+import { context7MCP } from './context7'
+import { grepAppMCP } from './grep-app'
 
-// Import additional MCPs
-import { additionalMcpConfigs, additionalMcpNames } from './additional-mcps'
-
-// Import MCP agent tools (both new and existing)
-import { mcpAgentTools } from './mcp-agent-tools'
-import { existingMcpAgentTools } from './existing-mcp-agent-tools'
-
-// Import MCP loader
-import { mcpLoader } from './mcp-loader'
-
-// Cache websearch config to avoid repeated calls
-let _cachedWebsearchConfig: RemoteMcpConfig | null = null
-
-const websearchConfig: RemoteMcpConfig = {
-  get type() {
-    if (!_cachedWebsearchConfig) {
-      _cachedWebsearchConfig = createWebsearchConfig()
-    }
-    return _cachedWebsearchConfig.type
-  },
-  get name() {
-    if (!_cachedWebsearchConfig) {
-      _cachedWebsearchConfig = createWebsearchConfig()
-    }
-    return _cachedWebsearchConfig.name
-  },
-  get url() {
-    if (!_cachedWebsearchConfig) {
-      _cachedWebsearchConfig = createWebsearchConfig()
-    }
-    return _cachedWebsearchConfig.url
-  },
-  get enabled() {
-    if (!_cachedWebsearchConfig) {
-      _cachedWebsearchConfig = createWebsearchConfig()
-    }
-    return _cachedWebsearchConfig.enabled
-  },
-  get headers() {
-    if (!_cachedWebsearchConfig) {
-      _cachedWebsearchConfig = createWebsearchConfig()
-    }
-    return _cachedWebsearchConfig.headers
-  },
-  get oauth() {
-    if (!_cachedWebsearchConfig) {
-      _cachedWebsearchConfig = createWebsearchConfig()
-    }
-    return _cachedWebsearchConfig.oauth
-  },
-}
-
-export const websearch = websearchConfig
+export const builtinMCPs: MCPServerDefinition[] = [websearchMCP, context7MCP, grepAppMCP]
 
 /**
- * Built-in MCP Server Names
+ * MCP Server Names
+ *
+ * Returns a list of all built-in MCP server names.
  */
-export const builtinMcpNames: readonly string[] = [
-  ...['websearch', 'context7', 'grep_app'],
-  ...additionalMcpNames,
-] as const
-
-export type BuiltinMcpName = (typeof builtinMcpNames)[number]
-
-/**
- * Built-in MCP Remote Configurations
- */
-export const builtinMcpConfigs: Record<BuiltinMcpName, RemoteMcpConfig> = {
-  websearch,
-  context7,
-  grep_app,
-  ...additionalMcpConfigs,
+export function getBuiltinMcpNames(): string[] {
+  return builtinMCPs.map((mcp) => mcp.name)
 }
 
 /**
- * Get Built-in MCP Names
+ * Get MCP Server Information
  *
- * Returns list of all built-in MCP server names.
+ * Returns detailed information about a specific built-in MCP server.
+ *
+ * @param name - The name of the MCP server
+ * @returns MCP server information or undefined if not found
  */
-export function getBuiltinMcpNames(): readonly string[] {
-  return builtinMcpNames
+export function getBuiltinMcpInfo(name: string): MCPServerDefinition | undefined {
+  return builtinMCPs.find((mcp) => mcp.name === name)
 }
 
 /**
- * Get Built-in MCP Configuration
+ * Get MCP Server Tools
  *
- * Returns remote configuration for a specific built-in MCP.
+ * Returns all tools provided by a specific built-in MCP server.
  *
- * @param name - The name of MCP server
- * @returns MCP server configuration or undefined if not found
+ * @param name - The name of the MCP server
+ * @returns Array of tools or empty array if server not found
  */
-export function getBuiltinMcpConfig(name: BuiltinMcpName): RemoteMcpConfig | undefined {
-  return builtinMcpConfigs[name]
+export function getBuiltinMcpTools(name: string) {
+  const mcp = getBuiltinMcpInfo(name)
+  return mcp?.tools ?? []
 }
 
 /**
- * Create Built-in MCPs for Plugin
+ * Get All MCP Server Tools
  *
- * Returns a map of remote MCP configurations for plugin integration.
+ * Returns all tools from all built-in MCP servers.
  *
- * @param disabledMcps - List of MCP names to exclude
- * @param config - Optional configuration for websearch provider
+ * @returns Array of all tools from all built-in MCP servers
  */
-export function createBuiltinMcpConfigs(
-  disabledMcps: string[] = [],
-  config?: { websearch?: { provider?: 'exa' | 'tavily' } },
-): Record<string, RemoteMcpConfig> {
-  const mcps: Record<string, RemoteMcpConfig> = {}
+export function getAllBuiltinMcpTools() {
+  return builtinMCPs.flatMap((mcp) => mcp.tools)
+}
 
-  // Original MCPs
-  if (!disabledMcps.includes('websearch')) {
-    const websearchConfig = createWebsearchConfig(config?.websearch)
-    mcps.websearch = websearchConfig
-    // Set active config for tools to use
-    setActiveWebsearchConfig(websearchConfig)
-  } else {
-    // Clear active config when websearch is disabled
-    setActiveWebsearchConfig(null)
-  }
+/**
+ * Get Enabled MCP Servers
+ *
+ * Returns all built-in MCP servers that are currently enabled.
+ *
+ * @returns Array of enabled MCP servers
+ */
+export function getEnabledMcpServers(): MCPServerDefinition[] {
+  return builtinMCPs.filter((mcp) => {
+    // Check if MCP is enabled in its config
+    const enabled = mcp.configSchema?.enabled
+    return enabled !== false // Default to true if not specified
+  })
+}
 
-  if (!disabledMcps.includes('context7')) {
-    mcps.context7 = context7
-  }
-
-  if (!disabledMcps.includes('grep_app')) {
-    mcps.grep_app = grep_app
-  }
-
-  // Additional MCPs
-  for (const name of additionalMcpNames) {
-    if (!disabledMcps.includes(name)) {
-      mcps[name] = additionalMcpConfigs[name]
+/**
+ * Initialize All MCP Servers
+ *
+ * Initializes all built-in MCP servers with their configurations.
+ *
+ * @param configs - Configuration object with server-specific configs
+ */
+export async function initializeAllMcpServers(
+  configs: Record<string, Record<string, unknown>> = {},
+): Promise<void> {
+  for (const mcp of builtinMCPs) {
+    const config = configs[mcp.name] || {}
+    if (mcp.initialize) {
+      try {
+        await mcp.initialize(config)
+      } catch (error) {
+        console.error(`Failed to initialize MCP server '${mcp.name}':`, error)
+        throw error
+      }
     }
-  }
-
-  return mcps
-}
-
-/**
- * Get MCP Agent Tools
- *
- * Returns all MCP tools available for agents to use.
- * These tools are lazy-loaded and do NOT auto-inject context.
- */
-export function getMcpAgentTools(): Record<string, any> {
-  return {
-    ...existingMcpAgentTools,
-    ...mcpAgentTools,
   }
 }
 
 /**
- * Re-export types and utilities
+ * Shutdown All MCP Servers
+ *
+ * Shuts down all built-in MCP servers and performs cleanup.
  */
-export type { RemoteMcpConfig } from './types'
-export { additionalMcpConfigs, additionalMcpNames } from './additional-mcps'
-export { mcpLoader } from './mcp-loader'
-export { mcpAgentTools } from './mcp-agent-tools'
-export { existingMcpAgentTools } from './existing-mcp-agent-tools'
-export { setActiveWebsearchConfig, getActiveWebsearchConfig } from './websearch'
+export async function shutdownAllMcpServers(): Promise<void> {
+  for (const mcp of builtinMCPs) {
+    if (mcp.shutdown) {
+      try {
+        await mcp.shutdown()
+      } catch (error) {
+        console.error(`Failed to shutdown MCP server '${mcp.name}':`, error)
+      }
+    }
+  }
+}
+
+/**
+ * Check MCP Server Health
+ *
+ * Performs health checks on all built-in MCP servers.
+ *
+ * @returns Object with server names and health status
+ */
+export async function checkAllMcpHealth(): Promise<Record<string, boolean>> {
+  const healthStatus: Record<string, boolean> = {}
+
+  for (const mcp of builtinMCPs) {
+    try {
+      if (mcp.healthCheck) {
+        healthStatus[mcp.name] = await mcp.healthCheck()
+      } else {
+        healthStatus[mcp.name] = true // Assume healthy if no health check
+      }
+    } catch (error) {
+      console.error(`Health check failed for MCP server '${mcp.name}':`, error)
+      healthStatus[mcp.name] = false
+    }
+  }
+
+  return healthStatus
+}
+
+/**
+ * Re-export types for external use
+ */
+export type {
+  MCPServerDefinition,
+  MCPTool,
+  BaseMCPConfig,
+  WebsearchConfig,
+  Context7Config,
+  GrepAppConfig,
+  WebsearchResult,
+  DocumentationResult,
+  GrepResult,
+  MCPError,
+  MCPRateLimitError,
+  MCPAuthenticationError,
+  MCPTimeoutError,
+} from './types'
+
+// Re-export utility classes
+export { RateLimiter } from './types'
+
+// Re-export specific MCP server implementations
+export { websearchMCP, websearchTool, webfetchTool } from './websearch'
+export {
+  context7MCP,
+  context7SearchToolMCP,
+  context7GetToolMCP,
+  clearContext7Cache,
+} from './context7'
+export { grepAppMCP, grepSearchToolMCP, grepGetFileToolMCP } from './grep-app'

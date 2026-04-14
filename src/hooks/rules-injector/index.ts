@@ -1,6 +1,5 @@
-import type { Hooks } from '@opencode-ai/plugin'
-import type { PluginInput } from '@opencode-ai/plugin'
-import { SHOULD_LOG } from '../../utils/logger'
+import type { Hooks } from "@opencode-ai/plugin"
+import type { PluginInput } from "@opencode-ai/plugin"
 
 export interface RulesInjectorConfig {
   enabled?: boolean
@@ -9,19 +8,19 @@ export interface RulesInjectorConfig {
 
 export function createRulesInjector(
   _input: PluginInput,
-  options?: { config?: RulesInjectorConfig },
+  options?: { config?: RulesInjectorConfig }
 ): Hooks {
   const config = options?.config ?? { enabled: true }
 
   return {
-    'chat.message': async (input, output) => {
+    "chat.message": async (input, output) => {
       if (!config.enabled) return
-      if (SHOULD_LOG) console.log('[rules-injector] Processing message for rules injection')
+      console.log("[rules-injector] Processing message for rules injection")
     },
 
-    'experimental.chat.system.transform': async (input, output) => {
+    "experimental.chat.system.transform": async (input, output) => {
       if (!config.enabled) return
-      if (SHOULD_LOG) console.log('[rules-injector] Injecting project rules into system message')
+      console.log("[rules-injector] Injecting project rules into system message")
     },
   }
 }

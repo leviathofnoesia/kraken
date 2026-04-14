@@ -1,5 +1,5 @@
-import { LSPClient } from './client'
-import type { Diagnostic, ResolvedServer, ServerLookupInfo, ServerLookupResult } from './types'
+import { LSPClient } from "./client"
+import type { ResolvedServer, Diagnostic } from "./types"
 
 const clients = new Map<string, LSPClient>()
 const initializing = new Map<string, Promise<LSPClient>>()

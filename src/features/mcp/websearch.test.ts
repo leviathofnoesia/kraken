@@ -1,93 +1,163 @@
-import { describe, expect, test, beforeEach, afterEach } from 'bun:test'
-import { createWebsearchConfig } from './websearch'
+import { describe, it, expect, spyOn, afterEach, beforeEach } from "bun:test"
+import { websearchMCP, initializeWebsearchMCP } from "./websearch"
+import * as types from "./types"
 
-describe('websearch MCP provider configuration', () => {
-  const originalEnv = { ...process.env }
-
-  beforeEach(() => {
+describe("websearch MCP", () => {
+  beforeEach(async () => {
+    // Clear environment variables for each test
     delete process.env.EXA_API_KEY
-    delete process.env.TAVILY_API_KEY
+    // Reset config
+    await initializeWebsearchMCP({ apiKey: undefined, timeout: undefined, numResults: undefined })
   })
 
-  afterEach(() => {
-    process.env = { ...originalEnv }
+  describe("initialization", () => {
+    it("initializes with default config", async () => {
+      // #given no config
+      // #when initializing
+      await initializeWebsearchMCP({})
+
+      // #then should not throw
+      expect(true).toBe(true)
+    })
+
+    it("accepts custom configuration", async () => {
+      // #given custom config
+      const config = {
+        apiKey: "test-key",
+        timeout: 60000,
+        numResults: 10,
+      }
+
+      // #when initializing with config
+      await initializeWebsearchMCP(config)
+
+      // #then should not throw
+      expect(true).toBe(true)
+    })
+
+    it("warns when no API key provided", async () => {
+      // #given no API key
+      // #when initializing without API key
+      const consoleWarnSpy = spyOn(console, "warn").mockImplementation(() => {})
+      await initializeWebsearchMCP({})
+
+      // #then should warn
+      expect(consoleWarnSpy).toHaveBeenCalled()
+      consoleWarnSpy.mockRestore()
+    })
   })
 
-  test('returns Exa config when no config provided', () => {
-    const result = createWebsearchConfig()
+  describe("MCP server definition", () => {
+    it("has correct server metadata", () => {
+      // #given
+      // #then server should have correct metadata
+      expect(websearchMCP.name).toBe("websearch")
+      expect(websearchMCP.description).toContain("Exa AI")
+      expect(websearchMCP.version).toBe("1.0.0")
+    })
 
-    expect(result.url).toContain('mcp.exa.ai')
-    expect(result.type).toBe('remote')
-    expect(result.enabled).toBe(true)
+    it("exports two tools", () => {
+      // #given
+      // #then should have two tools
+      expect(websearchMCP.tools.length).toBe(2)
+      expect(websearchMCP.tools.some(t => t.description.includes("Search the web"))).toBe(true)
+      expect(websearchMCP.tools.some(t => t.description.includes("Fetch and parse"))).toBe(true)
+    })
+
+    it("has configuration schema", () => {
+      // #given
+      // #then should have config schema
+      expect(websearchMCP.configSchema).toBeDefined()
+      expect(websearchMCP.configSchema?.apiKey).toBe("string (optional)")
+      expect(websearchMCP.configSchema?.numResults).toContain("1-20")
+    })
   })
 
-  test('returns Exa config when provider is exa', () => {
-    const config = { provider: 'exa' as const }
-
-    const result = createWebsearchConfig(config)
-
-    expect(result.url).toContain('mcp.exa.ai')
-    expect(result.type).toBe('remote')
+  describe("tool definitions", () => {
+    it("tools have correct server metadata", () => {
+      // #given
+      // #then all tools should have websearch server name
+      websearchMCP.tools.forEach(tool => {
+        expect(tool.serverName).toBe("websearch")
+        expect(tool.category).toBe("search")
+        expect(tool.rateLimit).toBe(60)
+      })
+    })
   })
 
-  test('includes x-api-key header when EXA_API_KEY is set', () => {
-    const apiKey = 'test-exa-key-12345'
-    process.env.EXA_API_KEY = apiKey
+  describe("lifecycle methods", () => {
+    it("has initialize function", async () => {
+      // #given
+      // #when calling initialize
+      await websearchMCP.initialize?.({ apiKey: "test" })
 
-    const result = createWebsearchConfig()
+      // #then should not throw
+      expect(true).toBe(true)
+    })
 
-    expect(result.headers).toEqual({ 'x-api-key': apiKey })
+    it("has shutdown function", async () => {
+      // #given
+      // #when calling shutdown
+      await websearchMCP.shutdown?.()
+
+      // #then should not throw
+      expect(true).toBe(true)
+    })
+
+    it("has health check function", async () => {
+      // #given no API key
+      // #when checking health
+      const healthy = await websearchMCP.healthCheck?.()
+
+      // #then should return false without API key
+      expect(healthy).toBe(false)
+    })
+  })
+})
+
+describe("RateLimiter utility", () => {
+  it("allows requests within rate limit", async () => {
+    // #given rate limiter with 2 requests per 100ms
+    const limiter = new types.RateLimiter(2, 100)
+
+    // #when making 2 requests
+    await limiter.waitIfNeeded()
+    await limiter.waitIfNeeded()
+
+    // #then should not throw
+    expect(true).toBe(true)
   })
 
-  test('returns Tavily config when provider is tavily and TAVILY_API_KEY set', () => {
-    const tavilyKey = 'test-tavily-key-67890'
-    process.env.TAVILY_API_KEY = tavilyKey
-    const config = { provider: 'tavily' as const }
+  it("waits when rate limit exceeded", async () => {
+    // #given rate limiter with 2 requests per 100ms
+    const limiter = new types.RateLimiter(2, 100)
 
-    const result = createWebsearchConfig(config)
+    // #when making 3 requests quickly
+    const start = Date.now()
+    await limiter.waitIfNeeded()
+    await limiter.waitIfNeeded()
+    await limiter.waitIfNeeded()
+    const elapsed = Date.now() - start
 
-    expect(result.url).toContain('mcp.tavily.com')
-    expect(result.headers).toEqual({ Authorization: `Bearer ${tavilyKey}` })
+    // #then should have waited
+    expect(elapsed).toBeGreaterThanOrEqual(100)
   })
 
-  test('returns disabled config when provider is tavily but TAVILY_API_KEY missing', () => {
-    delete process.env.TAVILY_API_KEY
-    const config = { provider: 'tavily' as const }
+  it("resets after time window", async () => {
+    // #given rate limiter with 2 requests per 100ms
+    const limiter = new types.RateLimiter(2, 100)
 
-    const result = createWebsearchConfig(config)
+    // #when making requests, waiting, then making more
+    await limiter.waitIfNeeded()
+    await limiter.waitIfNeeded()
+    await new Promise(resolve => setTimeout(resolve, 110))
 
-    expect(result.enabled).toBe(false)
-    expect(result.url).toContain('mcp.tavily.com')
-    expect(result.name).toBe('websearch')
-  })
+    const start = Date.now()
+    await limiter.waitIfNeeded()
+    await limiter.waitIfNeeded()
+    const elapsed = Date.now() - start
 
-  test('returns Exa when both keys present but no explicit provider', () => {
-    process.env.EXA_API_KEY = 'test-exa-key'
-    process.env.TAVILY_API_KEY = 'test-tavily-key'
-
-    const result = createWebsearchConfig()
-
-    expect(result.url).toContain('mcp.exa.ai')
-    expect(result.headers).toEqual({ 'x-api-key': 'test-exa-key' })
-  })
-
-  test('Tavily config uses Authorization Bearer header format', () => {
-    const tavilyKey = 'tavily-secret-key-xyz'
-    process.env.TAVILY_API_KEY = tavilyKey
-    const config = { provider: 'tavily' as const }
-
-    const result = createWebsearchConfig(config)
-
-    expect(result.headers?.Authorization).toMatch(/^Bearer /)
-    expect(result.headers?.Authorization).toBe(`Bearer ${tavilyKey}`)
-  })
-
-  test('Exa config has no headers when EXA_API_KEY not set', () => {
-    delete process.env.EXA_API_KEY
-
-    const result = createWebsearchConfig()
-
-    expect(result.url).toContain('mcp.exa.ai')
-    expect(result.headers).toBeUndefined()
+    // #then should not wait after window reset
+    expect(elapsed).toBeLessThan(50)
   })
 })

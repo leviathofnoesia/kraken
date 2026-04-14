@@ -5,43 +5,6 @@ All notable changes to Kraken Code will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.6.0] - 2026-02-19
-
-### Added
-
-- Universal client acceptance guide with copy-paste setup and smoke checks for Codex, Claude Code, Cline, Cursor, VS Code/Antigravity, and CI agents
-- New `kraken-code validate --target <target>` command for fast adapter schema + bridge launchability validation
-- Universal CI target matrix in `.github/workflows/ci.yml` with strict/standard bridge policy checks
-- Migration notes for the universal parity rollout
-
-### Changed
-
-- Expanded tool capability classification from bridge-only tools to all exposed plugin tools (session/LSP/learning/MCP families and named tool registrations)
-- Enforced strict/standard policy uniformly for plugin-registered tools using runtime tool wrappers
-- Hardened home-directory resolution in sandboxed/read-only environments by falling back to a writable temp home when needed
-
-### Fixed
-
-- Resolved `glob` typing/option incompatibilities with `glob@11`
-- Eliminated typecheck regressions introduced during universal target rollout
-- Fixed test instability caused by non-writable home directories in CI/sandbox environments
-
-## [1.5.4] - 2026-02-15
-
-### Changed
-
-- Updated version badge in README to match package.json (1.5.4)
-- Documentation sync for public release
-
-## [1.2.2] - 2026-02-05
-
-### Fixed
-
-- Removed Google OAuth auth from kraken-code codebase (should be separate package)
-- Fixed duplicate logging in uninstall command when verbose mode enabled
-- Added JSONC comment support to uninstall config parsing
-- Removed unused KRAKEN_BUILD=1 environment variable from build scripts
-
 ## [5.0.0] - 2026-01-24
 
 ### Added
@@ -85,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial kraken-code consolidation
 - 10 sea-themed agents
 - Blitzkrieg TDD system
-- Kratos memory integration
+- Kraken Memory (knowledge graph + palace hierarchy + vector search)
 - 30+ hooks for customization
 - Skills system with templates
 - Commands system with execution engine

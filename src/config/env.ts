@@ -1,7 +1,6 @@
 import { z } from 'zod'
 
 const EnvironmentSchema = z.object({
-  ANTIGRAVITY_DEBUG: z.enum(['0', '1']).optional(),
   DEBUG: z.enum(['1', 'true']).optional(),
   CI: z.string().optional(),
   EXA_API_KEY: z.string().min(20).optional(),

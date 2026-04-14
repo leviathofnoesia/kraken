@@ -1,6 +1,5 @@
-import type { Hooks } from '@opencode-ai/plugin'
-import type { PluginInput } from '@opencode-ai/plugin'
-import { SHOULD_LOG } from '../../utils/logger'
+import type { Hooks } from "@opencode-ai/plugin"
+import type { PluginInput } from "@opencode-ai/plugin"
 
 export interface AnthropicContextWindowLimitRecoveryConfig {
   enabled?: boolean
@@ -9,7 +8,7 @@ export interface AnthropicContextWindowLimitRecoveryConfig {
 
 export function createAnthropicContextWindowLimitRecovery(
   _input: PluginInput,
-  options?: { config?: AnthropicContextWindowLimitRecoveryConfig },
+  options?: { config?: AnthropicContextWindowLimitRecoveryConfig }
 ): Hooks {
   const config = options?.config ?? {
     enabled: true,
@@ -17,11 +16,9 @@ export function createAnthropicContextWindowLimitRecovery(
   }
 
   return {
-    'chat.params': async (input, output) => {
+    "chat.params": async (input, output) => {
       if (!config.enabled) return
-      if (SHOULD_LOG) {
-        console.log('[anthropic-context-window-limit-recovery] Monitoring context window usage')
-      }
+      console.log("[anthropic-context-window-limit-recovery] Monitoring context window usage")
     },
   }
 }

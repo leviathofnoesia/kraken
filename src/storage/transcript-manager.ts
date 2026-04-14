@@ -1,15 +1,13 @@
-import { promises as fs } from 'fs'
-import { join, dirname } from 'path'
-import * as os from 'os'
-import type { Part } from '@opencode-ai/sdk'
-import { createLogger } from '../utils/logger'
+import { promises as fs } from "fs"
+import { join, dirname } from "path"
+import * as os from "os"
+import type { Part } from "@opencode-ai/sdk"
 
-const logger = createLogger('transcript-manager')
-const _TRANSCRIPT_VERSION = '1.0'
-const TRANSCRIPT_ENCODING = 'utf-8'
+const TRANSCRIPT_VERSION = "1.0"
+const TRANSCRIPT_ENCODING = "utf-8"
 
 export interface TranscriptEntry {
-  role: 'user' | 'assistant'
+  role: "user" | "assistant"
   content: string
   timestamp?: number
   toolName?: string
@@ -34,14 +32,14 @@ export function getTranscriptPath(sessionId: string, customPath?: string): strin
     return join(customPath, `${sessionId}.jsonl`)
   }
 
-  const basePath = join(os.homedir(), '.claude', 'transcripts')
+  const basePath = join(os.homedir(), ".claude", "transcripts")
   return join(basePath, `${sessionId}.jsonl`)
 }
 
 export async function appendTranscriptEntry(
   sessionId: string,
   entry: TranscriptEntry,
-  customPath?: string,
+  customPath?: string
 ): Promise<void> {
   const transcriptPath = getTranscriptPath(sessionId, customPath)
 
@@ -53,10 +51,10 @@ export async function appendTranscriptEntry(
       timestamp: entry.timestamp || Date.now(),
     }
 
-    const jsonlLine = JSON.stringify(entryWithTimestamp) + '\n'
+    const jsonlLine = JSON.stringify(entryWithTimestamp) + "\n"
     await fs.appendFile(transcriptPath, jsonlLine, TRANSCRIPT_ENCODING)
   } catch (error) {
-    logger.error(`Error appending transcript entry:`, error)
+    console.error(`[transcript-manager] Error appending transcript entry:`, error)
   }
 }
 
@@ -65,11 +63,11 @@ export async function recordToolUse(
   toolName: string,
   toolInput: any,
   toolOutput: any,
-  customPath?: string,
+  customPath?: string
 ): Promise<void> {
   const entry: TranscriptEntry = {
-    role: 'assistant',
-    content: '',
+    role: "assistant",
+    content: "",
     timestamp: Date.now(),
     toolName,
     toolInput,
@@ -82,10 +80,10 @@ export async function recordToolUse(
 export async function recordUserMessage(
   sessionId: string,
   content: string,
-  customPath?: string,
+  customPath?: string
 ): Promise<void> {
   const entry: TranscriptEntry = {
-    role: 'user',
+    role: "user",
     content,
     timestamp: Date.now(),
   }
@@ -96,10 +94,10 @@ export async function recordUserMessage(
 export async function recordAssistantMessage(
   sessionId: string,
   content: string,
-  customPath?: string,
+  customPath?: string
 ): Promise<void> {
   const entry: TranscriptEntry = {
-    role: 'assistant',
+    role: "assistant",
     content,
     timestamp: Date.now(),
   }
@@ -110,17 +108,17 @@ export async function recordAssistantMessage(
 export async function buildTranscriptFromSession(
   client: any,
   sessionId: string,
-  options?: BuildTranscriptOptions,
+  options?: BuildTranscriptOptions
 ): Promise<string | null> {
   try {
     const messages = await client.listMessages({ sessionId, limit: 1000 })
     const parts: Part[] = messages.flatMap((msg: any) => msg.parts || [])
 
-    let transcript = ''
+    let transcript = ""
 
     for (const part of parts) {
-      if ((part as any).type === 'text') {
-        const role = (part as any).role === 'user' ? 'user' : 'assistant'
+      if ((part as any).type === "text") {
+        const role = (part as any).role === "user" ? "user" : "assistant"
         transcript += `${role.toUpperCase()}: ${(part as any).text}\n\n`
       }
     }
@@ -130,12 +128,12 @@ export async function buildTranscriptFromSession(
       if (options.currentToolInput !== undefined) {
         transcript += `INPUT: ${JSON.stringify(options.currentToolInput)}\n`
       }
-      transcript += '\n'
+      transcript += "\n"
     }
 
     return transcript || null
   } catch (error) {
-    logger.error(`Error building transcript from session:`, error)
+    console.error(`[transcript-manager] Error building transcript from session:`, error)
     return null
   }
 }
@@ -143,27 +141,27 @@ export async function buildTranscriptFromSession(
 export async function deleteTempTranscript(path: string): Promise<boolean> {
   try {
     await fs.unlink(path)
-    logger.debug(`Deleted temp transcript: ${path}`)
+    console.log(`[transcript-manager] Deleted temp transcript: ${path}`)
     return true
   } catch (error: any) {
-    if (error?.code === 'ENOENT') {
+    if (error?.code === "ENOENT") {
       return true
     }
 
-    logger.error(`Error deleting temp transcript:`, error)
+    console.error(`[transcript-manager] Error deleting temp transcript:`, error)
     return false
   }
 }
 
 export async function readTranscript(
   sessionId: string,
-  customPath?: string,
+  customPath?: string
 ): Promise<TranscriptEntry[]> {
   const transcriptPath = getTranscriptPath(sessionId, customPath)
 
   try {
     const content = await fs.readFile(transcriptPath, TRANSCRIPT_ENCODING)
-    const lines = content.trim().split('\n')
+    const lines = content.trim().split("\n")
 
     const entries: TranscriptEntry[] = []
 
@@ -173,52 +171,55 @@ export async function readTranscript(
           const entry = JSON.parse(line) as TranscriptEntry
           entries.push(entry)
         } catch (parseError) {
-          logger.warn(`Failed to parse transcript line:`, parseError)
+          console.warn(`[transcript-manager] Failed to parse transcript line:`, parseError)
         }
       }
     }
 
     return entries
   } catch (error: any) {
-    if (error?.code === 'ENOENT') {
+    if (error?.code === "ENOENT") {
       return []
     }
 
-    logger.error(`Error reading transcript:`, error)
+    console.error(`[transcript-manager] Error reading transcript:`, error)
     return []
   }
 }
 
-export async function clearTranscript(sessionId: string, customPath?: string): Promise<boolean> {
+export async function clearTranscript(
+  sessionId: string,
+  customPath?: string
+): Promise<boolean> {
   const transcriptPath = getTranscriptPath(sessionId, customPath)
 
   try {
     await fs.unlink(transcriptPath)
-    logger.debug(`Cleared transcript for session ${sessionId}`)
+    console.log(`[transcript-manager] Cleared transcript for session ${sessionId}`)
     return true
   } catch (error: any) {
-    if (error?.code === 'ENOENT') {
+    if (error?.code === "ENOENT") {
       return true
     }
 
-    logger.error(`Error clearing transcript:`, error)
+    console.error(`[transcript-manager] Error clearing transcript:`, error)
     return false
   }
 }
 
 export function validateTranscriptEntry(entry: TranscriptEntry): boolean {
-  if (!entry.role || (entry.role !== 'user' && entry.role !== 'assistant')) {
-    logger.warn(`Invalid transcript entry: invalid role "${entry.role}"`)
+  if (!entry.role || (entry.role !== "user" && entry.role !== "assistant")) {
+    console.warn(`[transcript-manager] Invalid transcript entry: invalid role "${entry.role}"`)
     return false
   }
 
-  if (entry.role === 'assistant' && !entry.content && !entry.toolName) {
-    logger.warn(`Invalid assistant entry: must have content or toolName`)
+  if (entry.role === "assistant" && !entry.content && !entry.toolName) {
+    console.warn(`[transcript-manager] Invalid assistant entry: must have content or toolName`)
     return false
   }
 
-  if (entry.role === 'user' && !entry.content) {
-    logger.warn(`Invalid user entry: must have content`)
+  if (entry.role === "user" && !entry.content) {
+    console.warn(`[transcript-manager] Invalid user entry: must have content`)
     return false
   }
 

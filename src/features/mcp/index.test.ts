@@ -1,177 +1,241 @@
-import { describe, test, expect } from 'bun:test'
+import { describe, it, expect, spyOn, beforeEach, afterEach } from 'bun:test'
 import {
-  builtinMcpNames,
-  builtinMcpConfigs,
+  builtinMCPs,
   getBuiltinMcpNames,
-  getBuiltinMcpConfig,
-  createBuiltinMcpConfigs,
+  getBuiltinMcpInfo,
+  getBuiltinMcpTools,
+  getAllBuiltinMcpTools,
+  getEnabledMcpServers,
+  initializeAllMcpServers,
+  shutdownAllMcpServers,
+  checkAllMcpHealth,
 } from './index'
 
-describe('MCP remote configuration index', () => {
-  describe('builtinMcpConfigs', () => {
-    test('contains all seven MCP servers', () => {
-      const keys = Object.keys(builtinMcpConfigs)
-      expect(keys.length).toBe(7)
+describe('MCP integration index', () => {
+  beforeEach(() => {
+    // Clear environment variables for each test
+    delete process.env.EXA_API_KEY
+    delete process.env.CONTEXT7_API_KEY
+    delete process.env.GITHUB_TOKEN
+  })
+
+  afterEach(() => {
+    // Shutdown all MCPs after each test
+    shutdownAllMcpServers()
+  })
+
+  describe('builtinMCPs', () => {
+    it('contains all three MCP servers', () => {
+      expect(builtinMCPs.length).toBe(3)
     })
 
-    test('contains websearch config', () => {
-      expect(builtinMcpConfigs.websearch).toBeDefined()
-      expect(builtinMcpConfigs.websearch.type).toBe('remote')
-      expect(builtinMcpConfigs.websearch.url).toContain('mcp.exa.ai')
+    it('contains websearch MCP', () => {
+      // #given
+      // #then should include websearch
+      expect(builtinMCPs.some((mcp) => mcp.name === 'websearch')).toBe(true)
     })
 
-    test('contains context7 config', () => {
-      expect(builtinMcpConfigs.context7).toBeDefined()
-      expect(builtinMcpConfigs.context7.type).toBe('remote')
-      expect(builtinMcpConfigs.context7.url).toBe('https://mcp.context7.com/mcp')
+    it('contains context7 MCP', () => {
+      // #given
+      // #then should include context7
+      expect(builtinMCPs.some((mcp) => mcp.name === 'context7')).toBe(true)
     })
 
-    test('contains grep_app config', () => {
-      expect(builtinMcpConfigs.grep_app).toBeDefined()
-      expect(builtinMcpConfigs.grep_app.type).toBe('remote')
-      expect(builtinMcpConfigs.grep_app.url).toBe('https://mcp.grep.app')
-    })
-
-    test('contains deepwiki config', () => {
-      expect(builtinMcpConfigs.deepwiki).toBeDefined()
-      expect(builtinMcpConfigs.deepwiki.type).toBe('remote')
-      expect(builtinMcpConfigs.deepwiki.url).toBe('https://mcp.deepwiki.com/mcp')
-    })
-
-    test('contains semgrep config', () => {
-      expect(builtinMcpConfigs.semgrep).toBeDefined()
-      expect(builtinMcpConfigs.semgrep.type).toBe('remote')
-      expect(builtinMcpConfigs.semgrep.url).toBe('https://mcp.semgrep.ai/sse')
-    })
-
-    test('contains sequential_thinking config', () => {
-      expect(builtinMcpConfigs.sequential_thinking).toBeDefined()
-      expect(builtinMcpConfigs.sequential_thinking.type).toBe('remote')
-      expect(builtinMcpConfigs.sequential_thinking.url).toBe(
-        'https://remote-mcp-servers.org/sequential-thinking/mcp',
-      )
-    })
-
-    test('contains bridgemind config', () => {
-      expect(builtinMcpConfigs.bridgemind).toBeDefined()
-      expect(builtinMcpConfigs.bridgemind.type).toBe('remote')
-      expect(builtinMcpConfigs.bridgemind.url).toBe('https://remote-mcp-servers.org/bridgemind/mcp')
+    it('contains grep_app MCP', () => {
+      // #given
+      // #then should include grep_app
+      expect(builtinMCPs.some((mcp) => mcp.name === 'grep_app')).toBe(true)
     })
   })
 
   describe('getBuiltinMcpNames', () => {
-    test('returns all MCP names', () => {
+    it('returns all MCP names', () => {
       const names = getBuiltinMcpNames()
+
       expect(names).toContain('websearch')
       expect(names).toContain('context7')
       expect(names).toContain('grep_app')
-      expect(names).toContain('deepwiki')
-      expect(names).toContain('semgrep')
-      expect(names).toContain('sequential_thinking')
-      expect(names).toContain('bridgemind')
-      expect(names.length).toBe(7)
-    })
-
-    test('returns readonly array', () => {
-      const names = getBuiltinMcpNames()
-      expect(names).toBe(builtinMcpNames)
+      expect(names.length).toBe(3)
     })
   })
 
-  describe('getBuiltinMcpConfig', () => {
-    test('returns websearch config', () => {
-      const config = getBuiltinMcpConfig('websearch')
-      expect(config).toBeDefined()
-      expect(config?.type).toBe('remote')
-      expect(config?.url).toContain('mcp.exa.ai')
+  describe('getBuiltinMcpInfo', () => {
+    it('returns correct MCP for websearch', () => {
+      // #given
+      // #when getting websearch info
+      const mcp = getBuiltinMcpInfo('websearch')
+
+      // #then should return websearch MCP
+      expect(mcp).toBeDefined()
+      expect(mcp?.name).toBe('websearch')
+      expect(mcp?.description).toContain('Exa AI')
     })
 
-    test('returns context7 config', () => {
-      const config = getBuiltinMcpConfig('context7')
-      expect(config).toBeDefined()
-      expect(config?.type).toBe('remote')
-      expect(config?.url).toBe('https://mcp.context7.com/mcp')
+    it('returns correct MCP for context7', () => {
+      // #given
+      // #when getting context7 info
+      const mcp = getBuiltinMcpInfo('context7')
+
+      // #then should return context7 MCP
+      expect(mcp).toBeDefined()
+      expect(mcp?.name).toBe('context7')
+      expect(mcp?.description).toContain('documentation')
     })
 
-    test('returns grep_app config', () => {
-      const config = getBuiltinMcpConfig('grep_app')
-      expect(config).toBeDefined()
-      expect(config?.type).toBe('remote')
-      expect(config?.url).toBe('https://mcp.grep.app')
+    it('returns correct MCP for grep_app', () => {
+      // #given
+      // #when getting grep_app info
+      const mcp = getBuiltinMcpInfo('grep_app')
+
+      // #then should return grep_app MCP
+      expect(mcp).toBeDefined()
+      expect(mcp?.name).toBe('grep_app')
+      expect(mcp?.description).toContain('GitHub')
     })
 
-    test('returns deepwiki config', () => {
-      const config = getBuiltinMcpConfig('deepwiki')
-      expect(config).toBeDefined()
-      expect(config?.type).toBe('remote')
-      expect(config?.url).toBe('https://mcp.deepwiki.com/mcp')
-    })
+    it('returns undefined for unknown MCP', () => {
+      // #given
+      // #when getting unknown MCP
+      const mcp = getBuiltinMcpInfo('unknown')
 
-    test('returns semgrep config', () => {
-      const config = getBuiltinMcpConfig('semgrep')
-      expect(config).toBeDefined()
-      expect(config?.type).toBe('remote')
-      expect(config?.url).toBe('https://mcp.semgrep.ai/sse')
-    })
-
-    test('returns sequential_thinking config', () => {
-      const config = getBuiltinMcpConfig('sequential_thinking')
-      expect(config).toBeDefined()
-      expect(config?.type).toBe('remote')
-      expect(config?.url).toBe('https://remote-mcp-servers.org/sequential-thinking/mcp')
-    })
-
-    test('returns bridgemind config', () => {
-      const config = getBuiltinMcpConfig('bridgemind')
-      expect(config).toBeDefined()
-      expect(config?.type).toBe('remote')
-      expect(config?.url).toBe('https://remote-mcp-servers.org/bridgemind/mcp')
+      // #then should return undefined
+      expect(mcp).toBeUndefined()
     })
   })
 
-  describe('createBuiltinMcpConfigs', () => {
-    test('returns all MCP configs when no disabled list', () => {
-      const configs = createBuiltinMcpConfigs()
-      expect(Object.keys(configs).length).toBe(7)
-      expect(configs.websearch).toBeDefined()
-      expect(configs.context7).toBeDefined()
-      expect(configs.grep_app).toBeDefined()
-      expect(configs.deepwiki).toBeDefined()
-      expect(configs.semgrep).toBeDefined()
-      expect(configs.sequential_thinking).toBeDefined()
-      expect(configs.bridgemind).toBeDefined()
+  describe('getBuiltinMcpTools', () => {
+    it('returns tools for websearch', () => {
+      // #given
+      // #when getting websearch tools
+      const tools = getBuiltinMcpTools('websearch')
+
+      // #then should return 2 tools
+      expect(tools.length).toBe(2)
     })
 
-    test('excludes websearch when disabled', () => {
-      const configs = createBuiltinMcpConfigs(['websearch'])
-      expect(configs.websearch).toBeUndefined()
-      expect(configs.context7).toBeDefined()
-      expect(configs.grep_app).toBeDefined()
-      expect(configs.deepwiki).toBeDefined()
-      expect(configs.semgrep).toBeDefined()
-      expect(configs.sequential_thinking).toBeDefined()
-      expect(configs.bridgemind).toBeDefined()
+    it('returns tools for context7', () => {
+      // #given
+      // #when getting context7 tools
+      const tools = getBuiltinMcpTools('context7')
+
+      // #then should return 2 tools
+      expect(tools.length).toBe(2)
     })
 
-    test('excludes multiple MCPs when disabled', () => {
-      const configs = createBuiltinMcpConfigs(['websearch', 'context7', 'deepwiki'])
-      expect(configs.websearch).toBeUndefined()
-      expect(configs.context7).toBeUndefined()
-      expect(configs.deepwiki).toBeUndefined()
-      expect(configs.grep_app).toBeDefined()
-      expect(configs.semgrep).toBeDefined()
-      expect(configs.sequential_thinking).toBeDefined()
-      expect(configs.bridgemind).toBeDefined()
+    it('returns tools for grep_app', () => {
+      // #given
+      // #when getting grep_app tools
+      const tools = getBuiltinMcpTools('grep_app')
+
+      // #then should return 2 tools
+      expect(tools.length).toBe(2)
     })
 
-    test('passes websearch config through', () => {
-      const tavilyKey = 'test-tavily-key'
-      process.env.TAVILY_API_KEY = tavilyKey
-      const websearchConfig = { provider: 'tavily' as const }
-      const configs = createBuiltinMcpConfigs([], { websearch: websearchConfig })
-      // Config should respect provider option
-      expect(configs.websearch.url).toContain('mcp.tavily.com')
-      delete process.env.TAVILY_API_KEY
+    it('returns empty array for unknown MCP', () => {
+      // #given
+      // #when getting unknown MCP tools
+      const tools = getBuiltinMcpTools('unknown')
+
+      // #then should return empty array
+      expect(tools).toEqual([])
+    })
+  })
+
+  describe('getAllBuiltinMcpTools', () => {
+    it('returns all tools from all MCPs', () => {
+      // #given
+      // #when getting all tools
+      const tools = getAllBuiltinMcpTools()
+
+      // then should return 6 tools total (2 websearch + 2 context7 + 2 grep)
+      expect(tools.length).toBe(6)
+    })
+  })
+
+  describe('getEnabledMcpServers', () => {
+    it('returns all enabled MCPs by default', () => {
+      // #given all MCPs enabled by default
+      // #when getting enabled servers
+      const enabled = getEnabledMcpServers()
+
+      // then should return all 3
+      expect(enabled.length).toBe(3)
+    })
+  })
+
+  describe('initializeAllMcpServers', () => {
+    it('initializes all MCP servers', async () => {
+      // #given
+      const consoleWarnSpy = spyOn(console, 'warn').mockImplementation(() => {})
+
+      // #when initializing all
+      await initializeAllMcpServers({})
+
+      // #then should not throw
+      expect(true).toBe(true)
+      consoleWarnSpy.mockRestore()
+    })
+
+    it('accepts per-MCP configuration', async () => {
+      // #given per-MCP configs
+      const configs = {
+        websearch: { numResults: 5 },
+        context7: { cacheTTL: 600 },
+        grep_app: { maxResults: 20 },
+      }
+
+      // #when initializing with configs
+      await initializeAllMcpServers(configs)
+
+      // #then should not throw
+      expect(true).toBe(true)
+    })
+  })
+
+  describe('shutdownAllMcpServers', () => {
+    it('shuts down all MCP servers', async () => {
+      // #given initialized servers
+      await initializeAllMcpServers({})
+
+      // #when shutting down
+      await shutdownAllMcpServers()
+
+      // #then should not throw
+      expect(true).toBe(true)
+    })
+  })
+
+  describe('checkAllMcpHealth', () => {
+    it('returns health status for all MCPs', async () => {
+      // #given
+      // #when checking health
+      const health = await checkAllMcpHealth()
+
+      // then should return status for all 3
+      const keys = Object.keys(health)
+      expect(keys).toContain('websearch')
+      expect(keys).toContain('context7')
+      expect(keys).toContain('grep_app')
+      expect(keys.length).toBe(3)
+    })
+
+    it('returns false for MCPs without API keys', async () => {
+      // #given no API keys set
+      // #when checking health
+      const health = await checkAllMcpHealth()
+
+      // #then websearch and context7 should be false
+      expect(health.websearch).toBe(false)
+      expect(health.context7).toBe(false)
+    })
+
+    it('returns true for grep_app (works without token)', async () => {
+      // #given no GitHub token
+      // #when checking health
+      const health = await checkAllMcpHealth()
+
+      // #then grep_app should be true
+      expect(health.grep_app).toBe(true)
     })
   })
 })

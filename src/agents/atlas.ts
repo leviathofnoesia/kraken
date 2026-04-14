@@ -1,6 +1,6 @@
 import type { AgentConfig } from '@opencode-ai/sdk'
 import { isGptModel } from './types'
-import { createAgentToolRestrictions } from '../shared/permission-compat'
+import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
 const DEFAULT_MODEL = 'anthropic/claude-opus-4-5'
 
@@ -262,6 +262,8 @@ export function createAtlasConfig(
     mode: 'subagent' as const,
     model,
     temperature: 0.1,
+    permission: buildPermissionConfig('Atlas'),
+    tools: buildToolsConfig('Atlas'),
     prompt: finalPrompt,
   } as AgentConfig
 

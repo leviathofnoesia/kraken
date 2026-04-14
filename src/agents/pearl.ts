@@ -1,6 +1,6 @@
 import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
-import { createAgentToolRestrictions } from '../shared/permission-compat'
+import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
 const DEFAULT_MODEL = 'google/gemini-3-pro-preview'
 
@@ -170,15 +170,14 @@ Present findings in organized format:
 Remember: Your value lies in transforming visual content into actionable, structured information. Accurate extraction enables downstream agents to use multimedia content effectively.`
 
 export function createPearlConfig(model: string = DEFAULT_MODEL): AgentConfig {
-  const restrictions = createAgentToolRestrictions(['write', 'edit', 'task'])
-
   return {
     description:
       'Multimedia analysis specialist for PDFs, images, diagrams, and visual content. Extracts structured information for downstream use.',
     mode: 'subagent' as const,
     model,
     temperature: 0.1,
-    ...restrictions,
+    permission: buildPermissionConfig('Pearl'),
+    tools: buildToolsConfig('Pearl'),
     prompt: PEARL_SYSTEM_PROMPT,
   } as AgentConfig
 }

@@ -1,7 +1,6 @@
-import type { Hooks } from '@opencode-ai/plugin'
-import type { PluginInput } from '@opencode-ai/plugin'
-import type { Part } from '@opencode-ai/sdk'
-import { SHOULD_LOG } from '../../utils/logger'
+import type { Hooks } from "@opencode-ai/plugin"
+import type { PluginInput } from "@opencode-ai/plugin"
+import type { Part } from "@opencode-ai/sdk"
 
 export interface AutoSlashCommandConfig {
   enabled?: boolean
@@ -10,32 +9,32 @@ export interface AutoSlashCommandConfig {
 
 export function createAutoSlashCommand(
   _input: PluginInput,
-  options?: { config?: AutoSlashCommandConfig },
+  options?: { config?: AutoSlashCommandConfig }
 ): Hooks {
   const config = options?.config ?? {
     enabled: true,
     commands: {
-      '/build': 'build',
-      '/plan': 'plan',
-      '/research': 'research',
-      '/docs': 'docs',
-      '/review': 'review',
-      '/test': 'test',
-      '/fix': 'fix',
-      '/explain': 'explain',
+      "/build": "build",
+      "/plan": "plan",
+      "/research": "research",
+      "/docs": "docs",
+      "/review": "review",
+      "/test": "test",
+      "/fix": "fix",
+      "/explain": "explain",
     },
   }
 
   function getTextFromParts(parts: Part[]): string {
     return parts
-      .filter((p): p is Extract<Part, { type: 'text' }> => p.type === 'text')
-      .map((p) => p.text)
-      .join('\n')
+      .filter((p): p is Extract<Part, { type: "text" }> => p.type === "text")
+      .map(p => p.text)
+      .join("\n")
       .trim()
   }
 
   return {
-    'chat.message': async (input, output) => {
+    "chat.message": async (input, output) => {
       if (!config.enabled) return
 
       const text = getTextFromParts(output.parts)
@@ -43,8 +42,7 @@ export function createAutoSlashCommand(
 
       for (const [command, action] of Object.entries(config.commands || {})) {
         if (text.startsWith(command)) {
-          if (SHOULD_LOG)
-            console.log(`[auto-slash-command] Detected ${command}, triggering: ${action}`)
+          console.log(`[auto-slash-command] Detected ${command}, triggering: ${action}`)
         }
       }
     },
