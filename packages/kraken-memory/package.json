@@ -1,0 +1,50 @@
+{
+  "name": "@kraken-code/memory",
+  "version": "0.1.0",
+  "description": "Kraken Memory System - Spatial knowledge graph with vector compression for AI agents",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "kraken-memory": "./dist/cli/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./palace": {
+      "types": "./dist/palace/index.d.ts",
+      "import": "./dist/palace/index.js"
+    },
+    "./graph": {
+      "types": "./dist/graph/index.d.ts",
+      "import": "./dist/graph/index.js"
+    },
+    "./vector": {
+      "types": "./dist/vector/index.d.ts",
+      "import": "./dist/vector/index.js"
+    },
+    "./compression": {
+      "types": "./dist/compression/index.d.ts",
+      "import": "./dist/compression/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "commander": "^14.0.2",
+    "sql.js": "^1.12.0",
+    "zod": "4.1.8"
+  },
+  "devDependencies": {
+    "@types/sql.js": "^1.4.9",
+    "typescript": "^5.9.0",
+    "bun-types": "latest"
+  },
+  "license": "MIT"
+}

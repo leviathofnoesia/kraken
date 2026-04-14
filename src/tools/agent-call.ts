@@ -1,38 +1,66 @@
-import { tool } from "@opencode-ai/plugin"
-import { z } from "zod"
+import { tool } from '@opencode-ai/plugin'
+import { getPluginInput } from '../features/background-agent/plugin-input'
+import { AgentPipeline } from '../agents/execution/pipeline'
+import { createDefaultMiddleware } from '../agents/execution'
+import { formatAgentOutput } from '../agents/execution'
+import type { AgentName } from '../agents'
+
+const z = tool.schema
 
 export const call_kraken_agent = tool({
   description:
-    "Call a specialized Kraken Code agent for a specific task. " +
-    "Use this to delegate to agents like Atlas (navigation), Nautilus (semantic search), " +
-    "Abyssal (external research), Coral (UI/UX), Siren (documentation), Scylla (code review), " +
-    "or Pearl (testing).",
+    'Call a specialized Kraken Code agent for a specific task. ' +
+    'Use this to delegate to agents like Atlas (architecture), Nautilus (codebase search), ' +
+    'Abyssal (external research), Coral (UI/UX), Siren (documentation), Scylla (code review), ' +
+    'Pearl (multimedia), Maelstrom (strategic advice), Leviathan (structural analysis), or Poseidon (pre-planning). ' +
+    "Creates a child session and returns the agent's response.",
   args: {
     agent: z
-      .enum(["Atlas", "Nautilus", "Abyssal", "Coral", "Siren", "Scylla", "Pearl", "Leviathan", "Maelstrom", "Poseidon"])
-      .describe("Agent to call"),
-    task: z.string().describe("Task or instruction for the agent"),
+      .enum([
+        'Atlas',
+        'Nautilus',
+        'Abyssal',
+        'Coral',
+        'Siren',
+        'Scylla',
+        'Pearl',
+        'Leviathan',
+        'Maelstrom',
+        'Poseidon',
+      ])
+      .describe('Agent to call'),
+    task: z.string().min(5).describe('Task or instruction for the agent'),
   },
   async execute(args): Promise<string> {
-    const { agent, task } = args
+    const { agent, task } = args as { agent: AgentName; task: string }
+    const input = getPluginInput()
 
-    const agentInstructions: Record<string, string> = {
-      Atlas: "Navigate and explore codebase structure",
-      Nautilus: "Perform semantic code understanding and search",
-      Abyssal: "Conduct external research and investigation",
-      Coral: "Handle UI/UX design and visual changes",
-      Siren: "Write or review documentation",
-      Scylla: "Audit and review code for issues",
-      Pearl: "Create tests and validate implementations",
-      Leviathan: "Architectural design and system-level decisions",
-      Maelstrom: "Orchestrate complex multi-step workflows",
-      Poseidon: "Plan and coordinate complex tasks",
+    if (!input) {
+      return JSON.stringify({
+        success: false,
+        error:
+          'Plugin input not initialized. Agent delegation requires access to the OpenCode client.',
+      })
     }
 
-    const defaultTask = agentInstructions[agent] || "Execute your specialized function"
+    const pipeline = new AgentPipeline()
+    for (const mw of createDefaultMiddleware()) {
+      pipeline.use(mw)
+    }
 
-    const response = `Calling @${agent.toLowerCase()} for task: ${task || defaultTask}`
+    const result = await pipeline.execute(agent, task, input.client, {
+      delegationDepth: 0,
+      metadata: { source: 'call_kraken_agent' },
+    })
 
-    return response
+    if (!result.success) {
+      return JSON.stringify({
+        success: false,
+        error: result.error,
+        agent,
+      })
+    }
+
+    return formatAgentOutput(result)
   },
 })

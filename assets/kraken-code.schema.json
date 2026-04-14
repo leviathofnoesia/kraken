@@ -34,7 +34,8 @@
           "blitzkrieg-test-plan-enforcer",
           "blitzkrieg-tdd-workflow",
           "blitzkrieg-evidence-verifier",
-          "blitzkrieg-planner-constraints"
+          "blitzkrieg-planner-constraints",
+          "effort-router"
         ]
       }
     },
@@ -1508,23 +1509,6 @@
         }
       }
     },
-    "kratos": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": true,
-          "type": "boolean"
-        },
-        "autoSave": {
-          "default": true,
-          "type": "boolean"
-        },
-        "storagePath": {
-          "default": "~/.kratos",
-          "type": "string"
-        }
-      }
-    },
     "lsp": {
       "type": "object",
       "properties": {
@@ -1856,6 +1840,98 @@
               "additionalProperties": {
                 "type": "boolean"
               }
+            }
+          }
+        }
+      }
+    },
+    "effortRouter": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "type": "boolean"
+        },
+        "defaultState": {
+          "default": "STANDARD",
+          "type": "string",
+          "enum": [
+            "TRIVIAL",
+            "STANDARD",
+            "ELEVATED",
+            "INTENSIVE",
+            "DEEP_WORK"
+          ]
+        },
+        "rolloutPhase": {
+          "default": "shadow",
+          "type": "string",
+          "enum": [
+            "shadow",
+            "conservative",
+            "full"
+          ]
+        },
+        "thermoclineSensitivity": {
+          "default": 2,
+          "type": "number",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "thermoclineWindowSize": {
+          "default": 5,
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 10
+        },
+        "crystallizationThreshold": {
+          "default": 3,
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 10
+        },
+        "maxCrystallizedPatterns": {
+          "default": 5,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10
+        },
+        "patternDecayMessages": {
+          "default": 20,
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 100
+        },
+        "signalWeights": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "type": "number"
+          }
+        },
+        "disabledMicroDirectives": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "logging": {
+          "type": "object",
+          "properties": {
+            "logDecisions": {
+              "default": true,
+              "type": "boolean"
+            },
+            "logSignals": {
+              "default": false,
+              "type": "boolean"
+            },
+            "logTransitions": {
+              "default": true,
+              "type": "boolean"
             }
           }
         }

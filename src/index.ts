@@ -56,6 +56,7 @@ import { createSessionStorageHook } from './hooks/session-storage-hook'
 import { createClaudeCodeHooks } from './hooks/claude-code-hooks'
 import { createThinkModeHook } from './hooks/think-mode'
 import { createBackgroundAgentFeature } from './features/background-agent/manager'
+import { setPluginInput } from './features/background-agent/plugin-input'
 import { createContextWindowMonitorHook } from './hooks/context-window-monitor'
 import { createKeywordDetector } from './hooks/keyword-detector'
 import { createAutoSlashCommand } from './hooks/auto-slash-command'
@@ -77,14 +78,32 @@ import { createBlitzkriegTestPlanEnforcerHook } from './hooks/blitzkrieg-test-pl
 import { createBlitzkriegTddWorkflowHook } from './hooks/blitzkrieg-tdd-workflow'
 import { createBlitzkriegEvidenceVerifierHook } from './hooks/blitzkrieg-evidence-verifier'
 import { createBlitzkriegPlannerConstraintsHook } from './hooks/blitzkrieg-planner-constraints'
+import { createEffortRouterHook } from './hooks/effort-router'
 
 // MCP & Features
 import { initializeAllMcpServers, shutdownAllMcpServers } from './features/mcp/index'
-import { initializeKratos, shutdownKratos } from './features/mcp/kratos'
 import { getBuiltinMcpTools } from './features/mcp/index'
+import { websearchTool, webfetchTool } from './features/mcp/websearch'
+import { context7SearchToolMCP, context7GetToolMCP } from './features/mcp/context7'
+import { grepSearchToolMCP, grepGetFileToolMCP } from './features/mcp/grep-app'
 
 // CLI & Skills
-import { getMcpManager } from './features/skills/mcp-manager'
+import { initializeCommandLoader as initCmdLoader } from './features/command-loader'
+import { initializeSkillMcpManager as initSkillMcp } from './features/skill-mcp-manager'
+
+// Memory
+import {
+  memoryAddNode,
+  memoryGetNode,
+  memorySearchNodes,
+  memoryLinkNodes,
+  memoryGetConnected,
+  memoryDeleteNode,
+  memoryStats,
+  memoryCompress,
+  memoryDecompress,
+  closeMemory,
+} from './features/memory'
 
 // Helper function
 function getSeaThemedAgents(): Record<string, AgentConfig> {
@@ -144,14 +163,11 @@ function mergeHooks(...hooks: Hooks[]): Hooks {
 }
 
 async function initializeCommandLoader(): Promise<void> {
-  // Placeholder for command loader initialization
-  console.log('[kraken-code] Command loader not yet implemented')
+  await initCmdLoader()
 }
 
 async function initializeSkillMcpManager(): Promise<void> {
-  // Placeholder for skill MCP manager initialization
-  const mcpManager = getMcpManager()
-  console.log('[kraken-code] Skill MCP manager initialized')
+  await initSkillMcp()
 }
 
 const builtinTools: Record<string, any> = {
@@ -176,56 +192,28 @@ const builtinTools: Record<string, any> = {
   lsp_code_action_resolve,
   lsp_servers,
   'call-kraken-agent': call_kraken_agent,
-  // TODO: Fix tool definitions with proper schema types
-  // "websearch": {
-  //   description: "Search the web using Exa AI",
-  //   args: z.object({
-  //     query: z.string(),
-  //     numResults: z.number().default(8),
-  //   }),
-  // },
-  // "webfetch": {
-  //   description: "Fetch a web page",
-  //   args: z.object({
-  //     url: z.string(),
-  //     format: z.enum(["text", "markdown", "html"]),
-  //   }),
-  // },
-  // "context7-search": {
-  //   description: "Search official documentation",
-  //   args: z.object({
-  //     query: z.string(),
-  //     numResults: z.number().default(5),
-  //   }),
-  // },
-  // "context7-get": {
-  //   description: "Get specific documentation",
-  //   args: z.object({
-  //     library: z.string(),
-  //     section: z.string().optional(),
-  //   }),
-  // },
-  // "grep-search": {
-  //   description: "Search code across GitHub",
-  //   args: z.object({
-  //     query: z.string(),
-  //     language: z.string().optional(),
-  //     numResults: z.number().default(10),
-  //   }),
-  // },
-  // "grep-get-file": {
-  //   description: "Get file from GitHub",
-  //   args: z.object({
-  //     repo: z.string(),
-  //     path: z.string(),
-  //   }),
-  // },
+  websearch: websearchTool,
+  webfetch: webfetchTool,
+  'context7-search': context7SearchToolMCP,
+  'context7-get': context7GetToolMCP,
+  'grep-search': grepSearchToolMCP,
+  'grep-get-file': grepGetFileToolMCP,
+  'memory-add': memoryAddNode,
+  'memory-get': memoryGetNode,
+  'memory-search': memorySearchNodes,
+  'memory-link': memoryLinkNodes,
+  'memory-connected': memoryGetConnected,
+  'memory-delete': memoryDeleteNode,
+  'memory-stats': memoryStats,
+  'memory-compress': memoryCompress,
+  'memory-decompress': memoryDecompress,
 }
 
 let backgroundManager: BackgroundManager | null = null
 
 const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks> => {
   const logger = createLogger('plugin-main')
+  setPluginInput(input)
 
   const hooks: Hooks[] = []
 
@@ -283,14 +271,6 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
           }
         })(),
         (async () => {
-          try {
-            await initializeKratos()
-            logger.info('Kratos initialized')
-          } catch (e) {
-            logger.error('Error initializing Kratos:', e)
-          }
-        })(),
-        (async () => {
           const mcpConfig = pluginConfig.mcp || {}
           try {
             await initializeAllMcpServers(mcpConfig)
@@ -330,6 +310,7 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     hooks.push(createBlitzkriegTddWorkflowHook())
     hooks.push(createBlitzkriegEvidenceVerifierHook())
     hooks.push(createBlitzkriegPlannerConstraintsHook())
+    hooks.push(createEffortRouterHook(input))
   } catch (e) {
     logger.error('Error initializing hooks:', e)
   }
@@ -356,9 +337,13 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
   process.on('exit', async () => {
     try {
       await shutdownAllMcpServers()
-      await shutdownKratos()
     } catch (e) {
       console.error('Kraken Code: Error shutting down services', e)
+    }
+    try {
+      await closeMemory()
+    } catch (e) {
+      console.error('Kraken Code: Error closing memory', e)
     }
   })
 

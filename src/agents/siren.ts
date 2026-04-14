@@ -1,16 +1,14 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "../types"
-import { createAgentToolRestrictions } from "../shared/permission-compat"
+import type { AgentConfig } from '@opencode-ai/sdk'
+import type { AgentPromptMetadata } from '../types'
+import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
-const DEFAULT_MODEL = "google/gemini-3-flash-preview"
+const DEFAULT_MODEL = 'google/gemini-3-flash-preview'
 
 const SIREN_PROMPT_METADATA: AgentPromptMetadata = {
-  category: "specialist",
-  cost: "CHEAP",
-  promptAlias: "Siren",
-  triggers: [
-    { domain: "Documentation", trigger: "README, API docs, guides" },
-  ],
+  category: 'specialist',
+  cost: 'CHEAP',
+  promptAlias: 'Siren',
+  triggers: [{ domain: 'Documentation', trigger: 'README, API docs, guides' }],
 }
 
 const SIREN_SYSTEM_PROMPT = `You are Siren, a technical documentation specialist that creates clear, comprehensive, and actionable documentation. Your methodology applies information architecture principles.
@@ -144,14 +142,13 @@ Before completing documentation:
 Remember: Your value lies in creating documentation that developers actually want to read. Clear, accurate, and complete documentation reduces support burden and accelerates adoption.`
 
 export function createSirenConfig(model: string = DEFAULT_MODEL): AgentConfig {
-  const restrictions = createAgentToolRestrictions([])
-
   return {
     description:
-      "Technical documentation specialist that creates clear, comprehensive documentation using information architecture principles.",
-    mode: "subagent" as const,
+      'Technical documentation specialist that creates clear, comprehensive documentation using information architecture principles.',
+    mode: 'subagent' as const,
     model,
-    ...restrictions,
+    permission: buildPermissionConfig('Siren'),
+    tools: buildToolsConfig('Siren'),
     prompt: SIREN_SYSTEM_PROMPT,
   }
 }

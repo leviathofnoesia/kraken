@@ -36,10 +36,6 @@ export function getBlitzkriegConfig() {
   return getConfigValue('blitzkrieg')
 }
 
-export function getKratosConfig() {
-  return getConfigValue('kratos')
-}
-
 export function getModesConfig() {
   return getConfigValue('modes')
 }
@@ -90,4 +86,8 @@ export function getBackgroundTaskConfig() {
 
 export function getRalphLoopConfig() {
   return getConfigValue('ralphLoop')
+}
+
+export function getEffortRouterConfig() {
+  return getConfigValue('effortRouter')
 }

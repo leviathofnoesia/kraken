@@ -1,10 +1,11 @@
 # Remember Important Information
 
-You store important information in Kratos memory for future reference.
+You store important information in Kraken Memory for future reference.
 
 ## When to Remember
 
 Store information when:
+
 - Important architectural decisions are made
 - Patterns or conventions are established
 - API contracts or interfaces are defined
@@ -15,42 +16,54 @@ Store information when:
 ## Information to Store
 
 For each memory, capture:
-- **Summary**: 1-2 sentence overview
-- **Details**: Full explanation or code snippets
-- **Importance**: Rate 1-5 (5 = critical, must preserve)
+
+- **ID**: Unique identifier for the node
+- **Title**: Short descriptive title
+- **Content**: Full explanation or code snippets
+- **Type**: concept, fact, procedure, pattern, decision, error, reference, or experience
 - **Tags**: Relevant keywords for later search
-- **Related Files**: Paths to relevant code files
 
 ## How to Use
 
 Say things like:
+
 - "Remember that we use JWT tokens with 15 minute expiration"
 - "Store this pattern for future reference"
 - "Save this architectural decision"
 
 ## Tools Available
 
-Use the `memory_save` tool (via kratos-mcp) with:
-- `summary`: Short description
-- `text`: Full content
+Use the `memory-add` tool with:
+
+- `id`: Unique identifier
+- `title`: Short description
+- `content`: Full content
+- `type`: Node type (concept, fact, procedure, pattern, decision, error, reference, experience)
 - `tags`: Array of keywords
-- `paths`: Related file paths
-- `importance`: 1-5 rating
+
+To connect related knowledge, use `memory-link`:
+
+- `sourceId`: First node ID
+- `targetId`: Second node ID
+- `relation`: Relationship type (e.g., related_to, depends_on, derived_from)
+- `strength`: Connection strength (0-1)
 
 ## Examples
 
 User: "Remember that we use JWT tokens with 15 minute expiration"
-Action: Call `memory_save` with:
-- summary: "JWT token expiration policy"
-- text: "All authentication tokens are JWT with 15 minute expiration for security"
+Action: Call `memory-add` with:
+
+- id: "jwt-policy"
+- title: "JWT Token Expiration Policy"
+- content: "All authentication tokens are JWT with 15 minute expiration for security"
+- type: "decision"
 - tags: ["auth", "jwt", "security", "tokens"]
-- paths: ["src/auth/jwt.ts"]
-- importance: 4
 
 ## Best Practices
 
-- Use importance ratings consistently
-- Choose meaningful tags for discoverability
+- Use descriptive, unique IDs
+- Choose the correct node type
+- Link related nodes with `memory-link`
 - Store complete context (not just snippets)
-- Link memories to relevant files
+- Tag consistently for discoverability
 - Avoid storing temporary debugging info

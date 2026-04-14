@@ -1,30 +1,30 @@
-import { describe, it, expect } from "bun:test"
-import { initializeSkillLoader, getSkills, getSkillContent } from "../../src/features/skills"
+import { describe, it, expect } from 'bun:test'
+import { SkillLoader, skillLoader } from '../../src/features/skills'
 
-describe("Skills Feature", () => {
-  describe("initializeSkillLoader", () => {
-    it("should initialize skill loader", async () => {
-      const result = await initializeSkillLoader()
-      expect(result).toBeDefined()
+describe('Skills Feature', () => {
+  describe('SkillLoader', () => {
+    it('should export SkillLoader class', () => {
+      expect(SkillLoader).toBeDefined()
     })
-  })
 
-  describe("getSkills", () => {
-    it("should get available skills", async () => {
-      const skills = await getSkills()
+    it('should return empty array for nonexistent path', () => {
+      const loader = new SkillLoader('/nonexistent/path')
+      const skills = loader.loadSkills()
       expect(Array.isArray(skills)).toBe(true)
+      expect(skills.length).toBe(0)
+    })
+
+    it('should return undefined for missing skill', () => {
+      const loader = new SkillLoader('/nonexistent/path')
+      loader.loadSkills()
+      expect(loader.getSkill('nonexistent')).toBeUndefined()
     })
   })
 
-  describe("getSkillContent", () => {
-    it("should get skill content", async () => {
-      const content = await getSkillContent("test-skill")
-      expect(content).toBeDefined()
-    })
-
-    it("should handle missing skill", async () => {
-      const content = await getSkillContent("nonexistent-skill")
-      expect(content).toBeNull()
+  describe('skillLoader singleton', () => {
+    it('should be a SkillLoader instance', () => {
+      expect(skillLoader).toBeDefined()
+      expect(skillLoader).toBeInstanceOf(SkillLoader)
     })
   })
 })

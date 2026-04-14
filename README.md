@@ -66,7 +66,7 @@ Four expert modes that reconfigure the entire system:
 
 ### 🧠 **Persistent Memory**
 
-Kratos remembers everything across sessions—conversations, decisions, code patterns. No more repeating yourself or asking the same questions.
+Kraken Memory remembers everything across sessions—conversations, decisions, code patterns. Spatial knowledge graph with vector search. No more repeating yourself or asking the same questions.
 
 ### 🛠 **Smart Tooling**
 
@@ -85,19 +85,19 @@ Kratos remembers everything across sessions—conversations, decisions, code pat
 
 **OpenCode is powerful. Kraken makes it unstoppable.**
 
-| OpenCode Alone | With Kraken |
-|---------------|--------------|
-| Ask a question → forgets context | Ask a question → Kratos remembers |
-| Do work → guess what's next | Do work → Blitzkrieg enforces quality |
-| Explore → manual grep searches | Explore → Nautilus auto-fires on patterns |
-| Multi-step tasks → one-shot guessing | Multi-step tasks → Atlas breaks down properly |
-| Change scope → context bloats out | Change scope → Kratos prunes intelligently |
+| OpenCode Alone                       | With Kraken                                       |
+| ------------------------------------ | ------------------------------------------------- |
+| Ask a question → forgets context     | Ask a question → Kraken Memory remembers          |
+| Do work → guess what's next          | Do work → Blitzkrieg enforces quality             |
+| Explore → manual grep searches       | Explore → Nautilus auto-fires on patterns         |
+| Multi-step tasks → one-shot guessing | Multi-step tasks → Atlas breaks down properly     |
+| Change scope → context bloats out    | Change scope → Kraken Memory prunes intelligently |
 
 **The Value Proposition:**
 
 1. **You work faster** - Agents handle specialized tasks while you focus on the big picture
 2. **Your code is better** - Blitzkrieg enforces TDD, Scylla validates tests
-3. **You stop repeating work** - Kratos remembers solutions, patterns, decisions
+3. **You stop repeating work** - Kraken Memory remembers solutions, patterns, decisions
 4. **You navigate larger codebases** - Nautilus finds patterns you'd miss
 5. **You get unstuck faster** - Atlas breaks down complex problems before you start
 
@@ -135,7 +135,7 @@ Production-ready TDD workflow:
 ### 💾 **Session & Memory Management**
 
 - **Session tools** - List, read, search sessions
-- **Kratos memory** - Save, search, query memories naturally
+- **Kraken Memory** - Save, search, link knowledge nodes naturally
 - **JSONL storage** - OpenCode-compatible transcript format
 - **Todo tracking** - Persistent task tracking across sessions
 
@@ -143,7 +143,7 @@ Production-ready TDD workflow:
 
 Built-in MCP servers:
 
-- **Kratos** - Ultra-lean memory system
+- **Kraken Memory** - Spatial knowledge graph with vector compression
 - **Websearch** - Exa AI web search
 - **Context7** - Official documentation lookup
 - **Grep App** - GitHub code search
@@ -161,7 +161,7 @@ All configuration lives in `~/.config/opencode/opencode.json`:
     "Kraken": { "enabled": true, "model": "..." }
   },
   "blitzkrieg": { "enabled": true, "enforcement": "strict" },
-  "kratos": { "enabled": true, "storagePath": "~/.kratos" },
+  "kraken-memory": { "enabled": true, "dbPath": "~/.kraken-memory/memory.db" },
   "modes": {
     "blitzkrieg": { "enabled": true },
     "ultrathink": { "enabled": true, "thinkingBudget": 32000 }

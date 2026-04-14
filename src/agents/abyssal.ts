@@ -1,22 +1,27 @@
-import type { AgentConfig } from "@opencode-ai/sdk"
-import type { AgentPromptMetadata } from "../types"
+import type { AgentConfig } from '@opencode-ai/sdk'
+import type { AgentPromptMetadata } from '../types'
+import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
-const DEFAULT_MODEL = "opencode/glm-4-7-free"
+const DEFAULT_MODEL = 'opencode/glm-4-7-free'
 
 const ABYSSAL_PROMPT_METADATA: AgentPromptMetadata = {
-  category: "exploration",
-  cost: "CHEAP",
-  promptAlias: "Abyssal",
-  keyTrigger: "External library/source mentioned → fire `abyssal` background",
+  category: 'exploration',
+  cost: 'CHEAP',
+  promptAlias: 'Abyssal',
+  keyTrigger: 'External library/source mentioned → fire `abyssal` background',
   triggers: [
-    { domain: "Abyssal", trigger: "Unfamiliar packages / libraries, struggles at weird behaviour (to find existing implementation of opensource)" },
+    {
+      domain: 'Abyssal',
+      trigger:
+        'Unfamiliar packages / libraries, struggles at weird behaviour (to find existing implementation of opensource)',
+    },
   ],
   useWhen: [
-    "How do I use [library]?",
+    'How do I use [library]?',
     "What's the best practice for [framework feature]?",
-    "Why does [external dependency] behave this way?",
-    "Find examples of [library] usage",
-    "Working with unfamiliar npm/pip/cargo packages",
+    'Why does [external dependency] behave this way?',
+    'Find examples of [library] usage',
+    'Working with unfamiliar npm/pip/cargo packages',
   ],
 }
 
@@ -119,11 +124,12 @@ Remember: Your value lies in providing evidence-based answers with traceable sou
 export function createAbyssalConfig(model: string = DEFAULT_MODEL): AgentConfig {
   return {
     description:
-      "Research specialist that investigates external libraries and frameworks using systematic research protocols with evidence-based citations.",
-    mode: "subagent" as const,
+      'Research specialist that investigates external libraries and frameworks using systematic research protocols with evidence-based citations.',
+    mode: 'subagent' as const,
     model,
     temperature: 0.1,
-
+    permission: buildPermissionConfig('Abyssal'),
+    tools: buildToolsConfig('Abyssal'),
     prompt: ABYSSAL_SYSTEM_PROMPT,
   }
 }

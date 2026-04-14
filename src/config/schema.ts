@@ -36,6 +36,7 @@ export const OpenCodeXHookNameSchema = z.enum([
   'blitzkrieg-tdd-workflow',
   'blitzkrieg-evidence-verifier',
   'blitzkrieg-planner-constraints',
+  'effort-router',
 ])
 
 export const OpenCodeXBuiltinCommandNameSchema = z.enum(['init-deep'])
@@ -176,12 +177,6 @@ export const MCPConfigSchema = z.object({
   grep_app: GrepAppMCPConfigSchema.optional(),
 })
 
-export const KratosConfigSchema = z.object({
-  enabled: z.boolean().default(true),
-  autoSave: z.boolean().default(true),
-  storagePath: z.string().default('~/.kratos'),
-})
-
 export const LSPConfigSchema = z.object({
   enabled: z.boolean().default(true),
   workspacePath: z.string().optional(),
@@ -288,6 +283,29 @@ export const ClaudeCodeCompatibilityConfigSchema = z
   })
   .optional()
 
+// Effort Router Configuration
+export const EffortRouterLoggingConfigSchema = z.object({
+  logDecisions: z.boolean().default(true),
+  logSignals: z.boolean().default(false),
+  logTransitions: z.boolean().default(true),
+})
+
+export const EffortRouterConfigSchema = z.object({
+  enabled: z.boolean().default(true),
+  defaultState: z
+    .enum(['TRIVIAL', 'STANDARD', 'ELEVATED', 'INTENSIVE', 'DEEP_WORK'])
+    .default('STANDARD'),
+  rolloutPhase: z.enum(['shadow', 'conservative', 'full']).default('shadow'),
+  thermoclineSensitivity: z.number().min(1.0).max(4.0).default(2.0),
+  thermoclineWindowSize: z.number().int().min(3).max(10).default(5),
+  crystallizationThreshold: z.number().int().min(2).max(10).default(3),
+  maxCrystallizedPatterns: z.number().int().min(1).max(10).default(5),
+  patternDecayMessages: z.number().int().min(5).max(100).default(20),
+  signalWeights: z.record(z.string(), z.number()).optional(),
+  disabledMicroDirectives: z.array(z.string()).default([]),
+  logging: EffortRouterLoggingConfigSchema.optional(),
+})
+
 export const OpenCodeXConfigSchema = z.object({
   $schema: z.string().optional(),
   disabled_hooks: z.array(OpenCodeXHookNameSchema).optional(),
@@ -299,7 +317,6 @@ export const OpenCodeXConfigSchema = z.object({
   compression: CompressionConfigSchema.optional(),
   blitzkrieg: BlitzkriegConfigSchema.optional(),
   mcp: MCPConfigSchema.optional(),
-  kratos: KratosConfigSchema.optional(),
   lsp: LSPConfigSchema.optional(),
   notifications: NotificationsConfigSchema.optional(),
   enhanced: z
@@ -315,6 +332,7 @@ export const OpenCodeXConfigSchema = z.object({
   skillMcp: SkillMcpConfigSchema.optional(),
   commandLoader: CommandLoaderConfigSchema.optional(),
   claudeCodeCompatibility: ClaudeCodeCompatibilityConfigSchema.optional(),
+  effortRouter: EffortRouterConfigSchema.optional(),
 })
 
 export type OpenCodeXConfig = z.infer<typeof OpenCodeXConfigSchema>
@@ -332,9 +350,10 @@ export type WebsearchMCPConfig = z.infer<typeof WebsearchMCPConfigSchema>
 export type Context7MCPConfig = z.infer<typeof Context7MCPConfigSchema>
 export type GrepAppMCPConfig = z.infer<typeof GrepAppMCPConfigSchema>
 export type MCPConfig = z.infer<typeof MCPConfigSchema>
-export type KratosConfig = z.infer<typeof KratosConfigSchema>
 export type LSPConfig = z.infer<typeof LSPConfigSchema>
 export type ModesConfig = z.infer<typeof ModesConfigSchema>
 export type SkillMcpConfig = z.infer<typeof SkillMcpConfigSchema>
 export type CommandLoaderConfig = z.infer<typeof CommandLoaderConfigSchema>
 export type ClaudeCodeCompatibilityConfig = z.infer<typeof ClaudeCodeCompatibilityConfigSchema>
+export type EffortRouterLoggingConfig = z.infer<typeof EffortRouterLoggingConfigSchema>
+export type EffortRouterConfig = z.infer<typeof EffortRouterConfigSchema>

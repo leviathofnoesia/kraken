@@ -86,12 +86,6 @@ export const SUMMARIZE_CONTEXT_PROMPT = 'e01b'
  */
 export const KRAKEN_CONTINUATION_PROMPT = '33dd'
 
-/**
- * ANTIGRAVITY - Antigravity system prompt
- * Hash: 319d
- * Original: 326 tokens
- * Upgraded: ~280 tokens (slightly reworded)
- */
 export const ANTIGRAVITY_PROMPT = '319d'
 
 /**

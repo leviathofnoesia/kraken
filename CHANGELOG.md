@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [5.0.0] - 2026-01-24
 
 ### Added
+
 - **Mode System**: 4-mode detection with 100+ keywords in 15+ languages (Blitzkrieg, Search, Analyze, Ultrathink)
 - **Session Storage**: JSONL-based todo and transcript storage for OpenCode compatibility
 - **Skill MCP Manager**: Connection pooling with 5-minute idle timeout
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **11 Sea-Themed Agents**: Added Maelstrom, Leviathan, and Poseidon agents
 
 ### Changed
+
 - Fixed "ultrawork" naming to "blitzkrieg" throughout codebase
 - Improved mode detection confidence scoring
 - Enhanced session storage with JSONL format
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Increased agent count from 10 to 11 with new Maelstrom, Leviathan, and Poseidon agents
 
 ### Fixed
+
 - TypeScript compilation errors in hooks
 - Import path issues for storage system
 - Mode detector keyword database
@@ -35,19 +38,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed test failures to achieve 88% pass rate
 
 ### Security
+
 - No security vulnerabilities
 
 ## [4.0.0] - 2026-01-23
 
 ### Added
+
 - Initial kraken-code consolidation
 - 10 sea-themed agents
 - Blitzkrieg TDD system
-- Kratos memory integration
+- Kraken Memory (knowledge graph + palace hierarchy + vector search)
 - 30+ hooks for customization
 - Skills system with templates
 - Commands system with execution engine
 - MCP management with built-in servers
 
 ### Notes
+
 This is the initial release consolidating OpenChode and OpenCode-X.

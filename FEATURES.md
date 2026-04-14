@@ -2,12 +2,12 @@
 
 ## Overview
 
-| Aspect | Kraken-Code |
-|--------|-------------|
-| **Version** | 5.0.0 |
-| **Author** | LeviathofNoesia |
-| **Type** | Unified OpenCode Plugin |
-| **License** | MIT |
+| Aspect         | Kraken-Code                                                                            |
+| -------------- | -------------------------------------------------------------------------------------- |
+| **Version**    | 5.0.0                                                                                  |
+| **Author**     | LeviathofNoesia                                                                        |
+| **Type**       | Unified OpenCode Plugin                                                                |
+| **License**    | MIT                                                                                    |
 | **Philosophy** | "Unified plugin with high-density agents" - Feature completeness, modular architecture |
 
 ---
@@ -17,6 +17,7 @@
 **Core Philosophy**: Feature completeness, modular architecture, comprehensive tooling
 
 **Key Architectural Decisions**:
+
 - 10 sea-themed agents with clear specialization boundaries
 - Modular feature system (skills, commands, MCP, memory)
 - Native integrations with full SDK implementations
@@ -28,20 +29,21 @@
 
 ## Agent System
 
-| Agent | Purpose | Description |
-|--------|---------|-------------|
-| **Kraken** | Architecture & Orchestration | Primary agent for complex architectural decisions and multi-agent coordination |
-| **Atlas** | Planning & Breakdown | Expert at breaking down complex tasks into manageable steps |
-| **Nautilus** | Shell & Infrastructure | Shell scripts, CI/CD, infrastructure as code |
-| **Abyssal** | Deep Analysis | Deep code analysis, debugging, problem investigation |
-| **Coral** | Building & Construction | Building new features and components |
-| **Siren** | Communication & Documentation | API docs, README files, user-facing content |
-| **Scylla** | Testing & Validation | Creates comprehensive tests and validates implementations |
-| **Pearl** | Refactoring & Optimization | Improves code quality, performance, and maintainability |
-| **Poseidon** | Data & Infrastructure | Databases, data pipelines, infrastructure management |
-| **Leviathan** | Large-Scale Projects | Large-scale refactoring and project-wide changes |
+| Agent         | Purpose                       | Description                                                                    |
+| ------------- | ----------------------------- | ------------------------------------------------------------------------------ |
+| **Kraken**    | Architecture & Orchestration  | Primary agent for complex architectural decisions and multi-agent coordination |
+| **Atlas**     | Planning & Breakdown          | Expert at breaking down complex tasks into manageable steps                    |
+| **Nautilus**  | Shell & Infrastructure        | Shell scripts, CI/CD, infrastructure as code                                   |
+| **Abyssal**   | Deep Analysis                 | Deep code analysis, debugging, problem investigation                           |
+| **Coral**     | Building & Construction       | Building new features and components                                           |
+| **Siren**     | Communication & Documentation | API docs, README files, user-facing content                                    |
+| **Scylla**    | Testing & Validation          | Creates comprehensive tests and validates implementations                      |
+| **Pearl**     | Refactoring & Optimization    | Improves code quality, performance, and maintainability                        |
+| **Poseidon**  | Data & Infrastructure         | Databases, data pipelines, infrastructure management                           |
+| **Leviathan** | Large-Scale Projects          | Large-scale refactoring and project-wide changes                               |
 
 **Characteristics**:
+
 - Manual selection or configurable default (Kraken)
 - Sea-themed naming for memorable organization
 - Broader coverage (from planning to infrastructure to data)
@@ -52,6 +54,7 @@
 ## Tool System
 
 **Core Tools**:
+
 - `grep` - Custom grep with advanced filtering
 - `ast-grep` - AST-based code search and modification
 - `compression` - Context compression for efficiency
@@ -59,20 +62,28 @@
 - `session_list`, `session_read`, `session_search`, `session_info` - Session management
 
 **Model Switcher**:
+
 - `model-switcher` - Interactive model selection menu
 - Command generation for different models
 - Config manager for model preferences
 
 **Ralph Loop**:
+
 - `ralph-loop` - Self-referential development loop with state persistence
 
-**Kratos Memory Tools**:
-- `memory_save` - Save memories with tags and importance
-- `memory_search` - Search memories by query or tags
-- `memory_get_recent` - Get recent memories
-- `memory_ask` - Natural language queries
+**Kraken Memory Tools**:
+
+- `memory-add` - Add knowledge nodes with type and tags
+- `memory-get` - Retrieve a node by ID
+- `memory-search` - Search nodes by text, type, or tags
+- `memory-link` - Create directed relationships between nodes
+- `memory-connected` - Get nodes connected via graph edges
+- `memory-delete` - Remove a node and its edges
+- `memory-stats` - Graph statistics
+- `memory-compress` / `memory-decompress` - AAAK dictionary compression
 
 **MCP Tools** (curated):
+
 - `websearch` - Web search (Exa AI)
 - `webfetch` - Web page fetching
 - `context7-search` - Official documentation lookup
@@ -81,6 +92,7 @@
 - `grep-get-file` - Get file from GitHub
 
 **CLI Tools**:
+
 - Native integrations with GitHub SDK, Git SDK
 - PR/Issue management
 
@@ -89,12 +101,14 @@
 ## Feature System
 
 **Blitzkrieg System** (4 components):
+
 - **Test Plan Enforcer**: Requires test plans before implementation
 - **TDD Workflow**: Enforces test-first development
 - **Evidence Verifier**: Validates test evidence before task completion
 - **Planner Constraints**: Enforces planning discipline and complexity limits
 
 **Skills System**:
+
 - Dynamic skill discovery
 - Hot reloading
 - Rich UI for skill display and selection
@@ -102,31 +116,36 @@
 - Built-in skill templates (10 categories)
 
 **Commands System**:
+
 - Command registry
 - Execution engine
 - Built-in commands
 - Custom commands support
 
 **Memory Integration**:
-- Kratos MCP with persistent storage
-- Obsidian MCP (optional)
-- Memory search and retrieval
-- Natural language queries
+
+- Kraken Memory with spatial knowledge graph (palace hierarchy)
+- SQLite-backed storage with vector similarity search
+- AAAK dictionary compression for text
 
 **Context Management**:
+
 - DCP (Dynamic Context Pruning) engine
 - Context window monitor
 - Intelligent compression (70% token reduction)
 
 **Native Integrations**:
+
 - GitHub SDK
 - Git SDK
 - PR/Issue SDK
 
 **Background Agents**:
+
 - Background task system with hooks
 
 **30+ Hooks**:
+
 - Context management hooks
 - Agent coordination hooks
 - Error recovery hooks
@@ -138,26 +157,30 @@
 ## MCP Integration
 
 **Built-in MCPs**:
+
 - **websearch** - Exa AI (real-time web search)
 - **context7** - Official documentation lookup
 - **grep_app** - GitHub code search (grep.app)
-- **kratos** - Ultra-lean memory system
+- **kraken-memory** - Spatial knowledge graph with vector compression
 
-**Kratos MCP Implementation**:
-- Full JSON-RPC 2.0 protocol
-- Subprocess management (kratos-mcp)
-- Request/response handling with timeouts
-- 4 tools: memory_save, memory_search, memory_get_recent, memory_ask
+**Kraken Memory Implementation**:
+
+- Spatial palace hierarchy (wing → room → hall → tunnel → drawer)
+- Knowledge graph with typed edges and strength weights
+- Vector similarity search with TurboQuant-inspired compression
+- AAAK dictionary-based text compression
 
 ---
 
 ## Authentication
 
 **Supported Providers**:
+
 - **Anthropic (Claude)**: Via `src/google-auth.ts`
 - **Google Gemini**: Via `src/google-auth.ts`
 
 **Google Auth Module**:
+
 - `src/google-auth.ts` - Google authentication for gemini models
 
 ---
@@ -165,16 +188,19 @@
 ## Configuration
 
 **Config Location**:
+
 - `~/.config/opencode/opencode.json` (user)
 
 **Schema Validation**:
+
 - Zod schema validation
 - Generated schema: `assets/kraken-code.schema.json`
 
 **Key Config Sections**:
+
 - `agents` - Agent configuration
 - `blitzkrieg` - Blitzkrieg TDD enforcement
-- `kratos` - Kratos memory config
+- `kraken-memory` - Kraken Memory config
 - `mcp` - MCP server config
 - `modes` - Special mode configurations (ultrawork, search, analyze, ultrathink)
 - `skillMcp` - Skill MCP server config
@@ -182,6 +208,7 @@
   - `enhanced` - Enhanced mode
 
 **Schema Autocomplete**:
+
 ```json
 {
   "$schema": "https://raw.githubusercontent.com/leviathofnoesia/kraken-code/main/assets/kraken-code.schema.json"
@@ -193,6 +220,7 @@
 ## Loaders
 
 **Skill Loader**:
+
 ```typescript
 export class SkillLoader {
   loadSkills(): Skill[]
@@ -205,13 +233,15 @@ export class SkillLoader {
 - Skills installed via CLI to `~/.config/opencode/skill/`
 
 **Data Storage**:
-- Kratos storage: `~/.kratos`
+
+- Kraken Memory storage: `~/.kraken-memory`
 
 ---
 
 ## Hooks System
 
 **Hook Events** (from plugin interface):
+
 - PreToolUse - Before tool execution
 - PostToolUse - After tool execution
 - UserPromptSubmit - When user submits prompt
@@ -221,6 +251,7 @@ export class SkillLoader {
 **Hooks Implemented** (31+):
 
 **Core Hooks**:
+
 1. Think Mode
 2. Context Window Monitor
 3. Ralph Loop
@@ -230,36 +261,13 @@ export class SkillLoader {
 7. Agent Usage Reminder
 8. Auto Update Checker
 
-**Context Management**:
-8. Anthropic Context Window Limit Recovery
-9. Auto Update Checker
-10. Claude Code Hooks
-11. Compaction Context Injector
-12. Directory Agents Injector
-13. Directory README Injector
-14. Edit Error Recovery
-15. Empty Message Sanitizer
-16. Empty Task Response Detector
-17. Grep Output Truncator
-18. Interactive Bash Session
-19. Non-Interactive Env
-20. Preemptive Compaction
-21. Session Recovery
-22. Thinking Block Validator
-23. Tool Output Truncator
+**Context Management**: 8. Anthropic Context Window Limit Recovery 9. Auto Update Checker 10. Claude Code Hooks 11. Compaction Context Injector 12. Directory Agents Injector 13. Directory README Injector 14. Edit Error Recovery 15. Empty Message Sanitizer 16. Empty Task Response Detector 17. Grep Output Truncator 18. Interactive Bash Session 19. Non-Interactive Env 20. Preemptive Compaction 21. Session Recovery 22. Thinking Block Validator 23. Tool Output Truncator
 
-**Comment Checking**:
-24. Comment Checker
+**Comment Checking**: 24. Comment Checker
 
-**Blitzkrieg Hooks**:
-25. Blitzkrieg Test Plan Enforcer
-26. Blitzkrieg TDD Workflow
-27. Blitzkrieg Evidence Verifier
-28. Blitzkrieg Planner Constraints
+**Blitzkrieg Hooks**: 25. Blitzkrieg Test Plan Enforcer 26. Blitzkrieg TDD Workflow 27. Blitzkrieg Evidence Verifier 28. Blitzkrieg Planner Constraints
 
-**Additional**:
-29. Background Agent
-30. CLI Tools
+**Additional**: 29. Background Agent 30. CLI Tools
 
 ---
 
@@ -268,6 +276,7 @@ export class SkillLoader {
 **CLI Tool**: `kraken-code`
 
 **Commands**:
+
 - `install` - Install and register Kraken Code plugin
 - `init [options]` - Initialize with recommended configuration
   - `--minimal` - Minimal setup (agents only)
@@ -279,16 +288,18 @@ export class SkillLoader {
   - `-v, --verbose` - Show detailed output
 
 **Initialization Process**:
+
 1. Creates `~/.config/opencode/opencode.json`
-2. Configures agents, blitzkrieg, skills, kratos
+2. Configures agents, blitzkrieg, skills, kraken-memory
 3. Installs skill templates to `~/.config/opencode/skill/`
-4. Creates Kratos storage directory
+4. Creates Kraken Memory storage directory
 
 ---
 
 ## Philosophy & Usage
 
 **Philosophy**:
+
 - "Unified plugin with high-density agents"
 - Feature completeness over raw performance
 - Modular architecture
@@ -297,12 +308,14 @@ export class SkillLoader {
 - Persistent memory across sessions
 
 **Usage**:
+
 - Sea-themed agents with clear specialization
 - Blitzkrieg for TDD enforcement
 - Skills for custom workflows
-- Kratos for persistent memory
+- Kraken Memory for persistent knowledge graph
 
 **Target Audience**:
+
 - Users wanting comprehensive feature set
 - Teams wanting TDD enforcement
 - Projects requiring persistent memory
@@ -312,31 +325,31 @@ export class SkillLoader {
 
 ## Feature Summary
 
-| Category | Kraken-Code |
-|----------|-------------|
-| **Agent Model Specialization** | User-configured per agent |
-| **Number of Agents** | 10 domain-specific |
-| **Keyword Detection** | Basic (enhanced mode) |
- | **LSP Integration** | Full (12 tools, 16 servers) |
-| **MCP Support** | Dedicated Kratos, structured |
-| **Authentication** | 2 providers (Claude, Google) |
-| **Loaders** | Skills only |
-| **Hooks** | 30+ hooks, code-based |
-| **TDD Support** | Full Blitzkrieg system |
-| **Memory System** | Kratos persistent memory |
-| **CLI Commands** | install, init, status, doctor |
-| **Configuration** | Zod validation, centralized |
-| **File-based Hooks** | No (code-based) |
-| **Data Persistence** | Kratos storage |
-| **Native Integrations** | GitHub SDK, Git SDK, PR/Issue SDK |
-| **Background Agents** | Yes, manager-based |
-| **Context Pruning** | DCP engine + multiple strategies |
-| **Todo Enforcement** | Via Blitzkrieg (optional) |
-| **Comment Checking** | Comment checker hook |
-| **Session Management** | list, read, search, info |
-| **Ralph Loop** | Refined implementation with state persistence |
- | **Auto Update** | Yes, NPM registry checking with cache |
-| **License** | MIT (permissive) |
+| Category                       | Kraken-Code                                                   |
+| ------------------------------ | ------------------------------------------------------------- |
+| **Agent Model Specialization** | User-configured per agent                                     |
+| **Number of Agents**           | 10 domain-specific                                            |
+| **Keyword Detection**          | Basic (enhanced mode)                                         |
+| **LSP Integration**            | Full (12 tools, 16 servers)                                   |
+| **MCP Support**                | Dedicated servers (websearch, context7, grep_app), structured |
+| **Authentication**             | 2 providers (Claude, Google)                                  |
+| **Loaders**                    | Skills only                                                   |
+| **Hooks**                      | 30+ hooks, code-based                                         |
+| **TDD Support**                | Full Blitzkrieg system                                        |
+| **Memory System**              | Kraken Memory (knowledge graph + palace + vectors)            |
+| **CLI Commands**               | install, init, status, doctor                                 |
+| **Configuration**              | Zod validation, centralized                                   |
+| **File-based Hooks**           | No (code-based)                                               |
+| **Data Persistence**           | Kraken Memory storage                                         |
+| **Native Integrations**        | GitHub SDK, Git SDK, PR/Issue SDK                             |
+| **Background Agents**          | Yes, manager-based                                            |
+| **Context Pruning**            | DCP engine + multiple strategies                              |
+| **Todo Enforcement**           | Via Blitzkrieg (optional)                                     |
+| **Comment Checking**           | Comment checker hook                                          |
+| **Session Management**         | list, read, search, info                                      |
+| **Ralph Loop**                 | Refined implementation with state persistence                 |
+| **Auto Update**                | Yes, NPM registry checking with cache                         |
+| **License**                    | MIT (permissive)                                              |
 
 ---
 
@@ -344,7 +357,7 @@ export class SkillLoader {
 
 1. **Sea-themed agent system** - 10 domain-specific agents for comprehensive coverage
 2. **Blitzkrieg TDD system** - Complete test-driven development enforcement
-3. **Kratos memory** - Persistent memory storage across sessions
+3. **Kraken Memory** - Spatial knowledge graph with persistent storage across sessions
 4. **Native SDK integrations** - GitHub, Git, PR/Issue SDKs
 5. **Skills system** - Dynamic skill discovery and templates
 6. **Extensive hooks** - 30+ hooks for customization
@@ -371,6 +384,7 @@ export class SkillLoader {
 ## When to Use
 
 **Use Kraken-Code if**:
+
 - You want TDD enforcement
 - You need persistent memory
 - You prefer comprehensive feature sets
