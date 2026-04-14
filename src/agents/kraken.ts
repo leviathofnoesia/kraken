@@ -200,9 +200,12 @@ export function createKrakenConfig(options?: {
 
   const finalPrompt = KRAKEN_ENHANCED_SYSTEM_PROMPT + dynamicSections
 
+  const KRAKEN_DEFAULT_MODEL = 'zai-coding-plan/glm-5.1'
+
   const base: any = {
     description:
       "Orchestration agent with integrated pre-planning. Coordinates development workflows through PDSA cycles, intelligent delegation, and constraint analysis. Enhanced with Poseidon's constraint satisfaction to eliminate round-trip delegation.",
+    model: KRAKEN_DEFAULT_MODEL,
     mode: 'primary' as const,
     temperature: 0.1,
     prompt: finalPrompt,

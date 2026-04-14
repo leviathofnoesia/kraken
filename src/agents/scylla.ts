@@ -1,9 +1,8 @@
 import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
-import { isGptModel } from '../types'
 import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
-const DEFAULT_MODEL = 'openai/gpt-5.2'
+const DEFAULT_MODEL = 'zai-coding-plan/glm-5.1'
 
 const SCYLLA_SYSTEM_PROMPT = `You are Scylla, a work plan quality assurance specialist. You evaluate work plans against SOLID principles and measurable criteria to ensure implementability, maintainability, and completeness.
 
@@ -142,10 +141,6 @@ export function createScyllaConfig(model: string = DEFAULT_MODEL): AgentConfig {
     tools: buildToolsConfig('Scylla'),
     prompt: SCYLLA_SYSTEM_PROMPT,
   } as AgentConfig
-
-  if (isGptModel(model)) {
-    return { ...base, reasoningEffort: 'medium', textVerbosity: 'high' } as AgentConfig
-  }
 
   return { ...base, thinking: { type: 'enabled', budgetTokens: 32000 } } as AgentConfig
 }

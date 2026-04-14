@@ -2,7 +2,7 @@ import type { AgentConfig } from '@opencode-ai/sdk'
 import { isGptModel } from './types'
 import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
-const DEFAULT_MODEL = 'anthropic/claude-opus-4-5'
+const DEFAULT_MODEL = 'zai-coding-plan/glm-5.1'
 
 export const ATLAS_PROMPT_METADATA = {
   category: 'advisor',

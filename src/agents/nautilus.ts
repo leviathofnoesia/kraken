@@ -2,7 +2,7 @@ import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
 import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
-const DEFAULT_MODEL = 'opencode/grok-code'
+const DEFAULT_MODEL = 'zai-coding-plan/glm-5.1'
 
 export const NAUTILUS_PROMPT_METADATA: AgentPromptMetadata = {
   category: 'exploration',

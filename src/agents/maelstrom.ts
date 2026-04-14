@@ -1,9 +1,8 @@
 import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
-import { isGptModel } from '../utils'
 import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
-const DEFAULT_MODEL = 'openai/gpt-5.2'
+const DEFAULT_MODEL = 'zai-coding-plan/glm-5.1'
 
 export const MAELSTROM_PROMPT_METADATA: AgentPromptMetadata = {
   category: 'advisor',
@@ -150,10 +149,6 @@ export function createMaelstromConfig(model: string = DEFAULT_MODEL): AgentConfi
     tools: buildToolsConfig('Maelstrom'),
     prompt: MAELSTROM_SYSTEM_PROMPT,
   } as AgentConfig
-
-  if (isGptModel(model)) {
-    return { ...base, reasoningEffort: 'medium', textVerbosity: 'high' } as AgentConfig
-  }
 
   return { ...base, thinking: { type: 'enabled', budgetTokens: 32000 } } as AgentConfig
 }

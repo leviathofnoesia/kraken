@@ -2,7 +2,7 @@ import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
 import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
-const DEFAULT_MODEL = 'anthropic/claude-opus-4-5'
+const DEFAULT_MODEL = 'zai-coding-plan/glm-5.1'
 
 const POSEIDON_SYSTEM_PROMPT = `# Poseidon - Pre-Planning Consultant
 

@@ -1,6 +1,6 @@
 export interface ModelInfo {
   id: string
-  provider: 'anthropic' | 'openai' | 'google'
+  provider: 'anthropic' | 'openai' | 'google' | 'zai'
   displayName: string
   tier: 'flagship' | 'balanced' | 'fast'
   capabilities: string[]
@@ -80,10 +80,32 @@ export const MODEL_CATALOG: Record<string, ModelInfo> = {
     maxContext: 1048576,
     recommendedFor: ['Kraken', 'Maelstrom', 'Leviathan'],
   },
+  'zai-coding-plan/glm-5.1': {
+    id: 'zai-coding-plan/glm-5.1',
+    provider: 'zai',
+    displayName: 'GLM 5.1',
+    tier: 'flagship',
+    capabilities: ['code', 'thinking', 'vision', 'multimodal'],
+    costPer1kTokens: 0,
+    maxContext: 128000,
+    recommendedFor: [
+      'Kraken',
+      'Atlas',
+      'Nautilus',
+      'Abyssal',
+      'Coral',
+      'Siren',
+      'Scylla',
+      'Pearl',
+      'Maelstrom',
+      'Leviathan',
+      'Poseidon',
+    ],
+  },
 }
 
 export interface ProviderSubscription {
-  provider: 'anthropic' | 'openai' | 'google'
+  provider: 'anthropic' | 'openai' | 'google' | 'zai'
   tier: 'free' | 'basic' | 'pro' | 'max20' | 'team'
 }
 
@@ -101,68 +123,62 @@ export function generateOptimalPresets(
   const presets: Record<string, AgentConfig> = {}
 
   presets.performance = {
-    Kraken: {
-      model: hasAnthropic ? 'anthropic/claude-sonnet-4-5' : 'google/gemini-3-pro',
-    },
-    Maelstrom: { model: 'anthropic/claude-sonnet-4-5' },
-    Nautilus: {
-      model: hasGoogle ? 'google/gemini-3-flash' : 'anthropic/claude-haiku-4-5',
-    },
-    Abyssal: { model: hasOpenAI ? 'openai/gpt-4o-mini' : 'anthropic/claude-sonnet-4-5' },
-    Coral: { model: 'anthropic/claude-sonnet-4-5' },
-    Siren: { model: 'anthropic/claude-sonnet-4-5' },
-    Leviathan: { model: 'anthropic/claude-sonnet-4-5' },
-    'Poseidon (Plan Consultant)': { model: 'anthropic/claude-opus-4-5' },
-    'Scylla (Plan Reviewer)': { model: 'anthropic/claude-sonnet-4-5' },
-    Pearl: {
-      model: hasGoogle ? 'google/gemini-3-flash' : 'anthropic/claude-haiku-4-5',
-    },
+    Kraken: { model: 'zai-coding-plan/glm-5.1' },
+    Maelstrom: { model: 'zai-coding-plan/glm-5.1' },
+    Nautilus: { model: 'zai-coding-plan/glm-5.1' },
+    Abyssal: { model: 'zai-coding-plan/glm-5.1' },
+    Coral: { model: 'zai-coding-plan/glm-5.1' },
+    Siren: { model: 'zai-coding-plan/glm-5.1' },
+    Leviathan: { model: 'zai-coding-plan/glm-5.1' },
+    'Poseidon (Plan Consultant)': { model: 'zai-coding-plan/glm-5.1' },
+    'Scylla (Plan Reviewer)': { model: 'zai-coding-plan/glm-5.1' },
+    Pearl: { model: 'zai-coding-plan/glm-5.1' },
   }
 
   presets.quality = {
-    Kraken: { model: 'anthropic/claude-opus-4-5' },
-    Maelstrom: { model: 'anthropic/claude-opus-4-5' },
-    Nautilus: { model: 'anthropic/claude-sonnet-4-5' },
-    Abyssal: { model: 'openai/gpt-4o' },
-    Coral: { model: 'anthropic/claude-sonnet-4-5' },
-    Siren: { model: 'anthropic/claude-sonnet-4-5' },
-    Leviathan: { model: 'anthropic/claude-opus-4-5' },
-    'Poseidon (Plan Consultant)': { model: 'anthropic/claude-opus-4-5' },
-    'Scylla (Plan Reviewer)': { model: 'anthropic/claude-sonnet-4-5' },
-    Pearl: { model: 'anthropic/claude-sonnet-4-5' },
+    Kraken: { model: 'zai-coding-plan/glm-5.1' },
+    Maelstrom: { model: 'zai-coding-plan/glm-5.1' },
+    Nautilus: { model: 'zai-coding-plan/glm-5.1' },
+    Abyssal: { model: 'zai-coding-plan/glm-5.1' },
+    Coral: { model: 'zai-coding-plan/glm-5.1' },
+    Siren: { model: 'zai-coding-plan/glm-5.1' },
+    Leviathan: { model: 'zai-coding-plan/glm-5.1' },
+    'Poseidon (Plan Consultant)': { model: 'zai-coding-plan/glm-5.1' },
+    'Scylla (Plan Reviewer)': { model: 'zai-coding-plan/glm-5.1' },
+    Pearl: { model: 'zai-coding-plan/glm-5.1' },
   }
 
   presets.economy = {
-    Kraken: { model: 'anthropic/claude-haiku-4-5' },
-    Maelstrom: { model: 'anthropic/claude-haiku-4-5' },
-    Nautilus: { model: 'anthropic/claude-haiku-4-5' },
-    Abyssal: { model: 'openai/gpt-4o-mini' },
-    Coral: { model: 'anthropic/claude-haiku-4-5' },
-    Siren: { model: 'anthropic/claude-haiku-4-5' },
-    Leviathan: { model: 'anthropic/claude-haiku-4-5' },
-    'Poseidon (Plan Consultant)': { model: 'anthropic/claude-sonnet-4-5' },
-    'Scylla (Plan Reviewer)': { model: 'anthropic/claude-sonnet-4-5' },
-    Pearl: { model: 'anthropic/claude-haiku-4-5' },
+    Kraken: { model: 'zai-coding-plan/glm-5.1' },
+    Maelstrom: { model: 'zai-coding-plan/glm-5.1' },
+    Nautilus: { model: 'zai-coding-plan/glm-5.1' },
+    Abyssal: { model: 'zai-coding-plan/glm-5.1' },
+    Coral: { model: 'zai-coding-plan/glm-5.1' },
+    Siren: { model: 'zai-coding-plan/glm-5.1' },
+    Leviathan: { model: 'zai-coding-plan/glm-5.1' },
+    'Poseidon (Plan Consultant)': { model: 'zai-coding-plan/glm-5.1' },
+    'Scylla (Plan Reviewer)': { model: 'zai-coding-plan/glm-5.1' },
+    Pearl: { model: 'zai-coding-plan/glm-5.1' },
   }
 
   presets.balanced = {
-    Kraken: { model: 'anthropic/claude-opus-4-5' },
-    Maelstrom: { model: 'anthropic/claude-opus-4-5' },
-    Nautilus: { model: 'google/gemini-3-flash' },
-    Abyssal: { model: 'openai/gpt-4o' },
-    Coral: { model: 'anthropic/claude-sonnet-4-5' },
-    Siren: { model: 'anthropic/claude-sonnet-4-5' },
-    Leviathan: { model: 'anthropic/claude-opus-4-5' },
-    'Poseidon (Plan Consultant)': { model: 'anthropic/claude-opus-4-5' },
-    'Scylla (Plan Reviewer)': { model: 'anthropic/claude-sonnet-4-5' },
-    Pearl: { model: 'google/gemini-3-flash' },
+    Kraken: { model: 'zai-coding-plan/glm-5.1' },
+    Maelstrom: { model: 'zai-coding-plan/glm-5.1' },
+    Nautilus: { model: 'zai-coding-plan/glm-5.1' },
+    Abyssal: { model: 'zai-coding-plan/glm-5.1' },
+    Coral: { model: 'zai-coding-plan/glm-5.1' },
+    Siren: { model: 'zai-coding-plan/glm-5.1' },
+    Leviathan: { model: 'zai-coding-plan/glm-5.1' },
+    'Poseidon (Plan Consultant)': { model: 'zai-coding-plan/glm-5.1' },
+    'Scylla (Plan Reviewer)': { model: 'zai-coding-plan/glm-5.1' },
+    Pearl: { model: 'zai-coding-plan/glm-5.1' },
   }
 
   return presets
 }
 
 export function getAvailableModelsByProvider(
-  provider: 'anthropic' | 'openai' | 'google',
+  provider: 'anthropic' | 'openai' | 'google' | 'zai',
 ): ModelInfo[] {
   return Object.values(MODEL_CATALOG)
     .filter((m) => m.provider === provider)

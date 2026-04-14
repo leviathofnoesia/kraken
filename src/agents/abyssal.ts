@@ -2,7 +2,7 @@ import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
 import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
-const DEFAULT_MODEL = 'opencode/glm-4-7-free'
+const DEFAULT_MODEL = 'zai-coding-plan/glm-5.1'
 
 const ABYSSAL_PROMPT_METADATA: AgentPromptMetadata = {
   category: 'exploration',

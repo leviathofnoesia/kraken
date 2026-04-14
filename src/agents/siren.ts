@@ -2,7 +2,7 @@ import type { AgentConfig } from '@opencode-ai/sdk'
 import type { AgentPromptMetadata } from '../types'
 import { buildPermissionConfig, buildToolsConfig } from './permissions'
 
-const DEFAULT_MODEL = 'google/gemini-3-flash-preview'
+const DEFAULT_MODEL = 'zai-coding-plan/glm-5.1'
 
 const SIREN_PROMPT_METADATA: AgentPromptMetadata = {
   category: 'specialist',

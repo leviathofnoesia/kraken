@@ -17,6 +17,8 @@ import {
   createEvidenceReport,
   generateVerificationSummary,
   isVerificationSufficient,
+  legacyVerifyEvidence,
+  extractDeficiencies,
   type EvidenceRequirements,
   type EvidenceReport as BlitzkriegEvidenceReport,
 } from '../../features/blitzkrieg/blitzkrieg-verification'
@@ -126,15 +128,49 @@ export function createBlitzkriegEvidenceVerifierHook(): Hooks {
         )
       }
 
-      // TODO: Implement proper evidence verification
-      // The verifyEvidence function requires buildOutput, buildExitCode, testOutput, coverageOutput, config
-      // This hook needs to be refactored to collect and pass these values
-      // For now, skip verification and just check if evidence exists
+      // Verify evidence using the blitzkrieg verification engine
       const evidence = taskEvidence.evidence || createEvidenceReport()
 
-      console.log(
-        `[blitzkrieg-evidence-verifier] Evidence verification is not fully implemented. Skipping verification for task ${taskId}.`,
-      )
+      // If we have test execution evidence, run full verification
+      if (evidence.testExecutionEvidence) {
+        const requirements: EvidenceRequirements = {
+          requireTestExecutionEvidence: evidenceConfig.requireTestExecutionEvidence,
+          requireAssertionEvidence: evidenceConfig.requireAssertionEvidence,
+          requireEdgeCaseEvidence: evidenceConfig.requireEdgeCaseEvidence,
+          coverageThreshold: evidenceConfig.coverageThreshold,
+        }
+
+        const result = legacyVerifyEvidence(evidence, requirements)
+        const summary = generateVerificationSummary(result)
+
+        if (!isVerificationSufficient(result)) {
+          const deficiencies = extractDeficiencies(result)
+          const deficiencyReport = deficiencies
+            .map((d) => `  [${d.severity}] ${d.type}: ${d.details} — ${d.suggestion}`)
+            .join('\n')
+
+          throw new Error(
+            `Blitzkrieg Evidence Verification FAILED for task "${taskId}":\n${summary}\n\nDeficiencies:\n${deficiencyReport}`,
+          )
+        }
+
+        console.log(
+          `[blitzkrieg-evidence-verifier] Evidence verification PASSED for task ${taskId} (confidence: ${result.confidenceScore}%)`,
+        )
+      } else {
+        // No test execution evidence — check if any test files were registered
+        if (taskEvidence.testFilePaths.length > 0) {
+          console.warn(
+            `[blitzkrieg-evidence-verifier] Test files registered for task ${taskId} but no execution evidence captured. ` +
+              `Run tests before marking task complete.`,
+          )
+        } else {
+          throw new Error(
+            `Blitzkrieg Evidence Verification: No evidence registered for task "${taskId}". ` +
+              `Register test files and run tests before marking task complete.`,
+          )
+        }
+      }
     },
 
     /**

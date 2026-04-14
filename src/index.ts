@@ -246,9 +246,17 @@ const createOpenCodeXPlugin: Plugin = async (input: PluginInput): Promise<Hooks>
     config: async (pluginConfig: any) => {
       if (!pluginConfig.agent) pluginConfig.agent = {}
       const agents = getSeaThemedAgents()
+
       for (const [name, agentConfig] of Object.entries(agents)) {
-        if (!pluginConfig.agent[name]) pluginConfig.agent[name] = agentConfig
+        if (!pluginConfig.agent[name]) {
+          pluginConfig.agent[name] = agentConfig
+        } else if (pluginConfig.agent[name].model) {
+          pluginConfig.agent[name] = { ...agentConfig, model: pluginConfig.agent[name].model }
+        } else {
+          pluginConfig.agent[name] = { ...agentConfig, ...pluginConfig.agent[name] }
+        }
       }
+
       if (!pluginConfig.default_agent && pluginConfig.agent['Kraken'])
         pluginConfig.default_agent = 'Kraken'
 
